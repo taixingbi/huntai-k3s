@@ -1,4 +1,4 @@
-# Gateway — prod (namespace ai-prod, NodePort 30380).
+# Gateway — prod (NodePort 30380; pod + ClusterIP listen on 8000).
 # vLLM stays in namespace `ai` (apply manifests/ai/inference-qwen25-7b.yaml first); backends use LAN NodePort 30080.
 # Image: https://hub.docker.com/r/taixingbi/layer-gateway-inference-v1
 # Source: https://github.com/taixingbi/layer-gateway-inference-v1
@@ -19,7 +19,7 @@ data:
   config.yaml: |
     server:
       host: 0.0.0.0
-      port: 8010
+      port: 8000
       request_timeout_ms: 60000
 
     scheduler:
@@ -87,7 +87,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 8010
+              containerPort: 8000
           env:
             - name: GATEWAY_CONFIG
               value: /app/config.yaml
@@ -144,6 +144,6 @@ spec:
     app: layer-gateway-inference
   ports:
     - name: http
-      port: 8010
+      port: 8000
       targetPort: http
       nodePort: 30380

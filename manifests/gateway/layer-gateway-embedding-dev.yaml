@@ -1,4 +1,4 @@
-# Embedding gateway — dev (namespace ai-dev, NodePort 30181).
+# Embedding gateway — dev (NodePort 30181; pod + ClusterIP listen on 8000).
 # Routes POST /v1/embeddings to vLLM embedding backends on each GPU node (:8001).
 # Image / source: https://github.com/taixingbi/layer-gateway-embed-v1
 # Configure backends with EMBED_BACKENDS (see docs/deploy-gateway-embedding.md).
@@ -36,12 +36,12 @@ spec:
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 30181
+              containerPort: 8000
           env:
             - name: GATEWAY_HOST
               value: "0.0.0.0"
             - name: GATEWAY_PORT
-              value: "30181"
+              value: "8000"
             # name=url,name=url — same LAN layout as docker-compose in upstream repo
             - name: EMBED_BACKENDS
               value: "embed-node-1=http://192.168.86.173:8001,embed-node-2=http://192.168.86.176:8001"
@@ -109,6 +109,6 @@ spec:
     app: layer-gateway-embedding
   ports:
     - name: http
-      port: 30181
+      port: 8000
       targetPort: http
       nodePort: 30181

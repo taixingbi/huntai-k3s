@@ -1,5 +1,7 @@
 # Test Calls
 
+Gateway and RAG services use **NodePort** below; pods listen on **8000** (ClusterIP port `8000`). Examples use a GPU node IP; adjust if needed.
+
 vLLM direct (`30080`):
 
 ```bash

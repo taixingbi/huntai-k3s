@@ -2,6 +2,8 @@
 
 Gateway image: [taixingbi/layer-gateway-inference-v1](https://hub.docker.com/r/taixingbi/layer-gateway-inference-v1)
 
+In-cluster: `http://layer-gateway-inference:8000` (dev `ai-dev`, prod `ai-prod`). LAN NodePorts: `30180` (dev), `30380` (prod); see `docs/port.md`.
+
 ## 1) Create secrets (required for `envFrom.secretRef`)
 
 Both manifests use `envFrom.secretRef.name=layer-gateway-inference-secrets`.

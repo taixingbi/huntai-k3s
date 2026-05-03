@@ -1,8 +1,8 @@
-# RAG query — dev (namespace ai-dev, NodePort 30183).
+# RAG query — dev (NodePort 30183; pod + ClusterIP listen on 8000).
 # Hybrid retrieval + POST /v1/rag/query (FastMCP HTTP). Source: https://github.com/taixingbi/layer-rag-query-v1
-# Image listens on HTTP_PORT (default 8000 in Dockerfile); set to 30183 so Service port/nodePort match docs/port.md.
+# HTTP_PORT=8000; NodePort 30183 forwards to container :8000.
 #
-# Requires: Qdrant at QDRANT_URL; embedding gateway, reranker gateway, vLLM inference (see env below).
+# Requires: Qdrant at QDRANT_URL; LAN NodePorts for embedding (30181), reranker (30182), inference gateway (30180).
 # Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-rag-query-v1:latest
 
 apiVersion: v1
@@ -36,16 +36,16 @@ spec:
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 30183
+              containerPort: 8000
           env:
             - name: HTTP_PORT
-              value: "30183"
+              value: "8000"
             - name: QDRANT_URL
               value: "http://192.168.86.179:6333"
             - name: QDRANT_API_KEY
               value: ""
             - name: EMBEDDING_URL
-              value: "http://layer-gateway-embedding:30181"
+              value: "http://192.168.86.179:30181"
             - name: EMBEDDING_INTERNAL_KEY
               value: ""
             - name: EMBEDDING_MODEL
@@ -59,11 +59,13 @@ spec:
             - name: RRF_K
               value: "60"
             - name: INFERENCE_URL
-              value: "http://vllm-inference.ai.svc.cluster.local:8000"
+              value: "http://192.168.86.179:30180"
             - name: INFERENCE_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
+            - name: INFERENCE_MAX_TOKENS
+              value: "512"
             - name: RERANK_URL
-              value: "http://layer-gateway-reranker:30182"
+              value: "http://192.168.86.179:30182"
             - name: RERANK_MODEL
               value: "BAAI/bge-reranker-v2-m3"
             - name: RERANK_TOP_N
@@ -104,6 +106,6 @@ spec:
     app: layer-rag-query
   ports:
     - name: http
-      port: 30183
+      port: 8000
       targetPort: http
       nodePort: 30183

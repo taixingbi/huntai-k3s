@@ -2,7 +2,7 @@
 
 Gateway image: [taixingbi/layer-gateway-embed-v1](https://hub.docker.com/r/taixingbi/layer-gateway-embed-v1) — source: [layer-gateway-embed-v1](https://github.com/taixingbi/layer-gateway-embed-v1)
 
-Endpoints: `POST /v1/rerank`, `GET /health`, `GET /metrics`. Smoke tests: `docs/test-calls.md`. For Grafana dashboard `grafana-import/dashboard/reranker.json`, ensure `manifests/observability/prometheus-grafana.yaml` includes reranker static targets with label `workload=reranker` on `:8002`.
+Endpoints: `POST /v1/rerank`, `GET /health`, `GET /metrics`. In-cluster: `http://layer-gateway-reranker:8000`; LAN: NodePort `30182` (`docs/port.md`). Smoke tests: `docs/test-calls.md`. For Grafana dashboard `grafana-import/dashboard/reranker.json`, ensure `manifests/observability/prometheus-grafana.yaml` includes reranker static targets with label `workload=reranker` on `:8002`.
 
 ## 1) Configure backends (no `secretRef`)
 

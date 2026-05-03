@@ -1,3 +1,5 @@
+Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`); below are **NodePort** values on the node.
+
 30080 → inference (vLLM) 
 30081 → embedding(vLLM) 
 30082 → reranker(vLLM) 

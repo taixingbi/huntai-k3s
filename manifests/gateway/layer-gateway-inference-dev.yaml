@@ -1,4 +1,4 @@
-# Gateway — dev (namespace ai-dev, NodePort 30180).
+# Gateway — dev (NodePort 30180; pod + ClusterIP listen on 8000).
 # Apply fails if 30180 is already taken (e.g. legacy Service layer-gateway-inference in namespace ai) — delete that Service first.
 # vLLM stays in namespace `ai` (apply manifests/ai/inference-qwen25-7b.yaml first); backends use LAN NodePort 30080.
 # Image: https://hub.docker.com/r/taixingbi/layer-gateway-inference-v1
@@ -20,7 +20,7 @@ data:
   config.yaml: |
     server:
       host: 0.0.0.0
-      port: 8010
+      port: 8000
       request_timeout_ms: 60000
 
     scheduler:
@@ -95,7 +95,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 8010
+              containerPort: 8000
           env:
             - name: GATEWAY_CONFIG
               value: /app/config.yaml
@@ -155,6 +155,6 @@ spec:
     app: layer-gateway-inference
   ports:
     - name: http
-      port: 8010
+      port: 8000
       targetPort: http
       nodePort: 30180

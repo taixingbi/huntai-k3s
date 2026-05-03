@@ -1,4 +1,4 @@
-# Reranker gateway — dev (namespace ai-dev, NodePort 30182).
+# Reranker gateway — dev (NodePort 30182; pod + ClusterIP listen on 8000).
 # Routes reranking traffic to backend nodes on :8002.
 # Image / source: https://github.com/taixingbi/layer-gateway-reranker-v1
 #
@@ -35,12 +35,12 @@ spec:
           imagePullPolicy: Always
           ports:
             - name: http
-              containerPort: 30182
+              containerPort: 8000
           env:
             - name: GATEWAY_HOST
               value: "0.0.0.0"
             - name: GATEWAY_PORT
-              value: "30182"
+              value: "8000"
             - name: RERANK_BACKENDS
               value: "reranker-node-1=http://192.168.86.173:8002,reranker-node-2=http://192.168.86.176:8002"
             - name: TIMEOUT_CONNECT_MS
@@ -107,6 +107,6 @@ spec:
     app: layer-gateway-reranker
   ports:
     - name: http
-      port: 30182
+      port: 8000
       targetPort: http
       nodePort: 30182
