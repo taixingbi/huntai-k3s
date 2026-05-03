@@ -46,8 +46,6 @@ spec:
               value: ""
             - name: EMBEDDING_URL
               value: "http://192.168.86.179:30181"
-            - name: EMBEDDING_INTERNAL_KEY
-              value: ""
             - name: EMBEDDING_MODEL
               value: "BAAI/bge-m3"
             - name: VECTOR_SIZE

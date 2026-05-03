@@ -12,7 +12,7 @@ HTTP API: `POST /v1/rag/query` (JSON body; see upstream README). MCP clients use
 
 ## 1) Configure env (no `secretRef` by default)
 
-Edit `manifests/rag/layer-rag-query-dev.yaml` for non-default Qdrant host, keys (`QDRANT_API_KEY`, `EMBEDDING_INTERNAL_KEY`), or model names. For Grafana Cloud Loki from the app, add `GRAFANA_CLOUD_*` env vars per upstream `.env.example` (not set in this manifest by default).
+Edit `manifests/rag/layer-rag-query-dev.yaml` for non-default Qdrant host, `QDRANT_API_KEY`, or model names. For Grafana Cloud Loki from the app, add `GRAFANA_CLOUD_*` env vars per upstream `.env.example` (not set in this manifest by default).
 
 ## 2) Apply manifests
 
