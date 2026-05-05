@@ -1,4 +1,4 @@
-# Reranker gateway — dev (NodePort 30182; pod + ClusterIP listen on 8000).
+# Reranker gateway — dev (NodePort 30182; pod + ClusterIP listen on 8000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
 # Routes reranking traffic to backend nodes on :8002.
 # Image / source: https://github.com/taixingbi/layer-gateway-reranker-v1
 #
@@ -28,6 +28,8 @@ spec:
         app: layer-gateway-reranker
         environment: dev
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: server-node-1
       automountServiceAccountToken: false
       containers:
         - name: gateway
