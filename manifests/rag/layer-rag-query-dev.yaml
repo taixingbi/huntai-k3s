@@ -2,7 +2,7 @@
 # Hybrid retrieval + POST /v1/rag/query (FastMCP HTTP). Source: https://github.com/taixingbi/layer-rag-query-v1
 # HTTP_PORT=8000; NodePort 30183 forwards to container :8000.
 #
-# Requires: Qdrant at QDRANT_URL; LAN NodePorts for embedding (30181), reranker (30182), inference gateway (30180).
+# Requires: Qdrant at QDRANT_URL; embedding/reranker gateways (30181, 30182); vLLM inference NodePort (30080). Matches upstream .env.example.
 # Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-rag-query-v1:latest
 
 apiVersion: v1
@@ -57,19 +57,21 @@ spec:
             - name: RRF_K
               value: "60"
             - name: INFERENCE_URL
-              value: "http://192.168.86.179:30180"
+              value: "http://192.168.86.179:30080"
             - name: INFERENCE_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
-            - name: INFERENCE_MAX_TOKENS
-              value: "512"
             - name: RERANK_URL
               value: "http://192.168.86.179:30182"
             - name: RERANK_MODEL
               value: "BAAI/bge-reranker-v2-m3"
             - name: RERANK_TOP_N
               value: "50"
+            - name: RERANK_RETURN_TOP_K
+              value: "25"
+            - name: RETRIEVE_FALLBACK_N
+              value: "3"
             - name: FINAL_CONTEXT_TOP_K
-              value: "10"
+              value: "12"
           readinessProbe:
             tcpSocket:
               port: http

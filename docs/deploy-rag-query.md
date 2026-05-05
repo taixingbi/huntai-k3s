@@ -2,12 +2,12 @@
 
 Service image: [taixingbi/layer-rag-query-v1](https://hub.docker.com/r/taixingbi/layer-rag-query-v1) — source: [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)
 
-HTTP API: `POST /v1/rag/query` (JSON body; see upstream README). MCP clients use `http://<host>:30183/mcp` when using FastMCP HTTP transport (NodePort; pod listens on `8000`). Required environment variables match upstream [`app/config.py`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/app/config.py) and [`.env.example`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/.env.example); the dev manifest uses LAN URLs on `192.168.86.179` for Qdrant, embedding gateway (`30181`), reranker gateway (`30182`), and inference gateway (`30180`). In-cluster callers may use Service DNS on port `8000` instead (e.g. `http://layer-gateway-embedding:8000`).
+HTTP API: `POST /v1/rag/query` (JSON body; see upstream README). MCP clients use `http://<host>:30183/mcp` when using FastMCP HTTP transport (NodePort; pod listens on `8000`). Environment variables follow upstream [`app/config.py`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/app/config.py) and [`.env.example`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/.env.example). The dev manifest uses LAN `192.168.86.179` for Qdrant, embedding gateway (`30181`), reranker gateway (`30182`), and **vLLM inference** (`30080`). To use the inference **gateway** instead, set `INFERENCE_URL` to `http://192.168.86.179:30180` (or `http://layer-gateway-inference:8000` in-cluster). In-cluster callers may use Service DNS on port `8000` for gateways (e.g. `http://layer-gateway-embedding:8000`).
 
 ## Prerequisites
 
 - Qdrant reachable at `QDRANT_URL` (manifest default: `http://192.168.86.179:6333` — adjust if yours differs).
-- Embedding gateway, reranker gateway, and inference gateway reachable at the NodePorts on `192.168.86.179` used in the manifest (`30181`, `30182`, `30180`), or edit the YAML to use in-cluster Service DNS on port `8000` (`layer-gateway-embedding`, `layer-gateway-reranker`, `layer-gateway-inference`).
+- Embedding gateway and reranker gateway reachable at NodePorts `30181` and `30182`; vLLM inference at `30080` (manifest default). Override `INFERENCE_URL` for gateway (`30180`) or in-cluster DNS (`layer-gateway-inference:8000`, `vllm-inference.ai.svc.cluster.local:8000`) as needed.
 - Port map: `docs/port.md` (`30183` dev).
 
 ## 1) Configure env (no `secretRef` by default)
