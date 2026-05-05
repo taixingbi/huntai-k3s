@@ -69,7 +69,7 @@ spec:
             - name: RERANK_RETURN_TOP_K
               value: "25"
             - name: RETRIEVE_FALLBACK_N
-              value: "3"
+              value: "8"
             - name: FINAL_CONTEXT_TOP_K
               value: "12"
           readinessProbe:
