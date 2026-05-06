@@ -1,4 +1,4 @@
-# Deploy Gateway (dev/prod)
+# Deploy Inference Gateway (dev/prod)
 
 Gateway image: [taixingbi/layer-gateway-inference-v1](https://hub.docker.com/r/taixingbi/layer-gateway-inference-v1)
 
@@ -33,7 +33,7 @@ sudo k3s kubectl -n ai-prod exec -it deploy/layer-gateway-inference -- cat /app/
 sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-dev \
   -o jsonpath='{.data.OPENAI_API_KEY}' | base64 -d | wc -c
 
-sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-prod
+sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-prod \
   -o jsonpath='{.data.OPENAI_API_KEY}' | base64 -d | wc -c
 ```
 
@@ -58,4 +58,3 @@ NodePorts:
 
 - dev: `30180`
 - prod: `30380`
-
