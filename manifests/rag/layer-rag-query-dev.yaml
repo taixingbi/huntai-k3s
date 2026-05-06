@@ -36,6 +36,9 @@ spec:
         - name: rag-query
           image: docker.io/taixingbi/layer-rag-query-v1:latest
           imagePullPolicy: Always
+          command: ["/bin/sh", "-c"]
+          args:
+            - exec fastmcp run -m app.main
           ports:
             - name: http
               containerPort: 8000
