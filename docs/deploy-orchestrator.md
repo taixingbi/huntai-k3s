@@ -1,0 +1,63 @@
+# Deploy Orchestrator (dev)
+
+Service image: [taixingbi/layer-orchestrator-v1](https://hub.docker.com/r/taixingbi/layer-orchestrator-v1) — source: [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)
+
+The dev manifest exposes orchestrator on NodePort `30184` and ClusterIP port `8000`.
+
+Key endpoints:
+
+- `GET /health`
+- `POST /orchestrator/stream-answer` (SSE)
+
+## Prerequisites
+
+- Inference gateway running in `ai-dev` (`layer-gateway-inference:8000` or NodePort `30180`)
+- RAG query running in `ai-dev` (`layer-rag-query:8000` or NodePort `30183`)
+- Port map reference: `docs/port.md`
+
+## 1) Configure env values
+
+Edit `manifests/orchestrator/layer-orchestrator-dev.yaml` if you need non-default model/env settings. By default:
+
+- `LLM_GATEWAY_BASE_URL=http://layer-gateway-inference:8000`
+- `RAG_HTTP_BASE_URL=http://layer-rag-query:8000`
+- `RAG_COLLECTION_BASE=taixing_knowledge`
+
+## 2) Apply manifests
+
+```bash
+# optional: preload image on the node
+sudo k3s ctr images pull docker.io/taixingbi/layer-orchestrator-v1:latest
+
+sudo k3s kubectl apply -f manifests/orchestrator/layer-orchestrator-dev.yaml
+sudo k3s kubectl rollout restart deployment/layer-orchestrator -n ai-dev
+sudo k3s kubectl rollout status deployment/layer-orchestrator -n ai-dev
+sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-orchestrator -o wide
+sudo k3s kubectl get svc -A -o wide | grep 30184
+```
+
+## 3) Smoke tests
+
+Health check:
+
+```bash
+curl -sS http://192.168.86.179:30184/health | jq .
+echo
+```
+
+SSE answer stream:
+
+```bash
+curl -N -s -X POST http://192.168.86.179:30184/orchestrator/stream-answer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "session_id": "ses-123",
+    "request_id": "req-123",
+    "question": "what is taixing visa status?"
+  }'
+echo
+```
+
+NodePort:
+
+- dev: `30184`

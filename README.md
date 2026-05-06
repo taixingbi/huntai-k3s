@@ -19,6 +19,7 @@ Manifests and scripts for:
 | `manifests/gateway/layer-gateway-embedding-dev.yaml` | Embedding gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30181` → vLLM `:8001` on GPU nodes) |
 | `manifests/gateway/layer-gateway-reranker-dev.yaml` | Reranker gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30182` → backend `:8002` on GPU nodes) |
 | `manifests/rag/layer-rag-query-dev.yaml` | RAG query in `ai-dev` (ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
+| `manifests/orchestrator/layer-orchestrator-dev.yaml` | Orchestrator in `ai-dev` (ClusterIP `:8000`, NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
 | `manifests/observability/prometheus-grafana.yaml` | Prometheus + Grafana Cloud remote_write |
 | `manifests/observability/alloy-loki-cloud.yaml` | Alloy DaemonSet logs -> Grafana Cloud Loki |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |
@@ -89,7 +90,7 @@ sudo k3s kubectl delete pod cuda-vectoradd
 
 ## 4) Deploy workloads + observability
 
-Detailed steps for vLLM, inference gateway (dev/prod), embedding gateway (dev), reranker gateway (dev), RAG query (dev), Prometheus, Alloy, and Grafana import now live in:
+Detailed steps for vLLM, inference gateway (dev/prod), embedding gateway (dev), reranker gateway (dev), RAG query (dev), orchestrator (dev), Prometheus, Alloy, and Grafana import now live in:
 
 - `docs/deploy-workloads-and-observability.md`
 

@@ -19,3 +19,7 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 30183 → rag-query (dev) 
 30283 → rag-query (qa) 
 30383 → rag-query (prod)
+
+30184 → orchestrator (dev)
+30284 → orchestrator (qa)
+30384 → orchestrator (prod)
