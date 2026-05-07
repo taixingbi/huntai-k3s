@@ -33,7 +33,6 @@ sudo k3s kubectl apply -f manifests/orchestrator/layer-orchestrator-dev.yaml
 sudo k3s kubectl rollout restart deployment/layer-orchestrator -n ai-dev
 sudo k3s kubectl rollout status deployment/layer-orchestrator -n ai-dev
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-orchestrator -o wide
-sudo k3s kubectl get svc -A -o wide | grep 30184
 ```
 
 ## 3) Smoke tests
