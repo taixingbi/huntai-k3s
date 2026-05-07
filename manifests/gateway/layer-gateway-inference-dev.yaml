@@ -119,14 +119,14 @@ spec:
               readOnly: true
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: http
             periodSeconds: 5
             timeoutSeconds: 3
             failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /health
               port: http
             periodSeconds: 30
             timeoutSeconds: 5

@@ -46,12 +46,33 @@ sudo k3s kubectl rollout restart deployment/layer-gateway-inference -n ai-dev # 
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30180
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-inference -o wide
+
 # prod
 sudo k3s kubectl rollout restart deployment/layer-gateway-inference -n ai-prod
 sudo k3s kubectl apply -f manifests/gateway/layer-gateway-inference-prod.yaml
 sudo k3s kubectl get pods,svc -n ai-prod -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30380
 sudo k3s kubectl get pods -n ai-prod -l app=layer-gateway-inference -o wide
+```
+
+## 3) Example: `POST /v1/chat/completions` (dev)
+
+From a host that can reach dev NodePort `30180`:
+
+```bash
+curl http://192.168.86.179:30180/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Request-Id: request-id-1" \
+  -H "X-Trace-Id: trace-id-1" \
+  -H "X-Session-Id: session-id-1" \
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "messages": [
+      {"role": "user", "content": "where is jersey city"}
+    ],
+    "max_tokens": 50,
+    "temperature": 0.7
+  }'
 ```
 
 NodePorts:
