@@ -27,7 +27,18 @@ sudo k3s kubectl get svc -A -o wide | grep 30183
 sudo k3s kubectl get pods -n ai-dev -l app=layer-rag-query -o wide
 ```
 
-## 3) Observability
+## 3) Quick checks: health and ready
+
+From a host that can reach NodePort `30183`:
+
+```bash
+curl -iS http://192.168.86.179:30183/health
+echo
+curl -iS http://192.168.86.179:30183/ready
+echo
+```
+
+## 4) Observability
 
 After changing scrape rules, reload Prometheus:
 
@@ -38,7 +49,7 @@ sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 
 Prometheus discovers Service `layer-rag-query` in `ai-dev` with label `workload=rag-query` (see `manifests/observability/prometheus-grafana.yaml`). Scrapes use `metrics_path: /metrics`; if the image does not expose that path yet, the target may show as down until the app exports Prometheus metrics.
 
-## 4) Example: `POST /v1/rag/query`
+## 5) Example: `POST /v1/rag/query`
 
 From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
 
