@@ -72,7 +72,8 @@ curl http://192.168.86.179:30180/v1/chat/completions \
     ],
     "max_tokens": 50,
     "temperature": 0.7
-  }'
+  }' | jq .
+echo
 ```
 
 NodePorts:
