@@ -69,6 +69,25 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   }'
 ```
 
+## 6) Example: `POST /v1/rag/query` (non-stream)
+
+From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
+
+```bash
+curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
+  -H "Content-Type: application/json" \
+  -H "X-Request-Id: req-abc123" \
+  -H "X-Session-Id: ses-xyz789" \
+  -H "X-Trace-Id: trc-001" \
+  -d '{
+    "question": "what is taixing visa",
+    "collection_base": "taixing_knowledge",
+    "k": 5,
+    "k_max": 40
+  }' | jq .
+echo
+```
+
 NodePorts:
 
 - dev: `30183`
