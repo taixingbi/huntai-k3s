@@ -7,7 +7,7 @@ The dev manifest exposes orchestrator on NodePort `30184` and ClusterIP port `80
 Key endpoints:
 
 - `GET /health`
-- `POST /orchestrator/stream-answer` (SSE)
+- `POST /orchestrator/answer` (JSON when `stream=false`, SSE when `stream=true`)
 
 ## Prerequisites
 
@@ -44,16 +44,32 @@ curl -sS http://192.168.86.179:30184/health | jq .
 echo
 ```
 
-SSE answer stream:
+Answer (non-stream):
 
 ```bash
-curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/stream-answer" \
+curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "Content-Type: application/json" \
   -H "X-Session-Id: ses-123" \
   -H "X-Request-Id: req-123" \
   -H "X-Trace-Id: req-123" \
   -d '{
-    "question": "what is taixing visa status?"
+    "question": "what is Taixing US visa status?"
+  }' | jq .
+echo
+```
+
+SSE answer stream (`stream: true`):
+
+```bash
+curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
+  -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
+  -H "X-Session-Id: ses-123" \
+  -H "X-Request-Id: req-123" \
+  -H "X-Trace-Id: req-123" \
+  -d '{
+    "question": "what is Taixing US visa status?",
+    "stream": true
   }'
 ```
 
