@@ -54,8 +54,9 @@ Prometheus discovers Service `layer-rag-query` in `ai-dev` with label `workload=
 From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
 
 ```bash
-curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
+curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
   -H "X-Request-Id: req-abc123" \
   -H "X-Session-Id: ses-xyz789" \
   -H "X-Trace-Id: trc-001" \
@@ -63,9 +64,9 @@ curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
     "question": "what is taixing visa",
     "collection_base": "taixing_knowledge",
     "k": 5,
-    "k_max": 40
-  }' | jq .
-echo
+    "k_max": 40,
+    "stream": true
+  }'
 ```
 
 NodePorts:
