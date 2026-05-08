@@ -59,7 +59,7 @@ spec:
             - name: RRF_K
               value: "60"
             - name: INFERENCE_URL
-              value: "http://192.168.86.179:30080"
+              value: "http://192.168.86.179:30180"
             - name: INFERENCE_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
             - name: RERANK_URL

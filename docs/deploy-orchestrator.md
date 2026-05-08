@@ -47,14 +47,14 @@ echo
 SSE answer stream:
 
 ```bash
-curl -N -s -X POST http://192.168.86.179:30184/orchestrator/stream-answer \
+curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/stream-answer" \
   -H "Content-Type: application/json" \
+  -H "X-Session-Id: ses-123" \
+  -H "X-Request-Id: req-123" \
+  -H "X-Trace-Id: req-123" \
   -d '{
-    "session_id": "ses-123",
-    "request_id": "req-123",
     "question": "what is taixing visa status?"
   }'
-echo
 ```
 
 NodePort:
