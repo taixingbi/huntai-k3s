@@ -45,6 +45,21 @@ echo
 ```
 
 Answer (non-stream):
+```bash
+curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
+  -H "Content-Type: application/json" \
+  -H "X-Session-Id: ses-123" \
+  -H "X-Request-Id: req-123" \
+  -H "X-Trace-Id: req-123" \
+  -H "X-User-Id: taixing" \
+  -H "X-User-Roles: hr" \
+  -H "X-User-Groups: engineering" \
+  -H "X-User-Teams: rag-platform" \
+  -d '{
+    "question": "What is Taixing Bi US visa status?"
+  }' | jq .
+echo
+```
 
 ```bash
 curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
@@ -57,7 +72,11 @@ curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-User-Groups: engineering" \
   -H "X-User-Teams: rag-platform" \
   -d '{
-    "question": "what is Taixing US visa status?"
+    "question": "Can he switch to another type of visa?",
+    "history": [
+      {"role": "user", "content": "What is Taixing Bi US visa status?"},
+      {"role": "assistant", "content": "Taixing has H4 EAD and does not need sponsorship."}
+    ]
   }' | jq .
 echo
 ```
