@@ -49,7 +49,30 @@ sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 
 Prometheus discovers Service `layer-rag-query` in `ai-dev` with label `workload=rag-query` (see `manifests/observability/prometheus-grafana.yaml`). Scrapes use `metrics_path: /metrics`; if the image does not expose that path yet, the target may show as down until the app exports Prometheus metrics.
 
-## 5) Example: `POST /v1/rag/query`
+
+## 5) Example: `POST /v1/rag/query` (non-stream)
+
+From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
+
+```bash
+curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
+  -H "Content-Type: application/json" \
+  -H "X-Request-Id: req-abc123" \
+  -H "X-Session-Id: ses-xyz789" \
+  -H "X-Trace-Id: trc-001" \
+  -H "X-User-Roles: hr" \
+  -H "X-User-Groups: engineering" \
+  -H "X-User-Teams: rag-platform" \
+  -d '{
+    "question": "What is the current US visa status of Taixing?",
+    "collection_base": "taixing_knowledge",
+    "k": 5,
+    "k_max": 40
+  }' | jq .
+echo
+```
+
+## 6) Example: `POST /v1/rag/query`
 
 From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
 
@@ -60,6 +83,9 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   -H "X-Request-Id: req-abc123" \
   -H "X-Session-Id: ses-xyz789" \
   -H "X-Trace-Id: trc-001" \
+  -H "X-User-Roles: hr" \
+  -H "X-User-Groups: engineering" \
+  -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is taixing visa",
     "collection_base": "taixing_knowledge",
@@ -67,25 +93,6 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
     "k_max": 40,
     "stream": true
   }'
-```
-
-## 6) Example: `POST /v1/rag/query` (non-stream)
-
-From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
-
-```bash
-curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
-  -H "Content-Type: application/json" \
-  -H "X-Request-Id: req-abc123" \
-  -H "X-Session-Id: ses-xyz789" \
-  -H "X-Trace-Id: trc-001" \
-  -d '{
-    "question": "what is taixing visa",
-    "collection_base": "taixing_knowledge",
-    "k": 5,
-    "k_max": 40
-  }' | jq .
-echo
 ```
 
 NodePorts:
