@@ -52,6 +52,10 @@ curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-Session-Id: ses-123" \
   -H "X-Request-Id: req-123" \
   -H "X-Trace-Id: req-123" \
+  -H "X-User-Id: taixing" \
+  -H "X-User-Roles: hr" \
+  -H "X-User-Groups: engineering" \
+  -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is Taixing US visa status?"
   }' | jq .
@@ -67,6 +71,10 @@ curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-Session-Id: ses-123" \
   -H "X-Request-Id: req-123" \
   -H "X-Trace-Id: req-123" \
+  -H "X-User-Id: taixing" \
+  -H "X-User-Roles: hr" \
+  -H "X-User-Groups: engineering" \
+  -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is Taixing US visa status?",
     "stream": true
