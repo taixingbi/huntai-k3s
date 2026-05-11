@@ -8,6 +8,7 @@ Key endpoints:
 
 - `GET /health`
 - `GET /ready`
+- `GET /metrics`
 - `POST /orchestrator/answer` (JSON when `stream=false`, SSE when `stream=true`)
 
 ## Prerequisites
@@ -38,12 +39,14 @@ sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-orchestrator -o wide
 
 ## 3) Smoke tests
 
-Health and ready:
+Health, ready, and metrics:
 
 ```bash
 curl -sS http://192.168.86.179:30184/health | jq .
 echo
 curl -sS http://192.168.86.179:30184/ready | jq .
+echo
+curl -sS http://192.168.86.179:30184/metrics | head -n 20
 echo
 ```
 
@@ -103,7 +106,7 @@ curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   }'
 ```
 
-## 4) Feedback examples (local)
+## 4) Feedback examples
 
 **Thumbs up** (correlate with the same `trace_id` / `request_id` you used on `/orchestrator/answer`):
 
