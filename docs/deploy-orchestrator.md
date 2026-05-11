@@ -7,6 +7,7 @@ The dev manifest exposes orchestrator on NodePort `30184` and ClusterIP port `80
 Key endpoints:
 
 - `GET /health`
+- `GET /ready`
 - `POST /orchestrator/answer` (JSON when `stream=false`, SSE when `stream=true`)
 
 ## Prerequisites
@@ -37,10 +38,12 @@ sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-orchestrator -o wide
 
 ## 3) Smoke tests
 
-Health check:
+Health and ready:
 
 ```bash
 curl -sS http://192.168.86.179:30184/health | jq .
+echo
+curl -sS http://192.168.86.179:30184/ready | jq .
 echo
 ```
 
@@ -72,10 +75,10 @@ curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-User-Groups: engineering" \
   -H "X-User-Teams: rag-platform" \
   -d '{
-    "question": "Can he switch to another type of visa?",
+    "question": "Can Taixing Bi travel outside the US during this period?",
     "history": [
       {"role": "user", "content": "What is Taixing Bi US visa status?"},
-      {"role": "assistant", "content": "Taixing has H4 EAD and does not need sponsorship."}
+      {"role": "assistant", "content": "H4 EAD. No visa sponsorship required. [1]"}
     ]
   }' | jq .
 echo
@@ -98,6 +101,34 @@ curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
     "question": "what is Taixing US visa status?",
     "stream": true
   }'
+```
+
+## 4) Feedback examples (local)
+
+**Thumbs up** (correlate with the same `trace_id` / `request_id` you used on `/orchestrator/answer`):
+
+```bash
+curl -sS -X POST "http://192.168.86.179:30184/feedback" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trace_id": "req-123",
+    "request_id": "req-123",
+    "rating": "thumbs_up"
+  }' | jq .
+```
+
+**Thumbs down** with optional `feedback_type` and `comment`:
+
+```bash
+curl -sS -X POST "http://192.168.86.179:30184/feedback" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "trace_id": "req-123",
+    "rating": "thumbs_down",
+    "feedback_type": "not_factual",
+    "comment": "Answer did not match the cited policy",
+    "question": "what is taixing visa status in us?"
+  }' | jq .
 ```
 
 NodePort:
