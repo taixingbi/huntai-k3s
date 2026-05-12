@@ -52,7 +52,7 @@ spec:
             - name: LLM_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
             - name: ROUTER_PROMPT_VERSION
-              value: "router-v1.01"
+              value: "router-v2.0.0"
             - name: LLM_API_KEY
               value: "not-used-in-dev"
             - name: RAG_HTTP_BASE_URL
