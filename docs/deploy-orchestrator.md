@@ -51,21 +51,8 @@ echo
 ```
 
 Answer (non-stream):
-```bash
-curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
-  -H "Content-Type: application/json" \
-  -H "X-Session-Id: ses-123" \
-  -H "X-Request-Id: req-123" \
-  -H "X-Trace-Id: req-123" \
-  -H "X-User-Id: taixing" \
-  -H "X-User-Roles: hr" \
-  -H "X-User-Groups: engineering" \
-  -H "X-User-Teams: rag-platform" \
-  -d '{
-    "question": "What is Taixing Bi US visa status?"
-  }' | jq .
-echo
-```
+
+Optional `conversation_id` ties turns together for logging and feedback; use a stable id per chat (e.g. `conv-smoke-1`).
 
 ```bash
 curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
@@ -78,10 +65,30 @@ curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-User-Groups: engineering" \
   -H "X-User-Teams: rag-platform" \
   -d '{
-    "question": "Can Taixing Bi travel outside the US during this period?",
+    "question": "What is Taixing Bi US visa status?",
+    "conversation_id": "conv-smoke-0"
+  }' | jq .
+echo
+```
+
+With `conversation_id` and `history`:
+
+```bash
+curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
+  -H "Content-Type: application/json" \
+  -H "X-Session-Id: ses-123" \
+  -H "X-Request-Id: req-124" \
+  -H "X-Trace-Id: req-124" \
+  -H "X-User-Id: taixing" \
+  -H "X-User-Roles: hr" \
+  -H "X-User-Groups: engineering" \
+  -H "X-User-Teams: rag-platform" \
+  -d '{
+    "question": "What does he location?",
+    "conversation_id": "conv-smoke-1",
     "history": [
       {"role": "user", "content": "What is Taixing Bi US visa status?"},
-      {"role": "assistant", "content": "H4 EAD. No visa sponsorship required. [1]"}
+      {"role": "assistant", "content": "Taixing has H4 EAD and does not need sponsorship."}
     ]
   }' | jq .
 echo
@@ -102,6 +109,7 @@ curl -N -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is Taixing US visa status?",
+    "conversation_id": "conv-smoke-2",
     "stream": true
   }'
 ```

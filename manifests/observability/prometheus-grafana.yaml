@@ -1,9 +1,10 @@
 # Prometheus in cluster (no local Grafana). Filename prometheus-grafana.yaml is historical;
 # only Prometheus + remote_write live here. Use Grafana Cloud for dashboards.
-# Scrapes (filter in Grafana with label workload=inference|gateway-inference|gateway-embedding|rag-query|embedding|reranker|gpu-telemetry):
+# Scrapes (filter in Grafana with label workload=inference|gateway-inference|gateway-embedding|gateway-api|rag-query|embedding|reranker|gpu-telemetry):
 #   - workload=inference: vLLM chat/completions via Service vllm-inference (ai)
 #   - workload=gateway-inference: chat routing gateway /metrics (Service layer-gateway-inference, ai-dev / ai-prod)
 #   - workload=gateway-embedding: embed routing gateway /metrics (Service layer-gateway-embedding, ai-dev)
+#   - workload=gateway-api: Next.js edge gateway /metrics (Service layer-gateway-api, ai-dev)
 #   - workload=rag-query: RAG query FastMCP HTTP /metrics (Service layer-rag-query, ai-dev) when exposed by the image
 #   - workload=gpu-telemetry: DCGM per-GPU metrics (gpu-operator)
 #   - workload=embedding: vLLM embed on node LAN :8001 (static targets; pod→host routing)
@@ -149,6 +150,29 @@ data:
             target_label: kubernetes_node
           - target_label: workload
             replacement: gateway-embedding
+
+      # Gateway API (FastAPI): Prometheus metrics on /metrics (Service layer-gateway-api, ai-dev).
+      - job_name: layer-gateway-api
+        metrics_path: /metrics
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - ai-dev
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: layer-gateway-api
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: kubernetes_node
+          - target_label: workload
+            replacement: gateway-api
 
       # RAG query (FastMCP HTTP): Prometheus /metrics when the image exposes it (Service layer-rag-query, ai-dev).
       - job_name: layer-rag-query

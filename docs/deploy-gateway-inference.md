@@ -57,7 +57,7 @@ sudo k3s kubectl get pods -n ai-prod -l app=layer-gateway-inference -o wide
 
 ## 3) Example: `POST /v1/chat/completions` (dev)
 
-From a host that can reach dev NodePort `30180`:
+From a host that can reach dev NodePort `30180`. Optional `conversation_id` in the JSON is for client-side correlation; omit it if your OpenAI-compatible backend rejects unknown fields.
 
 ```bash
 curl http://192.168.86.179:30180/v1/chat/completions \
@@ -67,6 +67,7 @@ curl http://192.168.86.179:30180/v1/chat/completions \
   -H "X-Session-Id: session-id-1" \
   -d '{
     "model": "Qwen/Qwen2.5-7B-Instruct",
+    "conversation_id": "conv_456",
     "messages": [
       {"role": "user", "content": "where is jersey city"}
     ],
@@ -74,6 +75,27 @@ curl http://192.168.86.179:30180/v1/chat/completions \
     "temperature": 0.7
   }' | jq .
 echo
+```
+
+## 4) Example: `POST /v1/chat/completions` (stream, dev)
+
+Use `curl -N` so chunks print as they arrive. `stream: true` in the JSON body enables token streaming (same NodePort `30180`).
+
+```bash
+curl -N http://192.168.86.179:30180/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Request-Id: request-id-stream-1" \
+  -H "X-Trace-Id: trace-id-stream-1" \
+  -H "X-Session-Id: session-id-stream-1" \
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "messages": [
+      {"role": "user", "content": "tell me 3 facts about jersey city"}
+    ],
+    "max_tokens": 80,
+    "temperature": 0.7,
+    "stream": true
+  }'
 ```
 
 NodePorts:

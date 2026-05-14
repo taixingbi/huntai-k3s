@@ -24,6 +24,24 @@ sudo k3s kubectl get svc -A -o wide | grep 30181
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-embedding -o wide
 ```
 
+## 3) Example: `POST /v1/embeddings`
+
+From a host that can reach NodePort `30181`. The body requires `model` and `input`. Add optional `conversation_id` to tie the call to a chat or session (omit if the gateway rejects unknown fields). Headers `X-Session-Id`, `X-Request-Id`, and `X-Trace-Id` are required for tracing.
+
+```bash
+curl -sS http://192.168.86.179:30181/v1/embeddings \
+  -H "X-Request-Id: request_id_1" \
+  -H "X-Trace-Id: trace_id_1" \
+  -H "X-Session-Id: session_id_1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "BAAI/bge-m3",
+    "conversation_id": "conv_embed_1",
+    "input": "hello world"
+  }' | jq .
+echo
+```
+
 NodePorts:
 
 - dev: `30181`

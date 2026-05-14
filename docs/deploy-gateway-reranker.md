@@ -26,7 +26,7 @@ sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-reranker -o wide
 
 ## 3) Example: `POST /v1/rerank`
 
-From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
+From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed). Include optional `conversation_id` in the JSON to tie the rerank call to a chat or session (omit if the gateway rejects unknown fields). Headers `X-Session-Id`, `X-Request-Id`, and `X-Trace-Id` are also used for tracing.
 
 ```bash
 curl -sS -X POST http://192.168.86.179:30182/v1/rerank \
@@ -36,6 +36,7 @@ curl -sS -X POST http://192.168.86.179:30182/v1/rerank \
   -H "X-Trace-Id: trc-001" \
   -d '{
     "model": "BAAI/bge-reranker-v2-m3",
+    "conversation_id": "conv_rerank_1",
     "query": "what is taixing visa",
     "documents": [
       "Taixing visa is the visa service product used by Taixing.",
@@ -43,6 +44,7 @@ curl -sS -X POST http://192.168.86.179:30182/v1/rerank \
     ],
     "top_n": 2
   }' | jq .
+echo
 ```
 
 NodePorts:

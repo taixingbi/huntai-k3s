@@ -52,7 +52,7 @@ Prometheus discovers Service `layer-rag-query` in `ai-dev` with label `workload=
 
 ## 5) Example: `POST /v1/rag/query` (non-stream)
 
-From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
+From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed). Include `conversation_id` in the JSON to tie the query to a chat or session (same pattern as [gateway-api](deploy-gateway-api.md) `POST /api/chat`).
 
 ```bash
 curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
@@ -65,6 +65,7 @@ curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "What is the current US visa status of Taixing?",
+    "conversation_id": "conv_rag_1",
     "collection_base": "taixing_knowledge",
     "k": 5,
     "k_max": 40
@@ -74,7 +75,7 @@ echo
 
 ## 6) Example: `POST /v1/rag/query`
 
-From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed).
+From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed). Use the same `conversation_id` across turns when correlating with gateway or orchestrator traffic.
 
 ```bash
 curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
@@ -88,6 +89,7 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is taixing visa",
+    "conversation_id": "conv_rag_1",
     "collection_base": "taixing_knowledge",
     "k": 5,
     "k_max": 40,
