@@ -84,7 +84,7 @@ curl -sS -X POST "http://192.168.86.179:30184/orchestrator/answer" \
   -H "X-User-Groups: engineering" \
   -H "X-User-Teams: rag-platform" \
   -d '{
-    "question": "What does he location?",
+    "question": "what is Taixing US visa status?",
     "conversation_id": "conv-smoke-1",
     "history": [
       {"role": "user", "content": "What is Taixing Bi US visa status?"},

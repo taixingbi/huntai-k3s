@@ -4,7 +4,7 @@
 #   - workload=inference: vLLM chat/completions via Service vllm-inference (ai)
 #   - workload=gateway-inference: chat routing gateway /metrics (Service layer-gateway-inference, ai-dev / ai-prod)
 #   - workload=gateway-embedding: embed routing gateway /metrics (Service layer-gateway-embedding, ai-dev)
-#   - workload=gateway-api: Next.js edge gateway /metrics (Service layer-gateway-api, ai-dev)
+#   - workload=gateway-api: FastAPI edge gateway /metrics (Service layer-gateway-api, ai-dev)
 #   - workload=rag-query: RAG query FastMCP HTTP /metrics (Service layer-rag-query, ai-dev) when exposed by the image
 #   - workload=gpu-telemetry: DCGM per-GPU metrics (gpu-operator)
 #   - workload=embedding: vLLM embed on node LAN :8001 (static targets; pod→host routing)

@@ -1,0 +1,95 @@
+# layer-mcp-github-v1 — dev (NodePort 30191; pod + ClusterIP listen on 8000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
+# MCP streamable-http: POST /v1/mcp (ask_repo). Source: https://github.com/taixingbi/layer-mcp-github-v1
+# Requires: layer-gateway-inference in ai-dev; GITHUB_TOKEN in layer-mcp-github-v1-secrets (see docs/deploy-layer-mcp-github-v1.md).
+# Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-mcp-github-v1:latest
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-mcp-github-v1
+  namespace: ai-dev
+  labels:
+    app: layer-mcp-github-v1
+    environment: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: layer-mcp-github-v1
+  template:
+    metadata:
+      labels:
+        app: layer-mcp-github-v1
+        environment: dev
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: server-node-1
+      automountServiceAccountToken: false
+      containers:
+        - name: mcp-github
+          image: docker.io/taixingbi/layer-mcp-github-v1:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: layer-mcp-github-v1-secrets
+          env:
+            - name: HTTP_HOST
+              value: "0.0.0.0"
+            - name: HTTP_PORT
+              value: "8000"
+            - name: GITHUB_OWNER
+              value: "taixingbi"
+            - name: LLM_GATEWAY_BASE_URL
+              value: "http://layer-gateway-inference:8000"
+            - name: LLM_MODEL
+              value: "Qwen/Qwen2.5-7B-Instruct"
+            - name: LLM_MAX_TOKENS
+              value: "384"
+            - name: LLM_TEMPERATURE
+              value: "0.7"
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: layer-mcp-github-v1
+  namespace: ai-dev
+  labels:
+    app: layer-mcp-github-v1
+    environment: dev
+spec:
+  type: NodePort
+  selector:
+    app: layer-mcp-github-v1
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      nodePort: 30191

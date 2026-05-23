@@ -1,6 +1,7 @@
 # Gateway API — dev (NodePort 30185; pod + ClusterIP listen on 8000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
-# FastAPI edge: auth stub, /api/chat → orchestrator, feedback. Source: https://github.com/taixingbi/layer-gateway-api-v1
+# FastAPI edge: Supabase or JWKS auth, /api/chat → orchestrator, feedback. Source: https://github.com/taixingbi/layer-gateway-api-v1
 # In-cluster orchestrator: ORCHESTRATOR_BASE_URL (not LAN NodePort). Env names match upstream .env.example / app/core/config.py.
+# Auth secrets: create `layer-gateway-api-secrets` before rollout (see docs/deploy-gateway-api.md).
 #
 # Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-gateway-api-v1:latest
 
@@ -38,6 +39,9 @@ spec:
           ports:
             - name: http
               containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: layer-gateway-api-secrets
           env:
             - name: APP_NAME
               value: "layer-gateway-api-v1"
@@ -65,18 +69,10 @@ spec:
               value: "3000"
             - name: ORCHESTRATOR_READINESS_PROBE_ENABLED
               value: "true"
-            - name: AUTH_MODE
-              value: "stub"
-            - name: AUTH_STUB_USER_ID
-              value: "taixing"
-            - name: AUTH_STUB_TENANT_ID
-              value: "tenant_01"
-            - name: AUTH_STUB_ROLES
-              value: "hr"
-            - name: AUTH_STUB_GROUPS
-              value: "engineering"
-            - name: AUTH_STUB_TEAMS
-              value: "rag-platform"
+            - name: FRONTEND_URL
+              value: "http://192.168.86.179:30186"
+            - name: JWT_EXPIRY_SECONDS
+              value: "3600"
             - name: CHAT_MESSAGE_MAX_LENGTH
               value: "4000"
           readinessProbe:
@@ -110,6 +106,7 @@ metadata:
   labels:
     app: layer-gateway-api
     environment: dev
+    workload: gateway-api
 spec:
   type: NodePort
   selector:

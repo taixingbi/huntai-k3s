@@ -2,7 +2,7 @@
 # Hybrid retrieval + POST /v1/rag/query (FastMCP HTTP). Source: https://github.com/taixingbi/layer-rag-query-v1
 # HTTP_PORT=8000; NodePort 30183 forwards to container :8000.
 #
-# Requires: Qdrant at QDRANT_URL; embedding/reranker gateways (30181, 30182); vLLM inference NodePort (30080). Matches upstream .env.example.
+# Requires: Qdrant at QDRANT_URL; embedding/reranker gateways (30181, 30182); inference gateway (30180). MCP: POST /v1/mcp. Matches upstream .env.example.
 # Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-rag-query-v1:latest
 
 apiVersion: v1

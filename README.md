@@ -20,7 +20,9 @@ Manifests and scripts for:
 | `manifests/gateway/layer-gateway-reranker-dev.yaml` | Reranker gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30182` → backend `:8002` on GPU nodes) |
 | `manifests/rag/layer-rag-query-dev.yaml` | RAG query in `ai-dev` (ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
 | `manifests/orchestrator/layer-orchestrator-dev.yaml` | Orchestrator in `ai-dev` (ClusterIP `:8000`, NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
-| `manifests/gateway/layer-gateway-api-dev.yaml` | Gateway API (Next.js edge) in `ai-dev` (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
+| `manifests/gateway/layer-gateway-api-dev.yaml` | Gateway API (FastAPI edge) in `ai-dev` (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
+| `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; [layer-web-v1](https://github.com/taixingbi/layer-web-v1)) |
+| `manifests/tool/layer-mcp-github-v1-dev.yaml` | GitHub MCP tool in `ai-dev` (ClusterIP `:8000`, NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
 | `manifests/observability/prometheus-grafana.yaml` | Prometheus + Grafana Cloud remote_write |
 | `manifests/observability/alloy-loki-cloud.yaml` | Alloy DaemonSet logs -> Grafana Cloud Loki |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |
