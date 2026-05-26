@@ -70,9 +70,12 @@ Optional Tavily tuning (non-secret) in the manifest: `TAVILY_SEARCH_DEPTH` (defa
 
 Orchestrator dev is managed by Argo CD Application `orchestrator-dev`. See [deploy-gitops-argocd.md](deploy-gitops-argocd.md) for install, bootstrap, and verify steps.
 
+**Image tag:** dev overlay pins `docker.io/taixingbi/layer-orchestrator-v1:<12-char-sha>` in `manifests/orchestrator/overlays/dev/kustomization.yaml`. After each push to **layer-orchestrator-v1 `main`**, CI updates that tag in huntai-k3s; Argo CD syncs and rolls out. Re-pushing `:latest` alone does not rollout.
+
 ```bash
-# optional: preload image on the node
-sudo k3s ctr images pull docker.io/taixingbi/layer-orchestrator-v1:latest
+# optional: preload pinned tag from Git (see deploy-gitops-argocd.md §6)
+TAG=$(grep newTag manifests/orchestrator/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
+sudo k3s ctr images pull "docker.io/taixingbi/layer-orchestrator-v1:${TAG}"
 
 sudo k3s kubectl apply -f argocd/applications/orchestrator-dev.yaml
 sudo k3s kubectl get application orchestrator-dev -n argocd

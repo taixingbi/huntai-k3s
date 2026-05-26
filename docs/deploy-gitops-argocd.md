@@ -81,11 +81,32 @@ In the UI:
 
 Edit files under `manifests/gateway-api/` or `manifests/orchestrator/`, commit, and push to `main`. Argo CD auto-syncs (`prune` + `selfHeal` enabled).
 
-Optional image preload after upstream CI:
+### Orchestrator image pin (automatic)
+
+On every push to **`layer-orchestrator-v1` `main`**, CI builds the Docker image, then commits the **12-char Git SHA tag** into this repo:
+
+- File: `manifests/orchestrator/overlays/dev/kustomization.yaml` → `images[].newTag`
+- Argo Application `orchestrator-dev` sees the Git change and rolls out the Deployment.
+
+Pushing only `:latest` to Docker Hub **without** a huntai-k3s commit does **not** trigger rollout (the Deployment spec in Git is unchanged).
+
+**One-time secret** in [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1) Actions: `HUNTAI_K3S_PAT` — PAT with **contents: write** on `taixingbi/huntai-k3s` only.
+
+Verify pinned image after sync:
 
 ```bash
-sudo k3s ctr images pull docker.io/taixingbi/layer-gateway-api-v1:latest
+sudo k3s kubectl get deploy layer-orchestrator -n ai-dev \
+  -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ```
+
+Optional image preload (use the pinned tag from Git, not only `:latest`):
+
+```bash
+TAG=$(grep newTag manifests/orchestrator/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
+sudo k3s ctr images pull "docker.io/taixingbi/layer-orchestrator-v1:${TAG}"
+```
+
+Gateway API still uses `:latest` in Git until the same pattern is added for `gateway-api-dev`.
 
 ## Layout
 
