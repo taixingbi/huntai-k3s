@@ -1,7 +1,8 @@
 # Gateway API — dev (NodePort 30185; pod + ClusterIP listen on 8000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
-# FastAPI edge: Supabase or JWKS auth, /api/chat → orchestrator, feedback. Source: https://github.com/taixingbi/layer-gateway-api-v1
+# FastAPI edge: Supabase or JWKS auth, POST /v1/chat → orchestrator, POST /v1/feedback → Supabase. Source: https://github.com/taixingbi/layer-gateway-api-v1
 # In-cluster orchestrator: ORCHESTRATOR_BASE_URL (not LAN NodePort). Env names match upstream .env.example / app/core/config.py.
 # Auth secrets: create `layer-gateway-api-secrets` before rollout (see docs/deploy-gateway-api.md).
+# FRONTEND_URL=https://dev.taixingai.com (Cloudflare Tunnel; match layer-web APP_URL + Supabase Site URL).
 #
 # Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-gateway-api-v1:latest
 
@@ -54,7 +55,9 @@ spec:
             - name: ORCHESTRATOR_BASE_URL
               value: "http://layer-orchestrator:8000"
             - name: ORCHESTRATOR_CHAT_PATH
-              value: "/orchestrator/answer"
+              value: "/v1/orchestrator/answer"
+            - name: CHAT_ASSISTANT_MODEL
+              value: "qwen2.5-7b"
             - name: ORCHESTRATOR_FEEDBACK_PATH
               value: "/feedback"
             - name: ORCHESTRATOR_CONTRACT
@@ -70,7 +73,7 @@ spec:
             - name: ORCHESTRATOR_READINESS_PROBE_ENABLED
               value: "true"
             - name: FRONTEND_URL
-              value: "http://192.168.86.179:30186"
+              value: "https://dev.taixingai.com"
             - name: JWT_EXPIRY_SECONDS
               value: "3600"
             - name: CHAT_MESSAGE_MAX_LENGTH

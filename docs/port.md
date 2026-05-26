@@ -24,7 +24,7 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 30284 → orchestrator (qa)
 30384 → orchestrator (prod)
 
-30185 → gateway-api (dev)
+30185 → layer-gateway-api-v1 (dev)
 30285 → gateway-api (qa)
 30385 → gateway-api (prod)
 

@@ -1,7 +1,7 @@
-# layer-web — dev (NodePort 30186; pod + ClusterIP listen on 3000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
-# Next.js 15 standalone (BFF → layer-gateway-api). Source: https://github.com/taixingbi/layer-web-v1
-# Requires published image docker.io/taixingbi/layer-web-v1:latest (CI) or: sudo k3s ctr images pull docker.io/taixingbi/layer-web-v1:latest
-# Runtime: GATEWAY_BASE_URL in-cluster; APP_URL must match gateway FRONTEND_URL (password reset redirect). Auth via /login → gateway Supabase.
+# layer-web-v1 — dev (NodePort 30186; pod + ClusterIP listen on 3000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
+# Next.js 15 BFF: /api/v1/* → layer-gateway-api /v1/* (+ /profile). Source: https://github.com/taixingbi/layer-web-v1
+# Image: docker.io/taixingbi/layer-web-v1:latest (CI). APP_URL=https://dev.taixingai.com (Cloudflare Tunnel). COOKIE_SECURE=true.
+# Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-web-v1:latest
 
 apiVersion: v1
 kind: Namespace
@@ -43,7 +43,7 @@ spec:
             - name: HOSTNAME
               value: "0.0.0.0"
             - name: APP_URL
-              value: "http://192.168.86.179:30186"
+              value: "https://dev.taixingai.com"
             - name: GATEWAY_BASE_URL
               value: "http://layer-gateway-api:8000"
             - name: WEB_SERVICE_NAME
@@ -51,7 +51,7 @@ spec:
             - name: AUTH_SESSION_MAX_AGE_SECONDS
               value: "3600"
             - name: COOKIE_SECURE
-              value: "false"
+              value: "true"
           readinessProbe:
             httpGet:
               path: /

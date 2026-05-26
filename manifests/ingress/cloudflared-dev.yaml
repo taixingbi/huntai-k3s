@@ -1,0 +1,91 @@
+# Cloudflare Tunnel — dev (ai-dev). Exposes https://dev.taixingai.com → layer-web:3000 in-cluster.
+# Source: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/deploy-tunnels/deployment-guides/kubernetes/
+#
+# Before apply: create Secret from existing tunnel credentials (never commit JSON to git):
+#   sudo k3s kubectl create secret generic cloudflared-tunnel-credentials -n ai-dev \
+#     --from-file=credentials.json="$HOME/.cloudflared/ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf.json" \
+#     --dry-run=client -o yaml | sudo k3s kubectl apply -f -
+#
+# DNS (once): cloudflared tunnel route dns ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf dev.taixingai.com
+#
+# Stop host-run cloudflared/systemd if migrating from NodePort backend to avoid duplicate connectors.
+# See docs/deploy-dev-cloudflare-tunnel.md
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: ai-dev
+  labels:
+    app: cloudflared
+    environment: dev
+data:
+  config.yaml: |
+    tunnel: ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    ingress:
+      - hostname: dev.taixingai.com
+        service: http://layer-web.ai-dev.svc.cluster.local:3000
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: ai-dev
+  labels:
+    app: cloudflared
+    environment: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+        environment: dev
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: server-node-1
+      automountServiceAccountToken: false
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.5.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-config
+        - name: creds
+          secret:
+            secretName: cloudflared-tunnel-credentials

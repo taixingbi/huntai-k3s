@@ -16,6 +16,8 @@ Key endpoints:
 
 Upstream: [schema.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/docs/schema.md), [design.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/docs/design.md), [smoke-test.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/docs/smoke-test.md). Smoke curls below adapt `127.0.0.1:8000` → `192.168.86.179:30191`.
 
+**`latency_ms` (tool-native):** `ask_repo` / SSE `done` use **flat** keys — `github_readme`, `github_search`, `chat`, `follow_up_chat`, `total`. That is correct for this MCP service. When the same tool is invoked via [orchestrator](deploy-orchestrator.md) **`github_repo_search`**, those timings appear under **`latency_ms.github`** on the orchestrator response, with **`latency_ms.total`** and **`latency_ms.intent_router`** at the orchestrator level (see [schema-request-response.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/schema-request-response.md)).
+
 ## Prerequisites
 
 - **layer-gateway-inference** in `ai-dev` (`http://layer-gateway-inference:8000` or NodePort `30180`); see [deploy-gateway-inference.md](deploy-gateway-inference.md).
@@ -207,7 +209,7 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
   }' | tee /tmp/mcp-stream-all.txt
 ```
 
-**Pass:** terminal `done` payload has `ok: true` and `repos` length **11** (current allowlist count in [`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py)).
+**Pass:** terminal `done` payload has `ok: true` and `repos` length **11** (current allowlist count in [`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py)). **`latency_ms`** on `done` is tool-only (flat `github_*` / `chat` keys); it is not orchestrator wall time — use [deploy-orchestrator.md §4.5](deploy-orchestrator.md) for nested **`latency_ms.github`**.
 
 ### 3.7 Checklist
 

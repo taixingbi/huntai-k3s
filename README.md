@@ -21,7 +21,8 @@ Manifests and scripts for:
 | `manifests/rag/layer-rag-query-dev.yaml` | RAG query in `ai-dev` (ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
 | `manifests/orchestrator/layer-orchestrator-dev.yaml` | Orchestrator in `ai-dev` (ClusterIP `:8000`, NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
 | `manifests/gateway/layer-gateway-api-dev.yaml` | Gateway API (FastAPI edge) in `ai-dev` (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
-| `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; [layer-web-v1](https://github.com/taixingbi/layer-web-v1)) |
+| `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
+| `manifests/ingress/cloudflared-dev.yaml` | Cloudflare Tunnel connector in `ai-dev` → `layer-web:3000` ([docs/deploy-dev-cloudflare-tunnel.md](docs/deploy-dev-cloudflare-tunnel.md)) |
 | `manifests/tool/layer-mcp-github-v1-dev.yaml` | GitHub MCP tool in `ai-dev` (ClusterIP `:8000`, NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
 | `manifests/observability/prometheus-grafana.yaml` | Prometheus + Grafana Cloud remote_write |
 | `manifests/observability/alloy-loki-cloud.yaml` | Alloy DaemonSet logs -> Grafana Cloud Loki |
