@@ -114,7 +114,7 @@ Expect logs like `Registered tunnel connection` and no credential errors.
 
 ```bash
 sudo k3s kubectl apply -f manifests/web/layer-web-dev.yaml
-sudo k3s kubectl apply -f manifests/gateway/layer-gateway-api-dev.yaml
+# Gateway API: managed by Argo CD (gateway-api-dev); push manifest changes or sync in UI
 sudo k3s kubectl rollout restart deployment/layer-web deployment/layer-gateway-api -n ai-dev
 ```
 

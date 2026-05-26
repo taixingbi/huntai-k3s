@@ -9,6 +9,8 @@ Manifests and scripts for:
 
 | Path | Purpose |
 |---|---|
+| `argocd/applications/` | Argo CD Application manifests (GitOps bootstrap) |
+| `manifests/gateway-api/` | Gateway API Kustomize base + dev overlay (GitOps source for `gateway-api-dev`) |
 | `scripts/install-k3s-server.sh` | Install k3s server and print join token/url |
 | `scripts/install-k3s-agent.sh` | Join an agent with `K3S_URL` + `K3S_TOKEN` |
 | `scripts/install-nvidia-gpu-operator.sh` | Install GPU Operator for k3s containerd |
@@ -20,7 +22,8 @@ Manifests and scripts for:
 | `manifests/gateway/layer-gateway-reranker-dev.yaml` | Reranker gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30182` → backend `:8002` on GPU nodes) |
 | `manifests/rag/layer-rag-query-dev.yaml` | RAG query in `ai-dev` (ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
 | `manifests/orchestrator/layer-orchestrator-dev.yaml` | Orchestrator in `ai-dev` (ClusterIP `:8000`, NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
-| `manifests/gateway/layer-gateway-api-dev.yaml` | Gateway API (FastAPI edge) in `ai-dev` (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
+| `manifests/gateway-api/overlays/dev` | Gateway API (FastAPI edge) in `ai-dev` via Argo CD (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
+| `manifests/gateway/layer-gateway-api-dev.yaml` | **Deprecated** — use `manifests/gateway-api/overlays/dev` |
 | `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
 | `manifests/ingress/cloudflared-dev.yaml` | Cloudflare Tunnel connector in `ai-dev` → `layer-web:3000` ([docs/deploy-dev-cloudflare-tunnel.md](docs/deploy-dev-cloudflare-tunnel.md)) |
 | `manifests/tool/layer-mcp-github-v1-dev.yaml` | GitHub MCP tool in `ai-dev` (ClusterIP `:8000`, NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
@@ -92,19 +95,25 @@ sudo k3s kubectl logs cuda-vectoradd
 sudo k3s kubectl delete pod cuda-vectoradd
 ```
 
-## 4) Deploy workloads + observability
+## 4) GitOps (Argo CD)
+
+Install Argo CD, bootstrap Applications, and deploy the first app (`gateway-api-dev`) from Git:
+
+- `docs/deploy-gitops-argocd.md`
+
+## 5) Deploy workloads + observability
 
 Detailed steps for vLLM, inference gateway (dev/prod), embedding gateway (dev), reranker gateway (dev), RAG query (dev), orchestrator (dev), Prometheus, Alloy, and Grafana import now live in:
 
 - `docs/deploy-workloads-and-observability.md`
 
-## 5) Test calls
+## 6) Test calls
 
 All API smoke-test commands now live in:
 
 - `docs/test-calls.md`
 
-## 6) Quick troubleshooting
+## 7) Quick troubleshooting
 
 - `provided port is already allocated`: check existing Service NodePort with `kubectl get svc -A -o wide | grep <port>`
 - Alloy crash with `mkdir /var/lib/alloy/data: permission denied`: apply latest `manifests/observability/alloy-loki-cloud.yaml`

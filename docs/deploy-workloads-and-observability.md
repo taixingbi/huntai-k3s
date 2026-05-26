@@ -1,5 +1,7 @@
 # Deploy Workloads And Observability
 
+GitOps (Argo CD) for the gateway API and future apps: [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
+
 Deployment steps are split by component:
 
 1. vLLM inference: `docs/deploy-vllm-inference.md`

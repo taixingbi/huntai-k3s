@@ -32,7 +32,7 @@ Key endpoints:
 
 ## 1) Create auth secrets and review env
 
-The dev manifest uses `envFrom.secretRef.name=layer-gateway-api-secrets`. Non-secret env is in [manifests/gateway/layer-gateway-api-dev.yaml](../manifests/gateway/layer-gateway-api-dev.yaml). Full list: upstream [`.env.example`](https://github.com/taixingbi/layer-gateway-api-v1/blob/main/.env.example) and [`app/core/config.py`](https://github.com/taixingbi/layer-gateway-api-v1/blob/main/app/core/config.py).
+The dev manifest uses `envFrom.secretRef.name=layer-gateway-api-secrets`. Non-secret env is in [manifests/gateway-api/base/deployment.yaml](../manifests/gateway-api/base/deployment.yaml). Full list: upstream [`.env.example`](https://github.com/taixingbi/layer-gateway-api-v1/blob/main/.env.example) and [`app/core/config.py`](https://github.com/taixingbi/layer-gateway-api-v1/blob/main/app/core/config.py).
 
 | Variable | Dev manifest |
 |----------|----------------|
@@ -88,17 +88,26 @@ Verify secret keys (names only):
 sudo k3s kubectl get secret layer-gateway-api-secrets -n ai-dev -o jsonpath='{.data}' | jq 'keys'
 ```
 
-## 2) Apply manifests
+## 2) Deploy via GitOps (Argo CD)
+
+Gateway API dev is managed by Argo CD Application `gateway-api-dev`. See [deploy-gitops-argocd.md](deploy-gitops-argocd.md) for install, bootstrap, and verify steps.
+
+After changing manifests under `manifests/gateway-api/`, commit and push to `main` — Argo CD syncs automatically.
 
 ```bash
 # optional: preload image after upstream CI (https://github.com/taixingbi/layer-gateway-api-v1/actions)
 sudo k3s ctr images pull docker.io/taixingbi/layer-gateway-api-v1:latest
 
-sudo k3s kubectl apply -f manifests/gateway/layer-gateway-api-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-gateway-api -n ai-dev
-sudo k3s kubectl rollout status deployment/layer-gateway-api -n ai-dev
+sudo k3s kubectl get application gateway-api-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-api -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30185
+```
+
+To force a rollout after an image tag change (same manifest, new `latest` digest):
+
+```bash
+sudo k3s kubectl rollout restart deployment/layer-gateway-api -n ai-dev
+sudo k3s kubectl rollout status deployment/layer-gateway-api -n ai-dev
 ```
 
 If the pod does not start:
