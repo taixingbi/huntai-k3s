@@ -1,14 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gateway-api-dev
+  name: orchestrator-dev
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/taixingbi/huntai-k3s.git
     targetRevision: main
-    path: manifests/gateway-api/overlays/dev
+    path: manifests/orchestrator/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: ai-dev

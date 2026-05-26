@@ -1,21 +1,30 @@
-# Dev public URL — Cloudflare Tunnel (`dev.taixingai.com`)
+# Dev public URL — Cloudflare Tunnel
 
-Expose the dev HuntAI web UI over HTTPS without opening inbound ports. **Dev only** — prod (`ai-prod`, apex DNS) is a separate tunnel manifest later.
+Expose dev services over HTTPS without opening inbound ports:
+
+- **`dev.taixingai.com`** — HuntAI web UI (`layer-web:3000`)
+- **`argocd.taixingai.com`** — Argo CD UI (`argocd-server:443`)
+
+**Dev only** — prod (`ai-prod`, apex DNS) is a separate tunnel manifest later.
 
 ## Architecture (recommended: in-cluster)
 
 ```mermaid
 flowchart TD
-  browser[Browser dev.taixingai.com]
+  browserDev[Browser dev.taixingai.com]
+  browserArgo[Browser argocd.taixingai.com]
   cf[Cloudflare edge]
   tun[cloudflared Deployment ai-dev]
   web[layer-web Service :3000]
+  argo[argocd-server :443]
   gw[layer-gateway-api :8000]
   orch[layer-orchestrator]
   rag[layer-rag-query]
-  browser -->|HTTPS| cf
+  browserDev -->|HTTPS| cf
+  browserArgo -->|HTTPS| cf
   cf --> tun
   tun -->|HTTP cluster DNS| web
+  tun -->|HTTPS noTLSVerify| argo
   web --> gw
   gw --> orch
   orch --> rag
@@ -25,19 +34,22 @@ flowchart TD
 |-------|-----------------|--------|
 | Tunnel connector | **`cloudflared`** Deployment | [`manifests/ingress/cloudflared-dev.yaml`](../manifests/ingress/cloudflared-dev.yaml) |
 | Web UI + BFF | **`layer-web`** Service | Image `layer-web-v1`; port **3000** |
+| Argo CD UI | **`argocd-server`** Service (`argocd` ns) | HTTPS; `originRequest.noTLSVerify` on tunnel |
 | Gateway | **`layer-gateway-api`** | ClusterIP only |
 | NodePort (LAN debug) | **30186** | Optional; not used by in-cluster tunnel |
 
-Backend URL inside the cluster:
+Backend URLs inside the cluster:
 
-`http://layer-web.ai-dev.svc.cluster.local:3000`
+- Web: `http://layer-web.ai-dev.svc.cluster.local:3000`
+- Argo CD: `https://argocd-server.argocd.svc.cluster.local:443`
 
 ## Prerequisites
 
 - [deploy-layer-web.md](deploy-layer-web.md) and [deploy-gateway-api.md](deploy-gateway-api.md) applied in `ai-dev`
 - Cloudflare tunnel already created; credentials JSON on the server (e.g. `~/.cloudflared/*.json`)
 - `APP_URL` / `FRONTEND_URL` = `https://dev.taixingai.com` in dev manifests
-- DNS route for `dev.taixingai.com` (one-time; see §3)
+- DNS routes for `dev.taixingai.com` and `argocd.taixingai.com` (one-time; see §3)
+- [deploy-gitops-argocd.md](deploy-gitops-argocd.md) §1 — Argo CD installed in `argocd` namespace (for `argocd.taixingai.com`)
 
 ## 1) Confirm stack
 
@@ -81,6 +93,7 @@ sudo k3s kubectl -n ai-dev get secret cloudflared-tunnel-credentials
 
 ```bash
 cloudflared tunnel route dns ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf dev.taixingai.com
+cloudflared tunnel route dns ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf argocd.taixingai.com
 ```
 
 ## 4) Apply in-cluster cloudflared
@@ -95,7 +108,7 @@ pkill -f 'cloudflared tunnel' 2>/dev/null || true
 Deploy:
 
 ```bash
-cd ~/shared/k3s
+cd ~/shared/huntai-k3s
 sudo k3s kubectl apply -f manifests/ingress/cloudflared-dev.yaml
 sudo k3s kubectl -n ai-dev rollout status deployment/cloudflared --timeout=120s
 sudo k3s kubectl -n ai-dev get pods -l app=cloudflared -o wide
@@ -132,6 +145,35 @@ curl -I https://dev.taixingai.com/chat
 
 Browser: `https://dev.taixingai.com/login` → `/chat`.
 
+## 8) Argo CD hostname (`argocd.taixingai.com`)
+
+After [deploy-gitops-argocd.md](deploy-gitops-argocd.md) §1 and DNS route for `argocd.taixingai.com` in §3 above:
+
+```bash
+cd ~/shared/huntai-k3s
+sudo k3s kubectl apply -f manifests/ingress/cloudflared-dev.yaml
+sudo k3s kubectl -n ai-dev rollout restart deploy/cloudflared
+sudo k3s kubectl -n ai-dev rollout status deployment/cloudflared --timeout=120s
+```
+
+Set Argo CD external URL (fixes UI redirects; one-time):
+
+```bash
+sudo k3s kubectl -n argocd patch configmap argocd-cm --type merge \
+  -p '{"data":{"url":"https://argocd.taixingai.com"}}'
+sudo k3s kubectl -n argocd rollout restart deployment argocd-server
+```
+
+Smoke test:
+
+```bash
+curl -sS -o /dev/null -w "%{http_code}\n" https://argocd.taixingai.com
+```
+
+Browser: [https://argocd.taixingai.com](https://argocd.taixingai.com) — login `admin` + initial password ([deploy-gitops-argocd.md](deploy-gitops-argocd.md) §2). Rotate the default admin password after first login.
+
+Optional later: [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) policy on `argocd.taixingai.com` (not configured in this pass).
+
 ## Alternative: host-run cloudflared (legacy)
 
 Use only for quick debugging without applying the Deployment. On **server-node-1**, cluster DNS from the host may fail; use NodePort:
@@ -152,8 +194,10 @@ Run: `cloudflared tunnel run <tunnel-id>`. Do **not** run host and in-cluster co
 |---------|--------|
 | `CreateContainerConfigError` | Secret `cloudflared-tunnel-credentials` §2 |
 | Pod CrashLoop | `kubectl logs deploy/cloudflared`; credentials path; tunnel ID in ConfigMap |
-| **502** from Cloudflare | `layer-web` Ready; `curl` from debug pod to `layer-web:3000` |
-| **404** hostname | DNS route §3; `dev.taixingai.com` in ConfigMap ingress |
+| **502** from Cloudflare | Web: `layer-web` Ready; `curl` to `layer-web:3000`. Argo CD: pods in `argocd` Running; `curl -k` from debug pod to `argocd-server:443` |
+| **404** hostname | DNS route §3; hostname in ConfigMap ingress (`dev.taixingai.com` or `argocd.taixingai.com`) |
+| Argo CD x509 in cloudflared logs | `originRequest.noTLSVerify: true` under `argocd.taixingai.com` ingress rule |
+| Argo CD redirect loop / wrong URL | `argocd-cm` `url: https://argocd.taixingai.com` §8 |
 | Duplicate / flaky tunnel | Only one connector: stop host systemd **or** scale in-cluster to 0 |
 | Login OK, chat **401** | Gateway secrets; `APP_URL` / `FRONTEND_URL` HTTPS |
 | Wrong reset link | Supabase Site URL |

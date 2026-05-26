@@ -49,7 +49,7 @@ Optional in the same Secret: `LANGCHAIN_API_KEY` or `LANGSMITH_API_KEY` for Lang
 
 ## 2) Configure env
 
-Edit [manifests/orchestrator/layer-orchestrator-dev.yaml](../manifests/orchestrator/layer-orchestrator-dev.yaml) for non-default settings. Full list: upstream [env.example](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/env.example) and [`app/config.py`](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/app/config.py).
+Edit [manifests/orchestrator/base/deployment.yaml](../manifests/orchestrator/base/deployment.yaml) for non-default settings (or push and let Argo CD sync). Full list: upstream [env.example](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/env.example) and [`app/config.py`](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/app/config.py).
 
 | Variable | Dev manifest |
 |----------|----------------|
@@ -66,15 +66,16 @@ Requires [layer-mcp-github-v1](deploy-layer-mcp-github-v1.md) when the router se
 
 Optional Tavily tuning (non-secret) in the manifest: `TAVILY_SEARCH_DEPTH` (default upstream: `advanced`), `TAVILY_MAX_RESULTS` (default `5`).
 
-## 3) Apply manifests
+## 3) Deploy (Argo CD)
+
+Orchestrator dev is managed by Argo CD Application `orchestrator-dev`. See [deploy-gitops-argocd.md](deploy-gitops-argocd.md) for install, bootstrap, and verify steps.
 
 ```bash
 # optional: preload image on the node
 sudo k3s ctr images pull docker.io/taixingbi/layer-orchestrator-v1:latest
 
-sudo k3s kubectl apply -f manifests/orchestrator/layer-orchestrator-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-orchestrator -n ai-dev
-sudo k3s kubectl rollout status deployment/layer-orchestrator -n ai-dev
+sudo k3s kubectl apply -f argocd/applications/orchestrator-dev.yaml
+sudo k3s kubectl get application orchestrator-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-orchestrator -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30184
 ```

@@ -1,4 +1,6 @@
-# Cloudflare Tunnel — dev (ai-dev). Exposes https://dev.taixingai.com → layer-web:3000 in-cluster.
+# Cloudflare Tunnel — dev (ai-dev).
+#   dev.taixingai.com   → layer-web:3000
+#   argocd.taixingai.com → argocd-server.argocd:443
 # Source: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/deploy-tunnels/deployment-guides/kubernetes/
 #
 # Before apply: create Secret from existing tunnel credentials (never commit JSON to git):
@@ -6,7 +8,9 @@
 #     --from-file=credentials.json="$HOME/.cloudflared/ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf.json" \
 #     --dry-run=client -o yaml | sudo k3s kubectl apply -f -
 #
-# DNS (once): cloudflared tunnel route dns ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf dev.taixingai.com
+# DNS (once):
+#   cloudflared tunnel route dns ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf dev.taixingai.com
+#   cloudflared tunnel route dns ccaafc35-b73f-4df6-ba51-d85b2e5f9bcf argocd.taixingai.com
 #
 # Stop host-run cloudflared/systemd if migrating from NodePort backend to avoid duplicate connectors.
 # See docs/deploy-dev-cloudflare-tunnel.md
@@ -27,6 +31,10 @@ data:
     ingress:
       - hostname: dev.taixingai.com
         service: http://layer-web.ai-dev.svc.cluster.local:3000
+      - hostname: argocd.taixingai.com
+        service: https://argocd-server.argocd.svc.cluster.local:443
+        originRequest:
+          noTLSVerify: true
       - service: http_status:404
 ---
 apiVersion: apps/v1
