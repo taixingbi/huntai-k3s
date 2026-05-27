@@ -8,4 +8,4 @@ resources:
 images:
   - name: docker.io/taixingbi/layer-mcp-github-v1
     newName: docker.io/taixingbi/layer-mcp-github-v1
-    newTag: "3f8e4f59ce1f"
+    newTag: "3f827a5593cf"
