@@ -68,6 +68,7 @@ sudo k3s kubectl apply -f argocd/applications/gateway-reranker-dev.yaml
 sudo k3s kubectl apply -f argocd/applications/orchestrator-dev.yaml
 sudo k3s kubectl apply -f argocd/applications/mcp-github-dev.yaml
 sudo k3s kubectl apply -f argocd/applications/rag-query-dev.yaml
+sudo k3s kubectl apply -f argocd/applications/web-dev.yaml
 ```
 
 ## 5) Verify sync
@@ -81,7 +82,8 @@ sudo k3s kubectl get application gateway-reranker-dev -n argocd -o jsonpath='{.s
 sudo k3s kubectl get application orchestrator-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application mcp-github-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application rag-query-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
-sudo k3s kubectl get pods,svc -n ai-dev -l 'app in (layer-gateway-api,layer-gateway-inference,layer-gateway-embedding,layer-gateway-reranker,layer-orchestrator,layer-mcp-github-v1,layer-rag-query)'
+sudo k3s kubectl get application web-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
+sudo k3s kubectl get pods,svc -n ai-dev -l 'app in (layer-gateway-api,layer-gateway-inference,layer-gateway-embedding,layer-gateway-reranker,layer-orchestrator,layer-mcp-github-v1,layer-rag-query,layer-web)'
 ```
 
 In the UI:
@@ -93,10 +95,11 @@ In the UI:
 - `orchestrator-dev` — **Synced** / **Healthy** when `layer-orchestrator-secrets` exists and dependencies (RAG, inference gateway, MCP) are up for your smoke paths.
 - `mcp-github-dev` — **Synced** / **Healthy** when `layer-mcp-github-v1-secrets` exists and **layer-gateway-inference** is reachable.
 - `rag-query-dev` — **Synced** / **Healthy** when Qdrant and gateway dependencies are reachable from `ai-dev`.
+- `web-dev` — **Synced** / **Healthy** when `layer-gateway-api` is reachable and web root `/` probes pass.
 
 ## 6) Change workloads via Git
 
-Edit files under `manifests/gateway-api/`, `manifests/gateway-inference/`, `manifests/gateway-embedding/`, `manifests/gateway-reranker/`, `manifests/orchestrator/`, `manifests/tool/`, or `manifests/rag/`, commit, and push to `main`. Argo CD auto-syncs (`prune` + `selfHeal` enabled).
+Edit files under `manifests/gateway-api/`, `manifests/gateway-inference/`, `manifests/gateway-embedding/`, `manifests/gateway-reranker/`, `manifests/orchestrator/`, `manifests/tool/`, `manifests/rag/`, or `manifests/web/`, commit, and push to `main`. Argo CD auto-syncs (`prune` + `selfHeal` enabled).
 
 ### Orchestrator image pin (automatic)
 
@@ -123,15 +126,16 @@ TAG=$(grep newTag manifests/orchestrator/overlays/dev/kustomization.yaml | sed '
 sudo k3s ctr images pull "docker.io/taixingbi/layer-orchestrator-v1:${TAG}"
 ```
 
-### Gateway API, MCP GitHub, and RAG image pin (automatic)
+### Gateway API, MCP GitHub, RAG, and web image pin (automatic)
 
-Same pattern on push to **`layer-gateway-api-v1`** / **`layer-mcp-github-v1`** / **`layer-rag-query-v1`** `main`:
+Same pattern on push to **`layer-gateway-api-v1`** / **`layer-mcp-github-v1`** / **`layer-rag-query-v1`** / **`layer-web-v1`** `main`:
 
 | App | Kustomize overlay | CI secret |
 |-----|-------------------|-----------|
 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in gateway-api repo |
 | `mcp-github-dev` | `manifests/tool/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in mcp-github repo |
 | `rag-query-dev` | `manifests/rag/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in rag-query repo |
+| `web-dev` | `manifests/web/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in web repo |
 
 ## Layout
 
@@ -143,6 +147,7 @@ argocd/applications/gateway-reranker-dev.yaml
 argocd/applications/orchestrator-dev.yaml
 argocd/applications/mcp-github-dev.yaml
 argocd/applications/rag-query-dev.yaml
+argocd/applications/web-dev.yaml
 manifests/gateway-api/
 ├── base/                                       # Deployment + Service
 └── overlays/dev/                               # namespace ai-dev, dev env
@@ -164,6 +169,9 @@ manifests/tool/                                 # layer-mcp-github-v1 (mcp-githu
 manifests/rag/                                  # layer-rag-query-v1 (rag-query-dev)
 ├── base/
 └── overlays/dev/
+manifests/web/                                  # layer-web-v1 (web-dev)
+├── base/
+└── overlays/dev/
 ```
 
 ## Secrets
@@ -181,6 +189,7 @@ Never commit secrets. Create cluster secrets manually in `ai-dev` (e.g. `layer-g
 | 5 | `orchestrator-dev` | `manifests/orchestrator/overlays/dev` |
 | 6 | `mcp-github-dev` | `manifests/tool/overlays/dev` |
 | 7 | `rag-query-dev` | `manifests/rag/overlays/dev` |
-| 8+ | web, cloudflared | see plan in repo history |
+| 8 | `web-dev` | `manifests/web/overlays/dev` |
+| 9+ | cloudflared | see plan in repo history |
 
 Optional later: an **app-of-apps** Application pointing at `argocd/applications/` so new apps need only a Git commit.

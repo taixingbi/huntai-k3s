@@ -1,30 +1,19 @@
-# layer-web-v1 — dev (NodePort 30186; pod + ClusterIP listen on 3000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
-# Next.js 15 BFF: /api/v1/* → layer-gateway-api /v1/* (+ /profile). Source: https://github.com/taixingbi/layer-web-v1
-# Image: docker.io/taixingbi/layer-web-v1:latest (CI). APP_URL=https://dev.taixingai.com (Cloudflare Tunnel). COOKIE_SECURE=true.
-# Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-web-v1:latest
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ai-dev
----
+# layer-web-v1 — Next.js 15 BFF (/api/v1/* -> layer-gateway-api).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: layer-web
-  namespace: ai-dev
   labels:
-    app: layer-web
     environment: dev
 spec:
   replicas: 1
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: layer-web
   template:
     metadata:
       labels:
-        app: layer-web
         environment: dev
     spec:
       nodeSelector:
@@ -75,21 +64,3 @@ spec:
             limits:
               cpu: "2"
               memory: 512Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: layer-web
-  namespace: ai-dev
-  labels:
-    app: layer-web
-    environment: dev
-spec:
-  type: NodePort
-  selector:
-    app: layer-web
-  ports:
-    - name: http
-      port: 3000
-      targetPort: http
-      nodePort: 30186

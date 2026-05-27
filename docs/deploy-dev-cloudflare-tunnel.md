@@ -126,7 +126,7 @@ Expect logs like `Registered tunnel connection` and no credential errors.
 | `FRONTEND_URL` | layer-gateway-api | `https://dev.taixingai.com` |
 
 ```bash
-sudo k3s kubectl apply -f manifests/web/layer-web-dev.yaml
+sudo k3s kubectl apply -f argocd/applications/web-dev.yaml
 # Gateway API: managed by Argo CD (gateway-api-dev); push manifest changes or sync in UI
 sudo k3s kubectl rollout restart deployment/layer-web deployment/layer-gateway-api -n ai-dev
 ```

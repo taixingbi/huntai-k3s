@@ -23,7 +23,7 @@ Manifests and scripts for:
 | `manifests/rag/overlays/dev` | RAG query in `ai-dev` via Argo CD (`rag-query-dev`; ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
 | `manifests/orchestrator/` | Orchestrator in `ai-dev` (Argo CD `orchestrator-dev`; NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
 | `manifests/gateway-api/overlays/dev` | Gateway API (FastAPI edge) in `ai-dev` via Argo CD (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
-| `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
+| `manifests/web/overlays/dev` | Next.js web UI in `ai-dev` via Argo CD (`web-dev`; ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
 | `manifests/ingress/cloudflared-dev.yaml` | Cloudflare Tunnel in `ai-dev` → `dev.taixingai.com` (web), `argocd.taixingai.com` (Argo CD) ([docs/deploy-dev-cloudflare-tunnel.md](docs/deploy-dev-cloudflare-tunnel.md)) |
 | `manifests/tool/` | GitHub MCP tool in `ai-dev` (Argo CD `mcp-github-dev`; NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
 | `manifests/observability/prometheus-grafana.yaml` | Prometheus + Grafana Cloud remote_write |

@@ -27,7 +27,7 @@ BFF translates gateway SSE (`meta`, `rewrite`, `token`, `done`, `error`) into cl
 
 ## 1) Configure env (optional)
 
-Defaults in [manifests/web/layer-web-dev.yaml](../manifests/web/layer-web-dev.yaml). Full list: upstream [`.env.example`](https://github.com/taixingbi/layer-web-v1/blob/main/.env.example), [`app/lib/config.ts`](https://github.com/taixingbi/layer-web-v1/blob/main/app/lib/config.ts).
+Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deployment.yaml). Full list: upstream [`.env.example`](https://github.com/taixingbi/layer-web-v1/blob/main/.env.example), [`app/lib/config.ts`](https://github.com/taixingbi/layer-web-v1/blob/main/app/lib/config.ts).
 
 | Variable | Dev manifest | Notes |
 |----------|----------------|--------|
@@ -41,15 +41,16 @@ Optional (not in manifest): `GATEWAY_BEARER_TOKEN` (service/stub fallback when b
 
 **Auth flow:** `/login` → BFF sets httpOnly **`layer_access_token`** → BFF forwards `Authorization: Bearer` to gateway. Per-user JWT in production; do not rely on a shared `GATEWAY_BEARER_TOKEN` for all users.
 
-## 2) Apply manifests
+## 2) Deploy via Argo CD (GitOps)
 
 ```bash
 # optional: preload image after upstream CI
 sudo k3s ctr images pull docker.io/taixingbi/layer-web-v1:latest
 
-sudo k3s kubectl apply -f manifests/web/layer-web-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-web -n ai-dev
-sudo k3s kubectl rollout status deployment/layer-web -n ai-dev
+# one-time: register Argo CD app
+sudo k3s kubectl apply -f argocd/applications/web-dev.yaml
+sudo k3s kubectl get application web-dev -n argocd
+
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-web -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30186
 ```
