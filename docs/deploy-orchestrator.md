@@ -19,7 +19,7 @@ Upstream: [schema-request-response.md](https://github.com/taixingbi/layer-orches
 
 **Access control:** optional `X-User-Id`, `X-User-Roles`, `X-User-Groups`, `X-User-Teams` are forwarded to RAG on `POST /v1/rag/query`.
 
-**`latency_ms` (orchestrator vs tool):** On **`POST /orchestrator/answer`**, timings are **nested by phase**. Top-level **`latency_ms.total`** is end-to-end wall time; **`latency_ms.intent_router`** is the router LLM; when the router picks **`github_repo_search`**, MCP **`ask_repo`** timings (`github_readme`, `github_search`, `chat`, `follow_up_chat`, …) are merged under **`latency_ms.github`** together with **`latency_ms.github.orchestrator`** (orchestrator wall time for that tool call). Same pattern for RAG under **`latency_ms.rag`**. Do **not** expect flat `github_*` keys at the top level of an orchestrator response.
+**`latency_ms` (orchestrator vs tool):** On **`POST /orchestrator/answer`**, timings are **nested by phase**. Top-level **`latency_ms.total`** is end-to-end wall time; **`latency_ms.intent_router`** is the router LLM; when the router picks **`github_repo_search`**, MCP **`github_search`** timings (`github_readme`, `github_search`, `chat`, `follow_up_chat`, …) are merged under **`latency_ms.github`** together with **`latency_ms.github.orchestrator`** (orchestrator wall time for that tool call). Same pattern for RAG under **`latency_ms.rag`**. Do **not** expect flat `github_*` keys at the top level of an orchestrator response.
 
 Direct **`POST /v1/mcp`** on [layer-mcp-github-v1](deploy-layer-mcp-github-v1.md) returns **tool-native** flat `latency_ms` (`github_readme`, `github_search`, `chat`, `total`, …) — that shape is correct for the MCP service only. Merging MCP SSE `done` JSON is not an orchestrator response; compare orchestrator with §4.5 below.
 
@@ -200,7 +200,7 @@ curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/eval/router \
 
 ### 4.5 `POST /orchestrator/answer` — GitHub MCP route (optional)
 
-When the router selects **`github_repo_search`**, orchestrator calls **`ask_repo`** on **layer-mcp-github-v1** (`MCP_GITHUB_BASE_URL`). Validate nested latency (not flat tool keys at top level):
+When the router selects **`github_repo_search`**, orchestrator calls **`github_search`** on **layer-mcp-github-v1** (`MCP_GITHUB_BASE_URL`). Validate nested latency (not flat tool keys at top level):
 
 ```bash
 curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \

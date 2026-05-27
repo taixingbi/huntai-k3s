@@ -2,9 +2,9 @@
 
 Service image: [taixingbi/layer-mcp-github-v1](https://hub.docker.com/r/taixingbi/layer-mcp-github-v1) — source: [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)
 
-MCP over HTTP: `POST /v1/mcp` on port **8000** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30191`** on the dev control plane; in-cluster: `http://layer-mcp-github-v1:8000/v1/mcp`. Tool `ask_repo` queries allowlisted GitHub repos and synthesizes answers via the inference gateway (`POST /v1/chat/completions` on **layer-gateway-inference**).
+MCP over HTTP: `POST /v1/mcp` on port **8000** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30191`** on the dev control plane; in-cluster: `http://layer-mcp-github-v1:8000/v1/mcp`. Tool `github_search` queries allowlisted GitHub repos and synthesizes answers via the inference gateway (`POST /v1/chat/completions` on **layer-gateway-inference**).
 
-Omit `repo` → all repos in upstream [`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py). `ask_repo_stream` is an alias for `ask_repo` with `stream: true`.
+Omit `repo` → all repos in upstream [`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py). Streaming is default for `github_search`; set `stream:false` when you need buffered JSON.
 
 Key endpoints:
 
@@ -16,7 +16,7 @@ Key endpoints:
 
 Upstream: [schema.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/docs/schema.md), [design.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/docs/design.md), [smoke-test.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/docs/smoke-test.md). Smoke curls below adapt `127.0.0.1:8000` → `192.168.86.179:30191`.
 
-**`latency_ms` (tool-native):** `ask_repo` / SSE `done` use **flat** keys — `github_readme`, `github_search`, `chat`, `follow_up_chat`, `total`. That is correct for this MCP service. When the same tool is invoked via [orchestrator](deploy-orchestrator.md) **`github_repo_search`**, those timings appear under **`latency_ms.github`** on the orchestrator response, with **`latency_ms.total`** and **`latency_ms.intent_router`** at the orchestrator level (see [schema-request-response.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/schema-request-response.md)).
+**`latency_ms` (tool-native):** `github_search` / SSE `done` use **flat** keys — `github_readme`, `github_search`, `chat`, `follow_up_chat`, `total`. That is correct for this MCP service. When the same tool is invoked via [orchestrator](deploy-orchestrator.md) **`github_repo_search`**, those timings appear under **`latency_ms.github`** on the orchestrator response, with **`latency_ms.total`** and **`latency_ms.intent_router`** at the orchestrator level (see [schema-request-response.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/schema-request-response.md)).
 
 ## Prerequisites
 
@@ -115,7 +115,7 @@ curl -sS -X POST \
   http://192.168.86.179:30191/v1/mcp | jq -r '.result.tools[].name' | sort
 ```
 
-**Pass:** `ask_repo`, `ask_repo_stream`. Use `/v1/mcp` not `/v1/mcp/`.
+**Pass:** `github_search`. Use `/v1/mcp` not `/v1/mcp/`.
 
 ### 3.2 MCP — buffered (`stream: false`)
 
@@ -123,15 +123,15 @@ curl -sS -X POST \
 curl -sS --max-time 120 -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  -d '{"jsonrpc":"2.0","id":"smoke-1","method":"tools/call","params":{"name":"ask_repo","arguments":{"repo":"layer-orchestrator-v1","question":"introduce this huntAi project","stream":false,"conversation_id":"conv_smoke_1","request_id":"req-smoke-1","session_id":"ses-smoke-1","trace_id":"trc-smoke-1"}}}' \
+  -d '{"jsonrpc":"2.0","id":"smoke-1","method":"tools/call","params":{"name":"github_search","arguments":{"repo":"layer-orchestrator-v1","question":"introduce this huntAi project","stream":false,"conversation_id":"conv_smoke_1","request_id":"req-smoke-1","session_id":"ses-smoke-1","trace_id":"trc-smoke-1"}}}' \
   http://192.168.86.179:30191/v1/mcp | jq '.result.structuredContent | {ok, answer, citations}'
 ```
 
 **Pass:** `ok: true`, non-empty `answer` and `citations`.
 
-### 3.3 MCP — SSE stream (`Accept: text/event-stream` + `stream: true`)
+### 3.3 MCP — SSE stream (default stream + `Accept: text/event-stream`)
 
-Requires `Accept: text/event-stream` and `"stream": true` on `ask_repo`. Events: `meta`, `status`, `delta`, `done`.
+Requires `Accept: text/event-stream` and `github_search` (stream defaults to true). Events: `meta`, `status`, `delta`, `done`.
 
 ```bash
 curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
@@ -145,11 +145,10 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
     "id":"smoke-1s",
     "method":"tools/call",
     "params":{
-      "name":"ask_repo",
+      "name":"github_search",
       "arguments":{
         "repo":"layer-orchestrator-v1",
         "question":"introduce this huntAi project",
-        "stream":true,
         "conversation_id":"conv_smoke_1s"
       }
     }
@@ -170,7 +169,7 @@ awk '/^event: done$/{p=1} p&&/^data: /{sub(/^data: /,""); print}' /tmp/mcp-strea
 curl -sS -X POST \
   -H "Content-Type: application/json" \
   -H "Accept: application/json" \
-  -d '{"jsonrpc":"2.0","id":"smoke-corr","method":"tools/call","params":{"name":"ask_repo","arguments":{"repo":"layer-orchestrator-v1","question":"One sentence.","stream":false}}}' \
+  -d '{"jsonrpc":"2.0","id":"smoke-corr","method":"tools/call","params":{"name":"github_search","arguments":{"repo":"layer-orchestrator-v1","question":"One sentence.","stream":false}}}' \
   http://192.168.86.179:30191/v1/mcp | jq '.result.structuredContent | {request_id, session_id, trace_id, conversation_id}'
 ```
 
@@ -209,10 +208,9 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
     "id":"smoke-1s",
     "method":"tools/call",
     "params":{
-      "name":"ask_repo",
+      "name":"github_search",
       "arguments":{
         "question":"introduce this huntAi project",
-        "stream":true,
         "conversation_id":"conv_smoke_1s"
       }
     }
@@ -229,9 +227,9 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
 | 2 | `GET /version` | non-empty `version` |
 | 3 | `GET /ready` | `"status":"ready"`, checks true |
 | 4 | `GET /metrics` | Prometheus text; `layer_mcp_github_info` |
-| 5 | `tools/list` on `/v1/mcp` | `ask_repo`, `ask_repo_stream` |
-| 6 | `ask_repo` buffered | `ok: true`, answer + citations |
-| 7 | `ask_repo` SSE | `meta` → optional `status` → `delta` (…) → `done` |
+| 5 | `tools/list` on `/v1/mcp` | `github_search` |
+| 6 | `github_search` buffered (`stream:false`) | `ok: true`, answer + citations |
+| 7 | `github_search` SSE (default stream) | `meta` → optional `status` → `delta` (…) → `done` |
 | 8 | correlation | ids present; `trace_id` null when omitted |
 | 9 | `30180` `/v1/chat/completions` | `has_choices: true` |
 | 10 | all repos (optional) | `repos` length = allowlist count |
