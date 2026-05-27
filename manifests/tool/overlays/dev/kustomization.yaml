@@ -4,3 +4,8 @@ namespace: ai-dev
 resources:
   - ../../base
   - namespace.yaml
+# Pinned by layer-mcp-github-v1 CI (docker-push → update-gitops). Argo CD rolls out on tag change.
+images:
+  - name: docker.io/taixingbi/layer-mcp-github-v1
+    newName: docker.io/taixingbi/layer-mcp-github-v1
+    newTag: "latest"
