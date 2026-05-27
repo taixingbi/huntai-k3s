@@ -26,7 +26,7 @@ Manifests and scripts for:
 | `manifests/gateway/layer-gateway-api-dev.yaml` | **Deprecated** — use `manifests/gateway-api/overlays/dev` |
 | `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
 | `manifests/ingress/cloudflared-dev.yaml` | Cloudflare Tunnel in `ai-dev` → `dev.taixingai.com` (web), `argocd.taixingai.com` (Argo CD) ([docs/deploy-dev-cloudflare-tunnel.md](docs/deploy-dev-cloudflare-tunnel.md)) |
-| `manifests/tool/layer-mcp-github-v1-dev.yaml` | GitHub MCP tool in `ai-dev` (ClusterIP `:8000`, NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
+| `manifests/tool/` | GitHub MCP tool in `ai-dev` (Argo CD `mcp-github-dev`; NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
 | `manifests/observability/prometheus-grafana.yaml` | Prometheus + Grafana Cloud remote_write |
 | `manifests/observability/alloy-loki-cloud.yaml` | Alloy DaemonSet logs -> Grafana Cloud Loki |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |

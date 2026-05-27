@@ -41,7 +41,7 @@ sudo k3s kubectl create secret generic layer-mcp-github-v1-secrets -n ai-dev \
 
 Optional `LLM_API_KEY` in the same Secret only if your inference gateway requires it (not set in the default manifest).
 
-Non-secret env is in [manifests/tool/layer-mcp-github-v1-dev.yaml](../manifests/tool/layer-mcp-github-v1-dev.yaml). Full list: upstream [`.env.example`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/.env.example).
+Non-secret env is in [manifests/tool/base/deployment.yaml](../manifests/tool/base/deployment.yaml). Full list: upstream [`.env.example`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/.env.example).
 
 | Variable | Dev value |
 |----------|-----------|
@@ -51,18 +51,28 @@ Non-secret env is in [manifests/tool/layer-mcp-github-v1-dev.yaml](../manifests/
 
 Allowlisted repo short names are baked into the image ([`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py)); expect **11** repos including `layer-orchestrator-v1`, `layer-mcp-github-v1`, and `k3s`.
 
-## 2) Apply manifests
+## 2) Deploy via Argo CD (GitOps)
+
+MCP GitHub dev is managed by Argo CD Application **`mcp-github-dev`**. See [deploy-gitops-argocd.md](deploy-gitops-argocd.md) for install and verify steps.
+
+**One-time:** register the Application (not automatic from Git until you apply this manifest):
 
 ```bash
-# optional: preload image on the node
-sudo k3s ctr images pull docker.io/taixingbi/layer-mcp-github-v1:latest
+cd ~/shared/huntai-platform/huntai-k3s
+sudo k3s kubectl apply -f argocd/applications/mcp-github-dev.yaml
+sudo k3s kubectl get application mcp-github-dev -n argocd
+```
+
+Ensure `manifests/tool/overlays/dev/` is on `main` in [taixingbi/huntai-k3s](https://github.com/taixingbi/huntai-k3s) before the first sync.
+
+```bash
+# optional: preload pinned tag from Git (see deploy-gitops-argocd.md)
+TAG=$(grep newTag manifests/tool/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
+sudo k3s ctr images pull "docker.io/taixingbi/layer-mcp-github-v1:${TAG}"
 
 # optional: remove legacy deployment (pre-v1 rename)
 sudo k3s kubectl delete deployment,service layer-mcp-github -n ai-dev --ignore-not-found
 
-sudo k3s kubectl apply -f manifests/tool/layer-mcp-github-v1-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-mcp-github-v1 -n ai-dev
-sudo k3s kubectl rollout status deployment/layer-mcp-github-v1 -n ai-dev
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-mcp-github-v1 -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30191
 ```
