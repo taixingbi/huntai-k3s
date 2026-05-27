@@ -1,0 +1,72 @@
+# Gateway inference — FastAPI/OpenAI-compatible router.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-inference
+  labels:
+    environment: dev
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: layer-gateway-inference
+  template:
+    metadata:
+      labels:
+        environment: dev
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: server-node-1
+      automountServiceAccountToken: false
+      containers:
+        - name: gateway
+          image: docker.io/taixingbi/layer-gateway-inference-v1:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: GATEWAY_CONFIG
+              value: /app/config.yaml
+            - name: GATEWAY_ENV
+              value: dev
+            - name: ENV
+              value: dev
+            - name: SERVICE_NAME
+              value: gateway
+            - name: LOG_TIMEZONE
+              value: EST
+          envFrom:
+            - secretRef:
+                name: layer-gateway-inference-secrets
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: layer-gateway-inference-config

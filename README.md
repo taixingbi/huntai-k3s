@@ -16,11 +16,11 @@ Manifests and scripts for:
 | `scripts/install-nvidia-gpu-operator.sh` | Install GPU Operator for k3s containerd |
 | `manifests/gpu/gpu-vectoradd-sample.yaml` | One-shot GPU smoke test (`nvidia-smi`) |
 | `manifests/ai/inference-qwen25-7b.yaml` | vLLM inference workload + services (`ai`) |
-| `manifests/gateway/layer-gateway-inference-dev.yaml` | Chat gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30180`) |
+| `manifests/gateway-inference/overlays/dev` | Chat gateway in `ai-dev` via Argo CD (`gateway-inference-dev`; ClusterIP `:8000`, NodePort `30180`) |
 | `manifests/gateway/layer-gateway-inference-prod.yaml` | Chat gateway in `ai-prod` (ClusterIP `:8000`, NodePort `30380`) |
-| `manifests/gateway/layer-gateway-embedding-dev.yaml` | Embedding gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30181` → vLLM `:8001` on GPU nodes) |
-| `manifests/gateway/layer-gateway-reranker-dev.yaml` | Reranker gateway in `ai-dev` (ClusterIP `:8000`, NodePort `30182` → backend `:8002` on GPU nodes) |
-| `manifests/rag/layer-rag-query-dev.yaml` | RAG query in `ai-dev` (ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
+| `manifests/gateway-embedding/overlays/dev` | Embedding gateway in `ai-dev` via Argo CD (`gateway-embedding-dev`; NodePort `30181` → vLLM `:8001`) |
+| `manifests/gateway-reranker/overlays/dev` | Reranker gateway in `ai-dev` via Argo CD (`gateway-reranker-dev`; NodePort `30182` → backend `:8002`) |
+| `manifests/rag/overlays/dev` | RAG query in `ai-dev` via Argo CD (`rag-query-dev`; ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |
 | `manifests/orchestrator/` | Orchestrator in `ai-dev` (Argo CD `orchestrator-dev`; NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
 | `manifests/gateway-api/overlays/dev` | Gateway API (FastAPI edge) in `ai-dev` via Argo CD (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
 | `manifests/web/layer-web-dev.yaml` | Next.js web UI in `ai-dev` (ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |

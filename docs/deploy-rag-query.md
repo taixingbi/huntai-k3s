@@ -29,7 +29,7 @@ Environment variables follow upstream [`app/core/config.py`](https://github.com/
 
 ## 1) Configure env (no `secretRef` by default)
 
-Edit [manifests/rag/layer-rag-query-dev.yaml](../manifests/rag/layer-rag-query-dev.yaml) for non-default Qdrant host, `QDRANT_API_KEY`, model names, or `ENV`. For Grafana Cloud Loki from the app, add `GRAFANA_CLOUD_*` env vars per upstream `.env.example` (not set in this manifest by default).
+Edit [manifests/rag/base/deployment.yaml](../manifests/rag/base/deployment.yaml) for non-default Qdrant host, `QDRANT_API_KEY`, model names, or `ENV`. For Grafana Cloud Loki from the app, add `GRAFANA_CLOUD_*` env vars per upstream `.env.example` (not set in this manifest by default).
 
 | Variable | Dev manifest |
 |----------|----------------|
@@ -39,15 +39,16 @@ Edit [manifests/rag/layer-rag-query-dev.yaml](../manifests/rag/layer-rag-query-d
 | `INFERENCE_URL` | `http://192.168.86.179:30180` |
 | `INFERENCE_MODEL` | `Qwen/Qwen2.5-7B-Instruct` |
 
-## 2) Apply manifests
+## 2) Deploy via Argo CD (GitOps)
 
 ```bash
 # optional: preload image on the node
 sudo k3s ctr images pull docker.io/taixingbi/layer-rag-query-v1:latest
 
-sudo k3s kubectl apply -f manifests/rag/layer-rag-query-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-rag-query -n ai-dev
-sudo k3s kubectl rollout status deployment/layer-rag-query -n ai-dev
+# one-time: register Argo CD app
+sudo k3s kubectl apply -f argocd/applications/rag-query-dev.yaml
+sudo k3s kubectl get application rag-query-dev -n argocd
+
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-rag-query -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30183
 ```

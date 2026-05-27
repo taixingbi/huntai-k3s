@@ -37,12 +37,12 @@ sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-prod \
   -o jsonpath='{.data.OPENAI_API_KEY}' | base64 -d | wc -c
 ```
 
-## 2) Apply manifests
+## 2) Deploy manifests
 
 ```bash
-# dev
-sudo k3s kubectl apply -f manifests/gateway/layer-gateway-inference-dev.yaml # deploy layer-gateway-inference-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-gateway-inference -n ai-dev # pull image
+# dev (Argo CD / GitOps source)
+sudo k3s kubectl apply -f argocd/applications/gateway-inference-dev.yaml
+sudo k3s kubectl get application gateway-inference-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30180
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-inference -o wide

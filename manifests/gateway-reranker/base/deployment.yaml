@@ -1,0 +1,84 @@
+# Gateway reranker — routes /v1/rerank to GPU-node backends.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-reranker
+  labels:
+    environment: dev
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: layer-gateway-reranker
+  template:
+    metadata:
+      labels:
+        environment: dev
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: server-node-1
+      automountServiceAccountToken: false
+      containers:
+        - name: gateway
+          image: docker.io/taixingbi/layer-gateway-reranker-v1
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: GATEWAY_HOST
+              value: "0.0.0.0"
+            - name: GATEWAY_PORT
+              value: "8000"
+            - name: RERANK_BACKENDS
+              value: "reranker-node-1=http://192.168.86.173:8002,reranker-node-2=http://192.168.86.176:8002"
+            - name: TIMEOUT_CONNECT_MS
+              value: "1000"
+            - name: TIMEOUT_READ_MS
+              value: "15000"
+            - name: RETRY_MAX_ATTEMPTS
+              value: "2"
+            - name: ADMISSION_MAX_CONCURRENT
+              value: "100"
+            - name: ADMISSION_WAIT_TIMEOUT_MS
+              value: "500"
+            - name: CB_FAILURE_THRESHOLD
+              value: "5"
+            - name: CB_RESET_TIMEOUT_SEC
+              value: "30"
+            - name: ROUTING_INFLIGHT_WEIGHT
+              value: "20.0"
+            - name: ROUTING_LATENCY_WEIGHT
+              value: "0.5"
+            - name: ROUTING_ERROR_WEIGHT
+              value: "100.0"
+            - name: ROUTING_EXPLORATION_RATE
+              value: "0.15"
+            - name: ROUTING_MAX_IDLE_MS
+              value: "500"
+            - name: LOG_LEVEL
+              value: INFO
+            - name: LOG_JSON
+              value: "true"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "2"
+              memory: 512Mi

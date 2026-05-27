@@ -6,19 +6,19 @@ Endpoints: `POST /v1/rerank`, `GET /health`, `GET /metrics`, `GET /docs`. In-clu
 
 ## 1) Configure backends (no `secretRef`)
 
-The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway/layer-gateway-reranker-dev.yaml`. The key variable for rerank traffic is **`RERANK_BACKENDS`** (`name=url,name=url`) and defaults to GPU-node reranker backends on `:8002`.
+The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-reranker/base/deployment.yaml`. The key variable for rerank traffic is **`RERANK_BACKENDS`** (`name=url,name=url`) and defaults to GPU-node reranker backends on `:8002`.
 
 ```bash
 # optional: confirm RERANK_BACKENDS on the live Deployment
 sudo k3s kubectl -n ai-dev get deploy layer-gateway-reranker -o yaml | grep -A1 RERANK_BACKENDS
 ```
 
-## 2) Apply manifests
+## 2) Deploy manifests
 
 ```bash
-# dev
-sudo k3s kubectl apply -f manifests/gateway/layer-gateway-reranker-dev.yaml
-sudo k3s kubectl rollout restart deployment/layer-gateway-reranker -n ai-dev
+# dev (Argo CD / GitOps source)
+sudo k3s kubectl apply -f argocd/applications/gateway-reranker-dev.yaml
+sudo k3s kubectl get application gateway-reranker-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-reranker
 sudo k3s kubectl get svc -A -o wide | grep 30182
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-reranker -o wide
