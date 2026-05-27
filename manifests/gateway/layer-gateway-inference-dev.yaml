@@ -93,7 +93,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: gateway
-          image: docker.io/taixingbi/layer-gateway-inference-v1:latest
+          image: docker.io/taixingbi/layer-gateway-inference-v1:3dc4d639f962
           imagePullPolicy: Always
           ports:
             - name: http
