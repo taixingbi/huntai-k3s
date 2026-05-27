@@ -1,20 +1,11 @@
-# layer-mcp-github-v1 — dev (NodePort 30191; pod + ClusterIP listen on 8000). Scheduled on server-node-1 (control plane — watch CPU/RAM).
-# MCP streamable-http: POST /v1/mcp (ask_repo). Source: https://github.com/taixingbi/layer-mcp-github-v1
-# Requires: layer-gateway-inference in ai-dev; GITHUB_TOKEN in layer-mcp-github-v1-secrets (see docs/deploy-layer-mcp-github-v1.md).
-# Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-mcp-github-v1:latest
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: ai-dev
----
+# layer-mcp-github-v1 — MCP streamable-http: POST /v1/mcp (ask_repo).
+# Source: https://github.com/taixingbi/layer-mcp-github-v1
+# Requires: layer-gateway-inference in ai-dev; GITHUB_TOKEN in layer-mcp-github-v1-secrets.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: layer-mcp-github-v1
-  namespace: ai-dev
   labels:
-    app: layer-mcp-github-v1
     environment: dev
 spec:
   replicas: 1
@@ -24,7 +15,6 @@ spec:
   template:
     metadata:
       labels:
-        app: layer-mcp-github-v1
         environment: dev
     spec:
       nodeSelector:
@@ -75,21 +65,3 @@ spec:
             limits:
               cpu: "2"
               memory: 512Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: layer-mcp-github-v1
-  namespace: ai-dev
-  labels:
-    app: layer-mcp-github-v1
-    environment: dev
-spec:
-  type: NodePort
-  selector:
-    app: layer-mcp-github-v1
-  ports:
-    - name: http
-      port: 8000
-      targetPort: http
-      nodePort: 30191
