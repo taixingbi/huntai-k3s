@@ -8,4 +8,4 @@ resources:
 images:
   - name: docker.io/taixingbi/layer-orchestrator-v1
     newName: docker.io/taixingbi/layer-orchestrator-v1
-    newTag: "1502a1ed2182"
+    newTag: "b13e36223138"
