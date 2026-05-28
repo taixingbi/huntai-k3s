@@ -79,13 +79,14 @@ echo
 
 **Pass:** `/health` → `"status":"ok"`; `/version` → `app_name` + `app_version`; `/ready` → `"status":"ready"` when Qdrant is reachable; `/metrics` → Prometheus text including `rag_query_` or `http_requests_total`.
 
-### 3.1 `POST /v1/rag/query` (JSON, non-stream)
+### 3.1 `POST /v1/rag/query` (SSE stream, default)
 
 Access-control headers are optional; roles default to `anyuser` when omitted. See [access-control.md](https://github.com/taixingbi/layer-rag-query-v1/blob/main/docs/access-control.md).
 
 ```bash
-curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
+curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   -H "Content-Type: application/json" \
+  -H "Accept: text/event-stream" \
   -H "X-Request-Id: req-abc123" \
   -H "X-Session-Id: ses-xyz789" \
   -H "X-Trace-Id: trc-001" \
@@ -99,20 +100,19 @@ curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
     "collection_base": "taixing_knowledge",
     "k": 5,
     "k_max": 50
-  }' | jq '{answer, citations: (.citations|length), follow_up_questions, request_id, session_id, trace_id, conversation_id}'
+  }'
 echo
 ```
 
-**Pass:** non-empty `answer`, `citations`, correlation fields echoed; `follow_up_questions` present (may be `[]`).
+**Pass:** SSE lines with `event: meta`, `event: answer_delta`, `event: done`.
 
-### 3.2 `POST /v1/rag/query` (SSE stream)
+### 3.2 `POST /v1/rag/query` (JSON, non-stream)
 
-Opt in with `Accept: text/event-stream` or `"stream": true` in the body. Events include `meta`, `latency`, `answer_delta`, `citations`, `follow_up_questions`, `done`.
+Default is stream response. Set `"stream": false` for non-stream JSON.
 
 ```bash
-curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
+curl -sS -X POST http://192.168.86.179:30183/v1/rag/query \
   -H "Content-Type: application/json" \
-  -H "Accept: text/event-stream" \
   -H "X-Request-Id: req-abc123" \
   -H "X-Session-Id: ses-xyz789" \
   -H "X-Trace-Id: trc-001" \
@@ -123,13 +123,13 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
     "question": "what is taixing visa status",
     "conversation_id": "conv_rag_1",
     "collection_base": "taixing_knowledge",
+    "stream": false,
     "k": 5,
-    "k_max": 50,
-    "stream": true
-  }'
+    "k_max": 50
+  }' | jq '{answer, citations: (.citations|length), follow_up_questions, request_id, session_id, trace_id, conversation_id}'
 ```
 
-**Pass:** SSE lines with `event: meta`, `event: answer_delta`, `event: done`.
+**Pass:** non-empty `answer`, `citations`, correlation fields echoed; `follow_up_questions` present (may be `[]`).
 
 ### 3.3 MCP — list tools
 

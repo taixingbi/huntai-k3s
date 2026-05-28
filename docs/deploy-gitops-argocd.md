@@ -137,6 +137,62 @@ Same pattern on push to **`layer-gateway-api-v1`** / **`layer-mcp-github-v1`** /
 | `rag-query-dev` | `manifests/rag/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in rag-query repo |
 | `web-dev` | `manifests/web/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in web repo |
 
+## 7) GitHub webhook (faster refresh)
+
+Argo CD can refresh immediately on GitHub push events instead of waiting for the default reconcile poll. Keep existing `syncPolicy.automated` in Applications; webhook only speeds up detection.
+
+### Webhook URL and secret
+
+Webhook endpoint:
+
+```text
+https://argocd.taixingai.com/api/webhook
+```
+
+Create and store a GitHub webhook secret in `argocd-secret`:
+
+```bash
+WEBHOOK_SECRET="$(openssl rand -hex 20)"
+echo "Save this for GitHub webhook setup: ${WEBHOOK_SECRET}"
+
+sudo k3s kubectl -n argocd patch secret argocd-secret \
+  --type merge \
+  -p "{\"stringData\":{\"webhook.github.secret\":\"${WEBHOOK_SECRET}\"}}"
+```
+
+### GitHub repository settings
+
+In `taixingbi/huntai-k3s`:
+
+- Settings -> Webhooks -> Add webhook
+- Payload URL: `https://argocd.taixingai.com/api/webhook`
+- Content type: `application/json`
+- Secret: same `WEBHOOK_SECRET` from above
+- SSL verification: enabled
+- Events: "Just the push event"
+
+After saving, open **Recent Deliveries**, redeliver the latest event, and confirm `200`.
+
+### Verify refresh and sync
+
+```bash
+sudo k3s kubectl get application orchestrator-dev -n argocd \
+  -o jsonpath='{.status.reconciledAt}{"\n"}{.status.sync.status}{"\n"}'
+```
+
+You should see `reconciledAt` update within seconds after a push. Rollout speed still depends on image pull and Kubernetes Deployment update timing.
+
+### Troubleshooting
+
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Delivery `401`/`403` | Secret mismatch | Re-patch `argocd-secret` and update GitHub webhook secret |
+| Delivery `404` | Wrong endpoint or hostname routing | Confirm URL is `https://argocd.taixingai.com/api/webhook` and tunnel routes Argo CD |
+| Delivery `502` | Tunnel/backend issue | Check `cloudflared` and `argocd-server` health |
+| Delivery `200`, no rollout | No manifest change in `huntai-k3s` | Confirm CI updated `kustomization.yaml` `newTag` on `main` |
+
+If you later protect `argocd.taixingai.com` with Cloudflare Access, keep `/api/webhook` reachable by GitHub (bypass path or use a service token policy).
+
 ## Layout
 
 ```

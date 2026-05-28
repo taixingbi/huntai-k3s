@@ -145,8 +145,7 @@ curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
       {"role": "user", "content": "What is Taixing Bi US visa status?"},
       {"role": "assistant", "content": "Taixing has H4 EAD and does not need sponsorship."}
     ]
-  }' | jq '{answer, route, rewritten_question}'
-echo
+  }'
 ```
 
 **Pass:** router produces `rewritten_question`; RAG runs only when `route` is `rag`.
