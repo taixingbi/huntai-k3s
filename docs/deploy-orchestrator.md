@@ -15,7 +15,7 @@ Key endpoints:
 
 Upstream: [schema-request-response.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/schema-request-response.md), [conversation-id.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/conversation-id.md), [intent-router.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/intent-router.md), [smoke-test.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/smoke-test.md). Smoke curls below adapt `127.0.0.1:8000` → `192.168.86.179:30184`.
 
-**Correlation:** `X-Request-Id`, `X-Session-Id`, `X-Trace-Id` on **headers** (not in the JSON body). Optional **`conversation_id`** in the **`/orchestrator/answer`** and **`/orchestrator/eval/router`** JSON body; if omitted or blank, the server assigns `conv_*` and returns **`is_new_conversation`: true**.
+**Correlation:** `X-Request-Id`, `X-Session-Id`, `X-Trace-Id` on **headers** (not in the JSON body). If `X-Session-Id` is omitted, the orchestrator mints `ses_*` per request; multi-turn clients must send the **same** session id each turn. Optional **`conversation_id`** in the **`/orchestrator/answer`** and **`/orchestrator/eval/router`** JSON body; if omitted or blank, the server assigns `conv_*` and returns **`is_new_conversation`: true**. First SSE frame: `type: "correlation"` (see [correlation-ids.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/correlation-ids.md)).
 
 **Access control:** optional `X-User-Id`, `X-User-Roles`, `X-User-Groups`, `X-User-Teams` are forwarded to RAG on `POST /v1/rag/query`.
 
@@ -120,7 +120,7 @@ curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
   -H "X-User-Id: taixing" \
   -H "X-User-Roles: hr" \
   -H "X-User-Groups: engineering" \
-  -H "X-User-Teams: rag-platform" \
+  H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is taixing visa status in us?",
     "conversation_id": "conv-smoke-1"
@@ -285,3 +285,4 @@ curl -sS -X POST http://192.168.86.179:30184/feedback \
 NodePort:
 
 - dev: `30184`
+6+-
