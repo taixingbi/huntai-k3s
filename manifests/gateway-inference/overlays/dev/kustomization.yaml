@@ -8,4 +8,4 @@ resources:
 images:
   - name: docker.io/taixingbi/layer-gateway-inference-v1
     newName: docker.io/taixingbi/layer-gateway-inference-v1
-    newTag: "latest"
+    newTag: "c95e3e233cf3"
