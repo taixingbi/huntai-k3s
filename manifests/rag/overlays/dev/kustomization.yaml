@@ -8,4 +8,4 @@ resources:
 images:
   - name: docker.io/taixingbi/layer-rag-query-v1
     newName: docker.io/taixingbi/layer-rag-query-v1
-    newTag: "b79e796f9c1c"
+    newTag: "713d12482091"
