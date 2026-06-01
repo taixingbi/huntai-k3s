@@ -2,7 +2,7 @@
 
 Gateway image: [taixingbi/layer-gateway-embed-v1](https://hub.docker.com/r/taixingbi/layer-gateway-embed-v1) — source: [layer-gateway-embed-v1](https://github.com/taixingbi/layer-gateway-embed-v1)
 
-Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /metrics`. In-cluster: `http://layer-gateway-embedding:8000`; LAN: NodePort `30181` (`docs/port.md`). Required headers on embed calls: `X-Request-Id`, `X-Trace-Id`, `X-Session-Id` (see upstream [README](https://github.com/taixingbi/layer-gateway-embed-v1#example)). Smoke tests: `docs/test-calls.md`. Prometheus scrapes Service `layer-gateway-embedding` as `workload=gateway-embedding` after `manifests/observability/prometheus-grafana.yaml`.
+Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `GET /metrics`. In-cluster: `http://layer-gateway-embedding:8000`; LAN: NodePort `30181` (`docs/port.md`). Required headers on embed calls: `X-Request-Id`, `X-Trace-Id`, `X-Session-Id` (see upstream [README](https://github.com/taixingbi/layer-gateway-embed-v1#example)). Smoke tests: `docs/test-calls.md`. Prometheus scrapes Service `layer-gateway-embedding` as `workload=gateway-embedding` after `manifests/observability/prometheus-grafana.yaml`.
 
 ## 1) Configure backends (no `secretRef`)
 
@@ -24,7 +24,37 @@ sudo k3s kubectl get svc -A -o wide | grep 30181
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-embedding -o wide
 ```
 
-## 3) Example: `POST /v1/embeddings`
+## 3) Readiness (`GET /ready`)
+
+Probes each vLLM embedding backend in `EMBED_BACKENDS` (`GET {url}/health`). Kubernetes readiness uses `/ready`; liveness stays on `/health`.
+
+```bash
+curl -sS http://192.168.86.179:30181/ready | jq .
+```
+
+Expected when both GPU nodes are up:
+
+```json
+{
+  "status": "ready",
+  "healthy_backends": 2,
+  "total_backends": 2,
+  "backends": {
+    "embed-node-1": "healthy",
+    "embed-node-2": "healthy"
+  }
+}
+```
+
+## 4) Version (`GET /version`)
+
+Build metadata baked into the image at CI time; `environment` from `ENVIRONMENT` in the Deployment (`ai-dev`).
+
+```bash
+curl -sS http://192.168.86.179:30181/version | jq .
+```
+
+## 5) Example: `POST /v1/embeddings`
 
 From a host that can reach NodePort `30181`. The body requires `model` and `input`. Add optional `conversation_id` to tie the call to a chat or session (omit if the gateway rejects unknown fields). Headers `X-Session-Id`, `X-Request-Id`, and `X-Trace-Id` are required for tracing.
 

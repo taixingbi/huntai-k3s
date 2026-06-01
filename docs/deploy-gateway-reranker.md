@@ -1,8 +1,8 @@
 # Deploy Reranker Gateway (dev)
 
-Gateway image: [taixingbi/layer-gateway-embed-v1](https://hub.docker.com/r/taixingbi/layer-gateway-embed-v1) — source: [layer-gateway-embed-v1](https://github.com/taixingbi/layer-gateway-embed-v1)
+Gateway image: [taixingbi/layer-gateway-reranker-v1](https://hub.docker.com/r/taixingbi/layer-gateway-reranker-v1) — source: [layer-gateway-reranker-v1](https://github.com/taixingbi/layer-gateway-reranker-v1)
 
-Endpoints: `POST /v1/rerank`, `GET /health`, `GET /metrics`, `GET /docs`. In-cluster: `http://layer-gateway-reranker:8000`; LAN: NodePort `30182` (`docs/port.md`), docs UI: `http://192.168.86.179:30182/docs`. Smoke tests: `docs/test-calls.md`. For Grafana dashboard `grafana-import/dashboard/reranker.json`, ensure `manifests/observability/prometheus-grafana.yaml` includes reranker static targets with label `workload=reranker` on `:8002`.
+Endpoints: `POST /v1/rerank`, `GET /health`, `GET /ready`, `GET /version`, `GET /metrics`, `GET /docs`. In-cluster: `http://layer-gateway-reranker:8000`; LAN: NodePort `30182` (`docs/port.md`), docs UI: `http://192.168.86.179:30182/docs`. Smoke tests: `docs/test-calls.md`. For Grafana dashboard `grafana-import/dashboard/reranker.json`, ensure `manifests/observability/prometheus-grafana.yaml` includes reranker static targets with label `workload=reranker` on `:8002`.
 
 ## 1) Configure backends (no `secretRef`)
 
@@ -24,7 +24,15 @@ sudo k3s kubectl get svc -A -o wide | grep 30182
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-reranker -o wide
 ```
 
-## 3) Example: `POST /v1/rerank`
+## 3) Version (`GET /version`)
+
+Build metadata baked into the image at CI time; `environment` from `ENVIRONMENT` in the Deployment (`ai-dev`).
+
+```bash
+curl -sS http://192.168.86.179:30182/version | jq .
+```
+
+## 4) Example: `POST /v1/rerank`
 
 From a host that can reach the dev NodePort (adjust IP if your server differs). `jq` is optional (drop `| jq .` if not installed). Include optional `conversation_id` in the JSON to tie the rerank call to a chat or session (omit if the gateway rejects unknown fields). Headers `X-Session-Id`, `X-Request-Id`, and `X-Trace-Id` are also used for tracing.
 

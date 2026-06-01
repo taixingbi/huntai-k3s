@@ -61,6 +61,8 @@ spec:
               value: INFO
             - name: LOG_JSON
               value: "true"
+            - name: ENVIRONMENT
+              value: ai-dev
           readinessProbe:
             httpGet:
               path: /health

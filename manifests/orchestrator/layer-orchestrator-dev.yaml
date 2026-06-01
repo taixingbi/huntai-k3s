@@ -56,6 +56,8 @@ spec:
               value: "http://layer-gateway-inference:8000"
             - name: LLM_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
+            - name: ROUTER_MODEL
+              value: "Qwen/Qwen2.5-7B-Instruct"
             - name: ROUTER_PROMPT_VERSION
               value: "router-v2.0.0"
             - name: LLM_API_KEY

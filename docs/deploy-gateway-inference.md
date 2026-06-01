@@ -55,7 +55,37 @@ sudo k3s kubectl get svc -A -o wide | grep 30380
 sudo k3s kubectl get pods -n ai-prod -l app=layer-gateway-inference -o wide
 ```
 
-## 3) Example: `POST /v1/chat/completions` (dev)
+## 3) Version (`GET /version`)
+
+Build metadata baked into the image at CI time; `environment` from `ENVIRONMENT` in the Deployment (`ai-dev`).
+
+```bash
+curl -sS http://192.168.86.179:30180/version | jq .
+```
+
+## 4) Readiness (`GET /ready`)
+
+Probes each vLLM backend in `config.yaml` (`GET {url}/health`). Use for smoke tests and Kubernetes readiness (liveness stays on `/health`).
+
+```bash
+curl -sS http://192.168.86.179:30180/ready | jq .
+```
+
+Expected when both GPU nodes are up:
+
+```json
+{
+  "status": "ready",
+  "healthy_backends": 2,
+  "total_backends": 2,
+  "backends": {
+    "gpu-node-1": "healthy",
+    "gpu-node-2": "healthy"
+  }
+}
+```
+
+## 5) Example: `POST /v1/chat/completions` (dev)
 
 From a host that can reach dev NodePort `30180`. Optional `conversation_id` in the JSON is for client-side correlation; omit it if your OpenAI-compatible backend rejects unknown fields.
 
@@ -77,7 +107,7 @@ curl http://192.168.86.179:30180/v1/chat/completions \
 echo
 ```
 
-## 4) Example: `POST /v1/chat/completions` (stream, dev)
+## 6) Example: `POST /v1/chat/completions` (stream, dev)
 
 Use `curl -N` so chunks print as they arrive. `stream: true` in the JSON body enables token streaming (same NodePort `30180`).
 

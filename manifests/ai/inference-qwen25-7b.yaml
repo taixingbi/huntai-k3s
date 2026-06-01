@@ -49,11 +49,19 @@ spec:
             - --port
             - "8000"
             - --gpu-memory-utilization
-            - "0.7"
+            - "0.8"
             - --max-model-len
-            - "8192"
+            - "4096"
             - --max-num-seqs
-            - "32"
+            - "8"
+            - --enable-lora
+            - --max-lora-rank
+            - "64"
+            - --max-loras
+            - "4"
+            - --lora-modules
+            - router-qwen2.5-7b-sft-v1.00=taixingbi/router-qwen2.5-7b-sft-v1.00
+            - router-qwen2.5-7b-dpo-v1.00=taixingbi/router-qwen2.5-7b-dpo-v1.00
           ports:
             - name: http
               containerPort: 8000

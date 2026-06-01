@@ -33,6 +33,8 @@ spec:
               value: dev
             - name: ENV
               value: dev
+            - name: ENVIRONMENT
+              value: ai-dev
             - name: SERVICE_NAME
               value: gateway
             - name: LOG_TIMEZONE
@@ -47,7 +49,7 @@ spec:
               readOnly: true
           readinessProbe:
             httpGet:
-              path: /health
+              path: /ready
               port: http
             periodSeconds: 5
             timeoutSeconds: 3
