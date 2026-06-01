@@ -8,4 +8,4 @@ resources:
 images:
   - name: docker.io/taixingbi/layer-web-v1
     newName: docker.io/taixingbi/layer-web-v1
-    newTag: "de4386aaac9f"
+    newTag: "9d37356b05a3"
