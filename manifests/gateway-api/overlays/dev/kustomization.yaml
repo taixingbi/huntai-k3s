@@ -8,4 +8,4 @@ resources:
 images:
   - name: docker.io/taixingbi/layer-gateway-api-v1
     newName: docker.io/taixingbi/layer-gateway-api-v1
-    newTag: "931b269f7be0"
+    newTag: "7921ef8e4853"
