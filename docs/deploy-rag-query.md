@@ -6,7 +6,7 @@ Hybrid retrieval (dense + BM25 + RRF) with optional rerank and chat completion. 
 
 Key endpoints:
 
-- `GET /health` — liveness (`status`, `app_name`, `app_version`)
+- `GET /health` — liveness (`{"status":"ok"}`); build metadata on `GET /version`
 - `GET /version` — build identity
 - `GET /ready` — readiness (Qdrant `get_collections`; **503** if unreachable)
 - `GET /metrics` — Prometheus (`rag_query_*`, `http_*`)

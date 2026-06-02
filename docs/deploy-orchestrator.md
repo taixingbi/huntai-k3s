@@ -6,7 +6,7 @@ FastAPI orchestrator: intent router + optional RAG via **`POST /orchestrator/ans
 
 Key endpoints:
 
-- `GET /health` — liveness (`status`, `app_name`, `app_version`)
+- `GET /health` — liveness (`{"status":"ok"}`); build metadata on `GET /version`
 - `GET /ready` — readiness (LLM gateway + RAG HTTP; **503** if either fails)
 - `GET /metrics` — Prometheus (HTTP + pipeline histograms/counters)
 - `POST v1/orchestrator/answer` — chat answer (JSON or SSE)
