@@ -8,5 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-gateway-api-v1
     newName: ghcr.io/taixingbi/layer-gateway-api-v1
-    newTag: "28dabdfde0d3"
-    digest: "sha256:c8c863ae324be5b0d6587a9059e7d6712d0b6acdd9de50b8393bebbdeade2fbb"
+    newTag: "72cc02afdf9a"
+    digest: "sha256:7944434a795e285900b1d9c847254a2b48fea05a0e2b25241a74e7442628cbd6"
