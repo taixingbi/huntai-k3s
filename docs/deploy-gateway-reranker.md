@@ -1,6 +1,6 @@
 # Deploy Reranker Gateway (dev)
 
-Gateway image: [taixingbi/layer-gateway-reranker-v1](https://hub.docker.com/r/taixingbi/layer-gateway-reranker-v1) — source: [layer-gateway-reranker-v1](https://github.com/taixingbi/layer-gateway-reranker-v1)
+Gateway image: [ghcr.io/taixingbi/layer-gateway-reranker-v1](https://github.com/taixingbi/layer-gateway-reranker-v1/pkgs/container/layer-gateway-reranker-v1) — source: [layer-gateway-reranker-v1](https://github.com/taixingbi/layer-gateway-reranker-v1)
 
 Endpoints: `POST /v1/rerank`, `GET /health`, `GET /ready`, `GET /version`, `GET /metrics`, `GET /docs`. In-cluster: `http://layer-gateway-reranker:8000`; LAN: NodePort `30182` (`docs/port.md`), docs UI: `http://192.168.86.179:30182/docs`. Smoke tests: `docs/test-calls.md`. For Grafana dashboard `grafana-import/dashboard/reranker.json`, ensure `manifests/observability/prometheus-grafana.yaml` includes reranker static targets with label `workload=reranker` on `:8002`.
 

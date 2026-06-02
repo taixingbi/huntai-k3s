@@ -1,6 +1,6 @@
 # Deploy Orchestrator (dev)
 
-Service image: [taixingbi/layer-orchestrator-v1](https://hub.docker.com/r/taixingbi/layer-orchestrator-v1) — source: [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)
+Service image: [ghcr.io/taixingbi/layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1/pkgs/container/layer-orchestrator-v1) — source: [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)
 
 FastAPI orchestrator: intent router + optional RAG via **`POST /orchestrator/answer`** (aggregated JSON by default; SSE when `"stream": true`). NodePort **`30184`**; in-cluster: `http://layer-orchestrator:8000/orchestrator/answer`. Calls inference gateway (`POST …/v1/chat/completions`) and RAG (`POST …/v1/rag/query` on **layer-rag-query**).
 
@@ -70,12 +70,12 @@ Optional Tavily tuning (non-secret) in the manifest: `TAVILY_SEARCH_DEPTH` (defa
 
 Orchestrator dev is managed by Argo CD Application `orchestrator-dev`. See [deploy-gitops-argocd.md](deploy-gitops-argocd.md) for install, bootstrap, and verify steps.
 
-**Image tag:** dev overlay pins `docker.io/taixingbi/layer-orchestrator-v1:<12-char-sha>` in `manifests/orchestrator/overlays/dev/kustomization.yaml`. After each push to **layer-orchestrator-v1 `main`**, CI updates that tag in huntai-k3s; Argo CD syncs and rolls out. Re-pushing `:latest` alone does not rollout.
+**Image tag:** dev overlay pins `ghcr.io/taixingbi/layer-orchestrator-v1:<12-char-sha>` in `manifests/orchestrator/overlays/dev/kustomization.yaml`. After each push to **layer-orchestrator-v1 `main`**, CI updates that tag in huntai-k3s; Argo CD syncs and rolls out. Re-pushing `:latest` alone does not rollout.
 
 ```bash
 # optional: preload pinned tag from Git (see deploy-gitops-argocd.md §6)
 TAG=$(grep newTag manifests/orchestrator/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
-sudo k3s ctr images pull "docker.io/taixingbi/layer-orchestrator-v1:${TAG}"
+sudo k3s ctr images pull "ghcr.io/taixingbi/layer-orchestrator-v1:${TAG}"
 
 sudo k3s kubectl apply -f argocd/applications/orchestrator-dev.yaml
 sudo k3s kubectl get application orchestrator-dev -n argocd

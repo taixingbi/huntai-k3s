@@ -23,7 +23,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: mcp-github
-          image: docker.io/taixingbi/layer-mcp-github-v1:latest
+          image: ghcr.io/taixingbi/layer-mcp-github-v1:latest
           imagePullPolicy: Always
           ports:
             - name: http

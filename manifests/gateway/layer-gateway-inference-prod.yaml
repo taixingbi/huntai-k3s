@@ -1,9 +1,9 @@
 # Gateway — prod (NodePort 30380; pod + ClusterIP listen on 8000).
 # vLLM stays in namespace `ai` (apply manifests/ai/inference-qwen25-7b.yaml first); backends use LAN NodePort 30080.
-# Image: https://hub.docker.com/r/taixingbi/layer-gateway-inference-v1
+# Image: https://github.com/taixingbi/layer-gateway-inference-v1/pkgs/container/layer-gateway-inference-v1
 # Source: https://github.com/taixingbi/layer-gateway-inference-v1
 #
-# Optional: sudo k3s ctr images pull docker.io/taixingbi/layer-gateway-inference-v1:latest
+# Optional: sudo k3s ctr images pull ghcr.io/taixingbi/layer-gateway-inference-v1:latest
 
 apiVersion: v1
 kind: Namespace
@@ -83,7 +83,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: gateway
-          image: docker.io/taixingbi/layer-gateway-inference-v1:latest
+          image: ghcr.io/taixingbi/layer-gateway-inference-v1:latest
           imagePullPolicy: Always
           ports:
             - name: http

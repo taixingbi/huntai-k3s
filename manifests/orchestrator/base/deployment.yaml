@@ -23,7 +23,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: orchestrator
-          image: docker.io/taixingbi/layer-orchestrator-v1:latest
+          image: ghcr.io/taixingbi/layer-orchestrator-v1:latest
           imagePullPolicy: Always
           ports:
             - name: http

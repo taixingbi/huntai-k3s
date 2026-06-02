@@ -1,6 +1,6 @@
 # Deploy layer-web (Next.js, dev)
 
-Service image: [taixingbi/layer-web-v1](https://hub.docker.com/r/taixingbi/layer-web-v1) — source: [layer-web-v1](https://github.com/taixingbi/layer-web-v1). CI publishes `latest` on push to `main` ([Actions](https://github.com/taixingbi/layer-web-v1/actions) → **Push to Docker Hub**).
+Service image: [ghcr.io/taixingbi/layer-web-v1](https://github.com/taixingbi/layer-web-v1/pkgs/container/layer-web-v1) — source: [layer-web-v1](https://github.com/taixingbi/layer-web-v1). CI publishes `latest` on push to `main` ([Actions](https://github.com/taixingbi/layer-web-v1/actions) → **Push to GHCR**).
 
 Next.js 15 (App Router) chat UI + BFF that talks only to [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1) (no direct orchestrator access). **Public dev URL:** [https://dev.taixingai.com](https://dev.taixingai.com) via in-cluster [cloudflared](deploy-dev-cloudflare-tunnel.md) → `layer-web:3000`. LAN NodePort **`30186`**; pods listen on **3000** ([Dockerfile](https://github.com/taixingbi/layer-web-v1/blob/main/Dockerfile)). In-cluster: `http://layer-web:3000`.
 
@@ -45,7 +45,7 @@ Optional (not in manifest): `GATEWAY_BEARER_TOKEN` (service/stub fallback when b
 
 ```bash
 # optional: preload image after upstream CI
-sudo k3s ctr images pull docker.io/taixingbi/layer-web-v1:latest
+sudo k3s ctr images pull ghcr.io/taixingbi/layer-web-v1:latest
 
 # one-time: register Argo CD app
 sudo k3s kubectl apply -f argocd/applications/web-dev.yaml

@@ -1,6 +1,6 @@
 # Deploy Inference Gateway (dev/prod)
 
-Gateway image: [taixingbi/layer-gateway-inference-v1](https://hub.docker.com/r/taixingbi/layer-gateway-inference-v1)
+Gateway image: [ghcr.io/taixingbi/layer-gateway-inference-v1](https://github.com/taixingbi/layer-gateway-inference-v1/pkgs/container/layer-gateway-inference-v1)
 
 In-cluster: `http://layer-gateway-inference:8000` (dev `ai-dev`, prod `ai-prod`). LAN NodePorts: `30180` (dev), `30380` (prod); see `docs/port.md`.
 

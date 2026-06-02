@@ -21,7 +21,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: rag-query
-          image: docker.io/taixingbi/layer-rag-query-v1:latest
+          image: ghcr.io/taixingbi/layer-rag-query-v1:latest
           imagePullPolicy: Always
           ports:
             - name: http

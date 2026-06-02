@@ -1,6 +1,6 @@
 # Deploy Gateway API (dev)
 
-Service image: [taixingbi/layer-gateway-api-v1](https://hub.docker.com/r/taixingbi/layer-gateway-api-v1) — source: [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1). CI publishes `latest` on push to `main` ([Actions](https://github.com/taixingbi/layer-gateway-api-v1/actions) → **Push to Docker Hub** → `docker.io/taixingbi/layer-gateway-api-v1:latest`).
+Service image: [ghcr.io/taixingbi/layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1/pkgs/container/layer-gateway-api-v1) — source: [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1). CI publishes `latest` on push to `main` ([Actions](https://github.com/taixingbi/layer-gateway-api-v1/actions) → **Push to GHCR** → `ghcr.io/taixingbi/layer-gateway-api-v1:latest`).
 
 The dev manifest exposes the gateway on NodePort **`30185`** and ClusterIP port **`8000`**. In-cluster callers use `http://layer-gateway-api:8000` in `ai-dev`. Orchestrator is NodePort **`30184`** (see [port.md](port.md)).
 
@@ -96,7 +96,7 @@ After changing manifests under `manifests/gateway-api/`, commit and push to `mai
 
 ```bash
 # optional: preload image after upstream CI (https://github.com/taixingbi/layer-gateway-api-v1/actions)
-sudo k3s ctr images pull docker.io/taixingbi/layer-gateway-api-v1:latest
+sudo k3s ctr images pull ghcr.io/taixingbi/layer-gateway-api-v1:latest
 
 sudo k3s kubectl get application gateway-api-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-api -o wide
@@ -303,7 +303,7 @@ Job `layer-gateway-api` scrapes Service `layer-gateway-api` in `ai-dev` (see [ma
 | **400** on `/v1/feedback` | `message_id` + `conversation_id` from prior chat; redeploy [layer-web-v1](deploy-layer-web.md) if UI sends legacy `trace_id`-only body |
 | **503** on `/v1/feedback` | `SUPABASE_*` in secret §1 |
 | **503** under load | `MAX_INFLIGHT_REQUESTS` (default `100`) |
-| Stale image | Pull `latest` after [CI Push to Docker Hub](https://github.com/taixingbi/layer-gateway-api-v1/actions) |
+| Stale image | Pull `latest` after [CI Push to GHCR](https://github.com/taixingbi/layer-gateway-api-v1/actions) |
 | `CreateContainerConfigError` | `layer-gateway-api-secrets` missing §1 |
 | Supabase feedback CHECK errors | upstream `sql/message_feedback_feedback_reason_constraint.sql` |
 

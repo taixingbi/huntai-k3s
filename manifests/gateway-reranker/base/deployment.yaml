@@ -21,7 +21,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: gateway
-          image: docker.io/taixingbi/layer-gateway-reranker-v1
+          image: ghcr.io/taixingbi/layer-gateway-reranker-v1
           imagePullPolicy: Always
           ports:
             - name: http

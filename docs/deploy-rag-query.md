@@ -1,6 +1,6 @@
 # Deploy RAG Query (dev)
 
-Service image: [taixingbi/layer-rag-query-v1](https://hub.docker.com/r/taixingbi/layer-rag-query-v1) — source: [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)
+Service image: [ghcr.io/taixingbi/layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1/pkgs/container/layer-rag-query-v1) — source: [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)
 
 Hybrid retrieval (dense + BM25 + RRF) with optional rerank and chat completion. **`POST /v1/rag/query`** on port **8000** (JSON or SSE). MCP over HTTP: **`POST /v1/mcp`** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30183`**; in-cluster: `http://layer-rag-query:8000/v1/rag/query`.
 
@@ -43,7 +43,7 @@ Edit [manifests/rag/base/deployment.yaml](../manifests/rag/base/deployment.yaml)
 
 ```bash
 # optional: preload image on the node
-sudo k3s ctr images pull docker.io/taixingbi/layer-rag-query-v1:latest
+sudo k3s ctr images pull ghcr.io/taixingbi/layer-rag-query-v1:latest
 
 # one-time: register Argo CD app
 sudo k3s kubectl apply -f argocd/applications/rag-query-dev.yaml

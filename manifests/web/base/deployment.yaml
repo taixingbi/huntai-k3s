@@ -21,7 +21,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: web
-          image: docker.io/taixingbi/layer-web-v1:bb1bba22e477
+          image: ghcr.io/taixingbi/layer-web-v1:bb1bba22e477
           imagePullPolicy: Always
           ports:
             - name: http

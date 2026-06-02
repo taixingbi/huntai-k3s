@@ -108,7 +108,7 @@ On every push to **`layer-orchestrator-v1` `main`**, CI builds the Docker image,
 - File: `manifests/orchestrator/overlays/dev/kustomization.yaml` → `images[].newTag`
 - Argo Application `orchestrator-dev` sees the Git change and rolls out the Deployment.
 
-Pushing only `:latest` to Docker Hub **without** a huntai-k3s commit does **not** trigger rollout (the Deployment spec in Git is unchanged).
+Pushing only `:latest` to GHCR **without** a huntai-k3s commit does **not** trigger rollout (the Deployment spec in Git is unchanged).
 
 **One-time secret** in [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1) Actions: `HUNTAI_K3S_PAT` — PAT with **contents: write** on `taixingbi/huntai-k3s` only.
 
@@ -123,7 +123,7 @@ Optional image preload (use the pinned tag from Git, not only `:latest`):
 
 ```bash
 TAG=$(grep newTag manifests/orchestrator/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
-sudo k3s ctr images pull "docker.io/taixingbi/layer-orchestrator-v1:${TAG}"
+sudo k3s ctr images pull "ghcr.io/taixingbi/layer-orchestrator-v1:${TAG}"
 ```
 
 ### Gateway API, MCP GitHub, RAG, and web image pin (automatic)

@@ -1,6 +1,6 @@
 # Deploy layer-mcp-github-v1 (dev)
 
-Service image: [taixingbi/layer-mcp-github-v1](https://hub.docker.com/r/taixingbi/layer-mcp-github-v1) — source: [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)
+Service image: [ghcr.io/taixingbi/layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1/pkgs/container/layer-mcp-github-v1) — source: [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)
 
 MCP over HTTP: `POST /v1/mcp` on port **8000** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30191`** on the dev control plane; in-cluster: `http://layer-mcp-github-v1:8000/v1/mcp`. Tool `github_search` queries allowlisted GitHub repos and synthesizes answers via the inference gateway (`POST /v1/chat/completions` on **layer-gateway-inference**).
 
@@ -68,7 +68,7 @@ Ensure `manifests/tool/overlays/dev/` is on `main` in [taixingbi/huntai-k3s](htt
 ```bash
 # optional: preload pinned tag from Git (see deploy-gitops-argocd.md)
 TAG=$(grep newTag manifests/tool/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
-sudo k3s ctr images pull "docker.io/taixingbi/layer-mcp-github-v1:${TAG}"
+sudo k3s ctr images pull "ghcr.io/taixingbi/layer-mcp-github-v1:${TAG}"
 
 # optional: remove legacy deployment (pre-v1 rename)
 sudo k3s kubectl delete deployment,service layer-mcp-github -n ai-dev --ignore-not-found
