@@ -8,5 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-gateway-inference-v1
     newName: ghcr.io/taixingbi/layer-gateway-inference-v1
-    newTag: "6c038531145e"
-    digest: "sha256:4300b9ca85532d96735d5e17f72d027493ed1ad5649d13fd38a0ca442db39d29"
+    newTag: "df7e0c24fb9f"
+    digest: "sha256:63d6c6f256bfe4423846fe93cfeece2c37dd2669c3ec5b50b9159085c2f2c9ff"
