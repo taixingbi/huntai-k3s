@@ -8,4 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-gateway-embed-v1
     newName: ghcr.io/taixingbi/layer-gateway-embed-v1
-    newTag: "86bb28c25cf6"
+    newTag: "028186278370"
+    digest: "sha256:de10559f86f9c56ad00ecc9b3eb5cb4f5b9dbcd51e2bfe3de08e35e0656c1203"
