@@ -17,7 +17,7 @@ Manifests and scripts for:
 | `manifests/gpu/gpu-vectoradd-sample.yaml` | One-shot GPU smoke test (`nvidia-smi`) |
 | `manifests/ai/inference-qwen25-7b.yaml` | vLLM inference workload + services (`ai`) |
 | `manifests/gateway-inference/overlays/dev` | Chat gateway in `ai-dev` via Argo CD (`gateway-inference-dev`; ClusterIP `:8000`, NodePort `30180`) |
-| `manifests/gateway/layer-gateway-inference-prod.yaml` | Chat gateway in `ai-prod` (ClusterIP `:8000`, NodePort `30380`) |
+| `manifests/gateway-inference/overlays/prod` | Chat gateway in `ai-prod` (manual `kubectl apply -k`; NodePort `30380`) |
 | `manifests/gateway-embedding/overlays/dev` | Embedding gateway in `ai-dev` via Argo CD (`gateway-embedding-dev`; NodePort `30181` → vLLM `:8001`) |
 | `manifests/gateway-reranker/overlays/dev` | Reranker gateway in `ai-dev` via Argo CD (`gateway-reranker-dev`; NodePort `30182` → backend `:8002`) |
 | `manifests/rag/overlays/dev` | RAG query in `ai-dev` via Argo CD (`rag-query-dev`; ClusterIP `:8000`, NodePort `30183`; [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1)) |

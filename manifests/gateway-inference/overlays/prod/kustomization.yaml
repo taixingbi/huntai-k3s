@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ai-prod
+resources:
+  - ../../base
+  - namespace.yaml
+patches:
+  - path: patch-service.yaml
+  - path: patch-deployment.yaml
+  - target:
+      kind: Deployment
+      name: layer-gateway-inference
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/nodeSelector
+# Pinned by layer-gateway-inference-v1 CI (same tag/digest as dev overlay).
+images:
+  - name: ghcr.io/taixingbi/layer-gateway-inference-v1
+    newName: ghcr.io/taixingbi/layer-gateway-inference-v1
+    newTag: "df7e0c24fb9f"
+    digest: "sha256:63d6c6f256bfe4423846fe93cfeece2c37dd2669c3ec5b50b9159085c2f2c9ff"

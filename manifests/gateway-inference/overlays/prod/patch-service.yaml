@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: layer-gateway-inference
+  labels:
+    environment: prod
+spec:
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      nodePort: 30380

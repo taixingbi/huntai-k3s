@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-inference
+  labels:
+    environment: prod
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+    spec:
+      containers:
+        - name: gateway
+          env:
+            - name: GATEWAY_ENV
+              value: prod
+            - name: ENV
+              value: prod
+            - name: ENVIRONMENT
+              value: ai-prod

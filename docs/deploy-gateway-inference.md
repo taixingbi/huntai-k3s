@@ -6,7 +6,7 @@ In-cluster: `http://layer-gateway-inference:8000` (dev `ai-dev`, prod `ai-prod`)
 
 ## 1) Create secrets (required for `envFrom.secretRef`)
 
-Both manifests use `envFrom.secretRef.name=layer-gateway-inference-secrets`.
+Both overlays use `envFrom.secretRef.name=layer-gateway-inference-secrets`.
 Create the Secret in each namespace you deploy to.
 
 ```bash
@@ -47,9 +47,8 @@ sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30180
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-inference -o wide
 
-# prod
-sudo k3s kubectl rollout restart deployment/layer-gateway-inference -n ai-prod
-sudo k3s kubectl apply -f manifests/gateway/layer-gateway-inference-prod.yaml
+# prod (Kustomize overlay; not yet an Argo CD Application)
+sudo k3s kubectl apply -k manifests/gateway-inference/overlays/prod
 sudo k3s kubectl get pods,svc -n ai-prod -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30380
 sudo k3s kubectl get pods -n ai-prod -l app=layer-gateway-inference -o wide
