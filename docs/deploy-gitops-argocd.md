@@ -209,8 +209,7 @@ manifests/gateway-api/
 └── overlays/dev/                               # namespace ai-dev, dev env
 manifests/gateway-inference/
 ├── base/                                       # ConfigMap + Deployment + Service
-├── overlays/dev/                               # Argo CD gateway-inference-dev
-└── overlays/prod/                              # manual kubectl apply -k (NodePort 30380)
+└── overlays/dev/                               # Argo CD gateway-inference-dev
 manifests/gateway-embedding/
 ├── base/
 └── overlays/dev/

@@ -2,7 +2,7 @@
 # only Prometheus + remote_write live here. Use Grafana Cloud for dashboards.
 # Scrapes (filter in Grafana with label workload=inference|gateway-inference|gateway-embedding|gateway-api|rag-query|embedding|reranker|gpu-telemetry):
 #   - workload=inference: vLLM chat/completions via Service vllm-inference (ai)
-#   - workload=gateway-inference: chat routing gateway /metrics (Service layer-gateway-inference, ai-dev / ai-prod)
+#   - workload=gateway-inference: chat routing gateway /metrics (Service layer-gateway-inference, ai-dev)
 #   - workload=gateway-embedding: embed routing gateway /metrics (Service layer-gateway-embedding, ai-dev)
 #   - workload=gateway-api: FastAPI edge gateway /metrics (Service layer-gateway-api, ai-dev)
 #   - workload=rag-query: RAG query FastMCP HTTP /metrics (Service layer-rag-query, ai-dev) when exposed by the image
@@ -112,7 +112,6 @@ data:
             namespaces:
               names:
                 - ai-dev
-                - ai-prod
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep

@@ -18,14 +18,6 @@ curl http://192.168.86.173:30180/v1/chat/completions \
   -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"where is jersey city"}],"max_tokens":50}'
 ```
 
-gateway prod (`30380`):
-
-```bash
-curl http://192.168.86.173:30380/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"where is jersey city"}],"max_tokens":50}'
-```
-
 embedding gateway dev (`30181`) — requires `X-Request-Id`, `X-Trace-Id`, `X-Session-Id` ([layer-gateway-embed-v1](https://github.com/taixingbi/layer-gateway-embed-v1)):
 
 ```bash

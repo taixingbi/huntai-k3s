@@ -6,7 +6,7 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 
 30180 → gateway-inference (dev) 
 30280 → gateway-inference (qa) 
-30380 → gateway-inference (prod) 
+30380 → reserved (gateway-inference prod, not deployed)
 
 30181 → gateway-embedding (dev) 
 30281 → gateway-embedding (qa) 

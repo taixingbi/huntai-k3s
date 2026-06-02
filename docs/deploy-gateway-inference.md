@@ -1,13 +1,13 @@
-# Deploy Inference Gateway (dev/prod)
+# Deploy Inference Gateway (dev)
 
 Gateway image: [ghcr.io/taixingbi/layer-gateway-inference-v1](https://github.com/taixingbi/layer-gateway-inference-v1/pkgs/container/layer-gateway-inference-v1)
 
-In-cluster: `http://layer-gateway-inference:8000` (dev `ai-dev`, prod `ai-prod`). LAN NodePorts: `30180` (dev), `30380` (prod); see `docs/port.md`.
+In-cluster: `http://layer-gateway-inference:8000` in `ai-dev`. LAN NodePort: `30180`; see `docs/port.md`.
 
 ## 1) Create secrets (required for `envFrom.secretRef`)
 
-Both overlays use `envFrom.secretRef.name=layer-gateway-inference-secrets`.
-Create the Secret in each namespace you deploy to.
+The dev overlay uses `envFrom.secretRef.name=layer-gateway-inference-secrets`.
+Create the Secret in `ai-dev` before rollout.
 
 ```bash
 mkdir -p ~/.secrets
@@ -15,43 +15,26 @@ chmod 700 ~/.secrets
 printf '%s' 'sk-xxxxx' > ~/.secrets/openai.key
 chmod 600 ~/.secrets/openai.key
 
-# dev
 sudo k3s kubectl create secret generic layer-gateway-inference-secrets -n ai-dev \
-  --from-file=OPENAI_API_KEY="$HOME/.secrets/openai.key" \
-  --dry-run=client -o yaml | sudo k3s kubectl apply -f -
-
-# prod
-sudo k3s kubectl create secret generic layer-gateway-inference-secrets -n ai-prod \
   --from-file=OPENAI_API_KEY="$HOME/.secrets/openai.key" \
   --dry-run=client -o yaml | sudo k3s kubectl apply -f -
 
 # check config
 sudo k3s kubectl -n ai-dev exec -it deploy/layer-gateway-inference -- cat /app/config.yaml
-sudo k3s kubectl -n ai-prod exec -it deploy/layer-gateway-inference -- cat /app/config.yaml
 
 # check secret
 sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-dev \
   -o jsonpath='{.data.OPENAI_API_KEY}' | base64 -d | wc -c
-
-sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-prod \
-  -o jsonpath='{.data.OPENAI_API_KEY}' | base64 -d | wc -c
 ```
 
-## 2) Deploy manifests
+## 2) Deploy (Argo CD / GitOps)
 
 ```bash
-# dev (Argo CD / GitOps source)
 sudo k3s kubectl apply -f argocd/applications/gateway-inference-dev.yaml
 sudo k3s kubectl get application gateway-inference-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30180
 sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-inference -o wide
-
-# prod (Kustomize overlay; not yet an Argo CD Application)
-sudo k3s kubectl apply -k manifests/gateway-inference/overlays/prod
-sudo k3s kubectl get pods,svc -n ai-prod -l app=layer-gateway-inference
-sudo k3s kubectl get svc -A -o wide | grep 30380
-sudo k3s kubectl get pods -n ai-prod -l app=layer-gateway-inference -o wide
 ```
 
 ## 3) Version (`GET /version`)
@@ -84,7 +67,7 @@ Expected when both GPU nodes are up:
 }
 ```
 
-## 5) Example: `POST /v1/chat/completions` (dev)
+## 5) Example: `POST /v1/chat/completions`
 
 From a host that can reach dev NodePort `30180`. Optional `conversation_id` in the JSON is for client-side correlation; omit it if your OpenAI-compatible backend rejects unknown fields.
 
@@ -106,7 +89,7 @@ curl http://192.168.86.179:30180/v1/chat/completions \
 echo
 ```
 
-## 6) Example: `POST /v1/chat/completions` (stream, dev)
+## 6) Example: `POST /v1/chat/completions` (stream)
 
 Use `curl -N` so chunks print as they arrive. `stream: true` in the JSON body enables token streaming (same NodePort `30180`).
 
@@ -126,8 +109,3 @@ curl -N http://192.168.86.179:30180/v1/chat/completions \
     "stream": true
   }'
 ```
-
-NodePorts:
-
-- dev: `30180`
-- prod: `30380`
