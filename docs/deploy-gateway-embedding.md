@@ -2,7 +2,7 @@
 
 Gateway image: [ghcr.io/taixingbi/layer-gateway-embed-v1](https://github.com/taixingbi/layer-gateway-embed-v1/pkgs/container/layer-gateway-embed-v1) — source: [layer-gateway-embed-v1](https://github.com/taixingbi/layer-gateway-embed-v1)
 
-Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `GET /metrics`. In-cluster: `http://layer-gateway-embedding:8000`; LAN: NodePort `30181` (`docs/port.md`). Required headers on embed calls: `X-Request-Id`, `X-Trace-Id`, `X-Session-Id` (see upstream [README](https://github.com/taixingbi/layer-gateway-embed-v1#example)). Smoke tests: `docs/test-calls.md`. Prometheus scrapes Service `layer-gateway-embedding` as `workload=gateway-embedding` after `manifests/observability/prometheus-grafana.yaml`.
+Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `GET /metrics`. In-cluster: `http://layer-gateway-embedding:8000`; LAN: NodePort `30181` (`docs/port.md`). Required headers on embed calls: `X-Request-Id`, `X-Trace-Id`, `X-Session-Id` (see upstream [README](https://github.com/taixingbi/layer-gateway-embed-v1#example)). vLLM backends (`:8001`): [deploy-vllm-embedding.md](deploy-vllm-embedding.md). Smoke tests: `docs/test-calls.md`. Prometheus scrapes Service `layer-gateway-embedding` as `workload=gateway-embedding` after `manifests/observability/prometheus-grafana.yaml`.
 
 ## 1) Configure backends (no `secretRef`)
 

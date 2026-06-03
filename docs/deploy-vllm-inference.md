@@ -2,13 +2,16 @@
 
 GitOps: Argo CD Application `vllm-inference` (manifest path `manifests/ai`). Bootstrap via [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
 
-Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node-2`) with **one container** and **three vLLM processes** on a single GPU (scheme C1):
+Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node-2`) with **one container** and **three vLLM processes** on a single GPU (scheme C1). **This doc covers the bundle and chat (`:8000`).** Embed and rerank are documented separately:
 
-| Port | Role | Model |
-|------|------|--------|
-| 8000 | chat | `Qwen/Qwen2.5-7B-Instruct` + router LoRAs (see below) |
-| 8001 | embed | `BAAI/bge-m3` (`--runner pooling`, `--pooler-config task=embed`; no `BgeM3EmbeddingModel` override) |
-| 8002 | rerank | `BAAI/bge-reranker-v2-m3` (`/v1/rerank`; vLLM 0.22 auto-detect) |
+- [deploy-vllm-embedding.md](deploy-vllm-embedding.md) — `BAAI/bge-m3` on `:8001`
+- [deploy-vllm-reranker.md](deploy-vllm-reranker.md) — `BAAI/bge-reranker-v2-m3` on `:8002`
+
+| Port | Role | Doc |
+|------|------|-----|
+| 8000 | chat (`Qwen/Qwen2.5-7B-Instruct` + router LoRAs) | below |
+| 8001 | embed | [deploy-vllm-embedding.md](deploy-vllm-embedding.md) |
+| 8002 | rerank | [deploy-vllm-reranker.md](deploy-vllm-reranker.md) |
 
 Startup script: ConfigMap `vllm-bundle-start` → [`manifests/ai/vllm-bundle-start-configmap.yaml`](../manifests/ai/vllm-bundle-start-configmap.yaml).
 
@@ -18,14 +21,14 @@ sudo k3s kubectl get pods,svc -n ai -l app=vllm-bundle -o wide
 sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -f --tail=100
 ```
 
-## Services
+## Services (chat)
 
 | Service | Port | Notes |
 |---------|------|--------|
 | `vllm-inference` | 8000 | Chat; used by inference gateway |
 | `inference-qwen25-7b` | 8000 (NodePort **30080**) | LAN smoke tests |
-| `vllm-embed-gpu-node-{1,2}` | 8001 | Embedding gateway backends |
-| `vllm-rerank-gpu-node-{1,2}` | 8002 | Reranker gateway backends |
+
+Embed/rerank NodePorts and per-node ClusterIP Services (`vllm-embed-gpu-node-*`, `vllm-rerank-gpu-node-*`) are in the dedicated docs above.
 
 ## Hugging Face cache (hostPath)
 
@@ -36,9 +39,9 @@ sudo mkdir -p /data/hf-cache
 sudo chmod 1777 /data/hf-cache   # or chown to the user the container runs as
 ```
 
-The bundle mounts `hostPath: /data/hf-cache` → `/root/.cache/huggingface` and sets `HF_HOME` to that path. Allow **~50–80GiB** free per node (Qwen + bge-m3 + reranker). If you previously ran vLLM on the host, you can bind the existing cache directory instead of an empty `/data/hf-cache`.
+The bundle mounts `hostPath: /data/hf-cache` → `/root/.cache/huggingface` and sets `HF_HOME` to that path. Allow **~50–80GiB** free per node (all three models). If you previously ran vLLM on the host, you can bind the existing cache directory instead of an empty `/data/hf-cache`.
 
-**InitContainer `prefetch-hf-cache`** runs before the GPU container: `snapshot_download` for embed/rerank/chat (and optional router LoRAs when `PREFETCH_ROUTER_LORAS=true`) into the same hostPath. Skips re-download when blobs already exist; first cold node still needs network time but vLLM no longer pulls weights during GPU startup.
+**InitContainer `prefetch-hf-cache`** runs before the GPU container: `snapshot_download` for chat (and embed/rerank; optional router LoRAs when `PREFETCH_ROUTER_LORAS=true`) into the same hostPath. Skips re-download when blobs already exist; first cold node still needs network time but vLLM no longer pulls weights during GPU startup.
 
 ```bash
 sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -c prefetch-hf-cache
@@ -46,35 +49,29 @@ sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -c prefetch-hf-cache
 
 For gated Hub repos, add `HF_TOKEN` to the init and main container (Secret optional).
 
-## GPU memory (conservative defaults)
+## GPU memory (chat)
 
-`--gpu-memory-utilization` is a vLLM soft limit, not Kubernetes isolation:
+`--gpu-memory-utilization` is a vLLM soft limit, not Kubernetes isolation. Chat shares the GPU with embed and rerank (see their docs for util defaults). Chat defaults:
 
-| Process | util | Notes |
-|---------|------|--------|
-| chat | 0.84 | Base Qwen + 2 router LoRAs; `max-model-len` 2048, `max-num-seqs` 1, `--enforce-eager` |
-| embed | 0.08 | Started first; waits up to 40m for `/health` |
-| rerank | 0.05 | Waits up to 30m after embed ready |
+| Setting | Value |
+|---------|--------|
+| `gpu-memory-utilization` | 0.84 |
+| `max-model-len` | 2048 |
+| `max-num-seqs` | 1 |
+| LoRA | 2 router adapters, `--enforce-eager` |
 
-Chat starts only after embed and rerank pass `/health`. Each process uses util × **total** VRAM; on a 24GB 3090 with siblings loaded, util above ~0.84 can fail init (`Free memory ... less than desired`). Edit the ConfigMap script and roll out; any script change restarts the whole bundle on that node.
+Chat starts only after embed and rerank pass `/health` in the bundle script. On a 24GB 3090 with siblings loaded, chat util above ~0.84 can fail init (`Free memory ... less than desired`). Edit the ConfigMap script and roll out; any script change restarts the whole bundle on that node.
 
-If chat still fails: lower util (0.78–0.82), lower embed/rerank util, or disable LoRA temporarily.
+If chat still fails: lower util (0.78–0.82), lower embed/rerank util ([embed](deploy-vllm-embedding.md) / [rerank](deploy-vllm-reranker.md) docs), or disable LoRA temporarily.
 
 ## Migration from host / old chat Deployment
 
 Before the first successful bundle rollout:
 
-1. **Stop** host vLLM on GPU nodes (`:8001`, `:8002`, and any host chat using the GPU).
+1. **Stop** host vLLM on GPU nodes (any process using the GPU).
 2. Let Argo delete old `inference-qwen25-7b` Pods so GPUs are free.
 3. Sync `vllm-inference`; wait for `startupProbe` (model pull can take 15–30+ minutes).
-4. Verify all three ports on each node:
-
-```bash
-curl -sf http://192.168.86.173:30080/health && echo " chat ok"
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
-```
-
-5. Confirm embedding/rerank gateways: `curl http://192.168.86.179:30181/ready` and `30182/ready`.
+4. Run [§ Smoke tests](#smoke-tests) below, then embed/rerank smokes in their docs.
 
 ### ConfigMap changes require a Pod restart
 
@@ -86,9 +83,128 @@ sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45
 sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
 ```
 
-`healthcheck.py` now probes `POST /v1/embeddings` on `:8001` so a Pod is not Ready when embed returns **501** (`The model does not support Embeddings API`). Restart after script changes. Embed must use **`--runner pooling`** and **`--pooler-config '{"task":"embed"}'`** (do **not** use `BgeM3EmbeddingModel` hf-overrides — that mode serves sparse/colbert via `/pooling` only).
-
 **Rollback:** revert Git commit; optionally restart host vLLM on previous ports.
+
+## Smoke tests
+
+Run from a host with cluster access after both bundle Pods are **`1/1 Ready`**. GPU node-1 chat NodePort: **`192.168.86.173:30080`**. `jq` is optional.
+
+### Prerequisites
+
+```bash
+sudo k3s kubectl get pods -n ai -l app=vllm-bundle -o wide
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45m
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
+```
+
+**Pass:** both Pods **`READY 1/1`**, **`AGE`** stable (not restarting).
+
+### 1) Bundle healthcheck
+
+All three processes (including embed API probe on `:8001`):
+
+```bash
+sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
+sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-2 -- python3 /scripts/healthcheck.py
+```
+
+**Pass:** exit **0**. Embed failures → [deploy-vllm-embedding.md](deploy-vllm-embedding.md).
+
+### 2) Chat — NodePort `30080`
+
+```bash
+curl -sS http://192.168.86.173:30080/health | jq .
+echo
+curl -sS http://192.168.86.173:30080/v1/models | jq '.data[].id'
+echo
+curl -sS http://192.168.86.173:30080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "messages": [{"role": "user", "content": "Reply with one word: ok"}],
+    "max_tokens": 8,
+    "temperature": 0
+  }' | jq '{model, answer: .choices[0].message.content}'
+echo
+```
+
+```bash
+curl -sS http://192.168.86.176:30080/health | jq .
+echo
+curl -sS http://192.168.86.176:30080/v1/models | jq '.data[].id'
+echo
+curl -sS http://192.168.86.176:30080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "messages": [{"role": "user", "content": "Reply with one word: ok"}],
+    "max_tokens": 8,
+    "temperature": 0
+  }' | jq '{model, answer: .choices[0].message.content}'
+echo
+```
+
+**Pass:** `/health` ok; `/v1/models` lists `Qwen/Qwen2.5-7B-Instruct` (and router LoRA ids when enabled); chat returns non-empty `answer` and `model` is Qwen (not an OpenAI id). Via gateway: [deploy-gateway-inference.md](deploy-gateway-inference.md) (`30180`).
+
+### 3) Router LoRA — SFT (`router-qwen2.5-7b-sft-v1.00`)
+
+Use the **vLLM LoRA id** as `model` (not the Hugging Face repo path). The router expects **`system` + `user`** messages — same shape as orchestrator intent routing ([`router-v2.01-compact.txt`](../../layer-orchestrator-v1/app/prompts/router-v2.01-compact.txt), `__CANDIDATE_NAME__` → `Taixing Bi`). Orchestrator default **`ROUTER_MODEL`**.
+
+```bash
+ROUTER_PROMPT="$(sed 's/__CANDIDATE_NAME__/Taixing Bi/g' \
+  ../layer-orchestrator-v1/app/prompts/router-v2.01-compact.txt)"
+
+curl -sS http://192.168.86.173:30080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg model "router-qwen2.5-7b-sft-v1.00" \
+    --arg sys "$ROUTER_PROMPT" \
+    '{
+      model: $model,
+      messages: [
+        {role: "system", content: $sys},
+        {role: "user", content: "What is Taixing Bi US visa status?"}
+      ],
+      max_tokens: 256,
+      temperature: 0
+    }')" \
+  | jq -r '.choices[0].message.content' \
+  | jq '{route, rewritten_question, confidence, reason}'
+echo
+```
+
+**Pass:** valid JSON; **`route`** is **`rag_private_kb`**; non-empty **`rewritten_question`**. Response **`model`** (on the outer completion) is `router-qwen2.5-7b-sft-v1.00`. Full pipeline: [deploy-orchestrator.md §4.4](deploy-orchestrator.md#44-post-orchestratorevalrouter-optional) with `"router_model": "router-qwen2.5-7b-sft-v1.00"`.
+
+### 4) Router LoRA — DPO (`router-qwen2.5-7b-dpo-v1.00`)
+
+Same prompt and question; change only the LoRA **`model`** id.
+
+```bash
+ROUTER_PROMPT="$(sed 's/__CANDIDATE_NAME__/Taixing Bi/g' \
+  ../layer-orchestrator-v1/app/prompts/router-v2.01-compact.txt)"
+
+curl -sS http://192.168.86.173:30080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d "$(jq -n \
+    --arg model "router-qwen2.5-7b-dpo-v1.00" \
+    --arg sys "$ROUTER_PROMPT" \
+    '{
+      model: $model,
+      messages: [
+        {role: "system", content: $sys},
+        {role: "user", content: "What is Taixing Bi US visa status?"}
+      ],
+      max_tokens: 256,
+      temperature: 0
+    }')" \
+  | jq -r '.choices[0].message.content' \
+  | jq '{route, rewritten_question, confidence, reason}'
+echo
+```
+
+**Pass:** valid JSON; **`route`** is **`rag_private_kb`**. Orchestrator eval: §4.4 with `"router_model": "router-qwen2.5-7b-dpo-v1.00"`.
+
+Embed and rerank smokes: [deploy-vllm-embedding.md](deploy-vllm-embedding.md), [deploy-vllm-reranker.md](deploy-vllm-reranker.md). Gateways and RAG: [deploy-gateway-embedding.md](deploy-gateway-embedding.md) (`30181`), [deploy-gateway-reranker.md](deploy-gateway-reranker.md) (`30182`), [deploy-rag-query.md](deploy-rag-query.md) (`30183`).
 
 ## Router SFT / DPO LoRA adapters
 
@@ -101,13 +217,7 @@ Chat loads two LoRA adapters via `--enable-lora` in `vllm-bundle-start-configmap
 
 Orchestrator **`ROUTER_MODEL`** defaults to `router-qwen2.5-7b-sft-v1.00` (override per request with `router_model` on eval). General chat/RAG synthesis still uses `Qwen/Qwen2.5-7B-Instruct`.
 
-Verify after rollout:
-
-```bash
-curl -sS http://192.168.86.173:30080/v1/models | jq '.data[].id'
-```
-
-Expect base Qwen plus both router LoRA ids. If init fails with `Free memory ... less than desired`, lower chat util to 0.82 or disable LoRA.
+After rollout, **`/v1/models`** in §2 should list base Qwen plus both LoRA ids; confirm each adapter with §3 (SFT) and §4 (DPO). If init fails with `Free memory ... less than desired`, lower chat util to 0.82 or disable LoRA.
 
 **Merged weights (alternative):** `export_merge.py` and point chat `--model` at merged weights instead of `--enable-lora`.
 

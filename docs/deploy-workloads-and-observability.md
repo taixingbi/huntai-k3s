@@ -4,7 +4,9 @@ GitOps (Argo CD) for the gateway API and future apps: [deploy-gitops-argocd.md](
 
 Deployment steps are split by component:
 
-1. vLLM inference: `docs/deploy-vllm-inference.md`
+1. vLLM inference (bundle): `docs/deploy-vllm-inference.md`
+   - vLLM embedding (`:8001`): `docs/deploy-vllm-embedding.md`
+   - vLLM reranker (`:8002`): `docs/deploy-vllm-reranker.md`
 2. Qdrant (dev): `docs/deploy-qdrant.md`
 3. inference gateway (dev): `docs/deploy-gateway-inference.md`
 4. embedding gateway (dev): `docs/deploy-gateway-embedding.md`
