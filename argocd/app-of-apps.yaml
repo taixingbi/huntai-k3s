@@ -1,0 +1,19 @@
+# Bootstrap all HuntAI Argo CD Applications from Git (one-time after Argo CD install).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: huntai-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/taixingbi/huntai-k3s.git
+    targetRevision: main
+    path: argocd/applications
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

@@ -34,7 +34,7 @@ spec:
             - name: QDRANT_API_KEY
               value: ""
             - name: EMBEDDING_URL
-              value: "http://192.168.86.179:30181"
+              value: "http://layer-gateway-embedding:8000"
             - name: EMBEDDING_MODEL
               value: "BAAI/bge-m3"
             - name: VECTOR_SIZE
@@ -46,11 +46,11 @@ spec:
             - name: RRF_K
               value: "60"
             - name: INFERENCE_URL
-              value: "http://192.168.86.179:30180"
+              value: "http://layer-gateway-inference:8000"
             - name: INFERENCE_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
             - name: RERANK_URL
-              value: "http://192.168.86.179:30182"
+              value: "http://layer-gateway-reranker:8000"
             - name: RERANK_MODEL
               value: "BAAI/bge-reranker-v2-m3"
             - name: RERANK_TOP_N

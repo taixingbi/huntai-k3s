@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - vllm-inference.yaml
+  - observability.yaml
+  - gateway-inference-dev.yaml
+  - gateway-embedding-dev.yaml
+  - gateway-reranker-dev.yaml
+  - gateway-api-dev.yaml
+  - orchestrator-dev.yaml
+  - mcp-github-dev.yaml
+  - rag-query-dev.yaml
+  - web-dev.yaml
+  - cloudflared-dev.yaml

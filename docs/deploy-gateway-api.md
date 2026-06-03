@@ -287,7 +287,7 @@ Structured logs: `request_complete` JSON (`request_id`, `trace_id`, `session_id`
 After changing scrape rules:
 
 ```bash
-sudo k3s kubectl apply -f manifests/observability/prometheus-grafana.yaml
+# Prometheus is managed by Argo CD Application `observability`
 sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 ```
 

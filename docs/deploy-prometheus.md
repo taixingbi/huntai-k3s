@@ -1,7 +1,9 @@
 # Deploy Prometheus (Grafana Cloud metrics)
 
+GitOps: Argo CD Application `observability` (includes Prometheus and Alloy). Bootstrap via [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
+
 ```bash
-sudo k3s kubectl apply -f manifests/observability/prometheus-grafana.yaml
+sudo k3s kubectl get application observability -n argocd
 sudo k3s kubectl get pods,svc -n monitoring -o wide
 ```
 

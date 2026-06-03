@@ -109,7 +109,8 @@ Deploy:
 
 ```bash
 cd ~/shared/huntai-k3s
-sudo k3s kubectl apply -f manifests/ingress/cloudflared-dev.yaml
+# GitOps: Argo CD Application `cloudflared-dev` (see deploy-gitops-argocd.md)
+sudo k3s kubectl get application cloudflared-dev -n argocd
 sudo k3s kubectl -n ai-dev rollout status deployment/cloudflared --timeout=120s
 sudo k3s kubectl -n ai-dev get pods -l app=cloudflared -o wide
 sudo k3s kubectl -n ai-dev logs deploy/cloudflared --tail=30
@@ -151,7 +152,7 @@ After [deploy-gitops-argocd.md](deploy-gitops-argocd.md) §1 and DNS route for `
 
 ```bash
 cd ~/shared/huntai-k3s
-sudo k3s kubectl apply -f manifests/ingress/cloudflared-dev.yaml
+# ConfigMap changes sync via Argo CD Application `cloudflared-dev`
 sudo k3s kubectl -n ai-dev rollout restart deploy/cloudflared
 sudo k3s kubectl -n ai-dev rollout status deployment/cloudflared --timeout=120s
 ```

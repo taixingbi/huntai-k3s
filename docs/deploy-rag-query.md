@@ -19,13 +19,13 @@ Upstream: [schema.md](https://github.com/taixingbi/layer-rag-query-v1/blob/main/
 
 **Collection naming:** manifest sets `ENV=dev`; `collection_base` `taixing_knowledge` resolves to Qdrant collection `taixing_knowledge_dev`.
 
-Environment variables follow upstream [`app/core/config.py`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/app/core/config.py) and [`.env.example`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/.env.example). The dev manifest uses LAN `192.168.86.179` for Qdrant (`6333`), embedding gateway (`30181`), reranker gateway (`30182`), and inference **gateway** (`30180`). In-cluster callers may use Service DNS on port `8000` (e.g. `http://layer-gateway-inference:8000`).
+Environment variables follow upstream [`app/core/config.py`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/app/core/config.py) and [`.env.example`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/.env.example). The dev manifest uses in-cluster Service DNS for embedding, reranker, and inference gateways (`http://layer-gateway-*:8000`). Qdrant stays on LAN (`192.168.86.179:6333`) until in-cluster. Smoke curls below use NodePort `30183` on the control plane.
 
 ## Prerequisites
 
 - Qdrant reachable at `QDRANT_URL` (manifest default: `http://192.168.86.179:6333` — adjust if yours differs).
-- Embedding gateway NodePort `30181`, reranker gateway `30182`, inference gateway `30180` (manifest defaults). Override `INFERENCE_URL` for direct vLLM (`30080`) or in-cluster DNS as needed.
-- Port map: [port.md](port.md) (`30183` dev).
+- Gateway Services in `ai-dev`: `layer-gateway-embedding`, `layer-gateway-reranker`, `layer-gateway-inference` (Argo apps must be synced).
+- Port map: [port.md](port.md) (`30183` dev for LAN smoke tests).
 
 ## 1) Configure env (no `secretRef` by default)
 
@@ -34,9 +34,9 @@ Edit [manifests/rag/base/deployment.yaml](../manifests/rag/base/deployment.yaml)
 | Variable | Dev manifest |
 |----------|----------------|
 | `ENV` | `dev` |
-| `EMBEDDING_URL` | `http://192.168.86.179:30181` |
-| `RERANK_URL` | `http://192.168.86.179:30182` |
-| `INFERENCE_URL` | `http://192.168.86.179:30180` |
+| `EMBEDDING_URL` | `http://layer-gateway-embedding:8000` |
+| `RERANK_URL` | `http://layer-gateway-reranker:8000` |
+| `INFERENCE_URL` | `http://layer-gateway-inference:8000` |
 | `INFERENCE_MODEL` | `Qwen/Qwen2.5-7B-Instruct` |
 
 ## 2) Deploy via Argo CD (GitOps)
@@ -268,7 +268,7 @@ curl -sS -X POST http://192.168.86.179:30180/v1/chat/completions \
 After changing scrape rules, reload Prometheus:
 
 ```bash
-sudo k3s kubectl apply -f manifests/observability/prometheus-grafana.yaml
+# Prometheus is managed by Argo CD Application `observability` (see deploy-gitops-argocd.md)
 sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 ```
 

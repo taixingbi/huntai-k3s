@@ -54,27 +54,30 @@ After pushing this repo to `main`:
 ```bash
 cd ~/shared/huntai-k3s
 
-# Secrets must exist before pods start
+# Secrets must exist before pods start (create once; see per-service deploy docs)
 sudo k3s kubectl get secret layer-gateway-api-secrets -n ai-dev
 sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-dev
 sudo k3s kubectl get secret layer-orchestrator-secrets -n ai-dev
 sudo k3s kubectl get secret layer-mcp-github-v1-secrets -n ai-dev
+sudo k3s kubectl get secret cloudflared-tunnel-credentials -n ai-dev
+sudo k3s kubectl get secret prometheus-grafana-cloud-remote-write -n monitoring
+sudo k3s kubectl get secret alloy-grafana-cloud-loki -n monitoring
 
-# Register Applications (one-time; workloads sync from Git after push)
-sudo k3s kubectl apply -f argocd/applications/gateway-api-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/gateway-inference-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/gateway-embedding-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/gateway-reranker-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/orchestrator-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/mcp-github-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/rag-query-dev.yaml
-sudo k3s kubectl apply -f argocd/applications/web-dev.yaml
+# Register all Applications (one-time; workloads sync from Git after push)
+sudo k3s kubectl apply -f argocd/app-of-apps.yaml
 ```
+
+This creates Application `huntai-apps`, which syncs every manifest under `argocd/applications/` (vLLM, observability, gateways, orchestrator, RAG, web, cloudflared). New apps only need a YAML file in that directory plus a Git push.
+
+**Alternative:** apply individual files under `argocd/applications/` if you prefer phased rollout.
 
 ## 5) Verify sync
 
 ```bash
 sudo k3s kubectl get applications -n argocd
+sudo k3s kubectl get application huntai-apps -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
+sudo k3s kubectl get application vllm-inference -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
+sudo k3s kubectl get application observability -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application gateway-api-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application gateway-inference-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application gateway-embedding-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
@@ -228,24 +231,25 @@ manifests/rag/                                  # layer-rag-query-v1 (rag-query-
 manifests/web/                                  # layer-web-v1 (web-dev)
 ├── base/
 └── overlays/dev/
+manifests/ai/                                   # vLLM (vllm-inference Argo app)
+manifests/observability/                        # Prometheus + Alloy (observability Argo app)
+manifests/ingress/                              # Cloudflare tunnel (cloudflared-dev Argo app)
+argocd/app-of-apps.yaml                         # Bootstrap all Applications (one-time apply)
 ```
 
 ## Secrets
 
-Never commit secrets. Create cluster secrets manually in `ai-dev` (e.g. `layer-gateway-api-secrets`, `layer-orchestrator-secrets`). See [deploy-gateway-api.md](deploy-gateway-api.md) §1 and [deploy-orchestrator.md](deploy-orchestrator.md) §1.
+Never commit secrets. Create cluster secrets manually before sync (e.g. `layer-gateway-api-secrets`, `layer-orchestrator-secrets` in `ai-dev`; `cloudflared-tunnel-credentials` in `ai-dev`; Grafana Cloud secrets in `monitoring`). See [deploy-gateway-api.md](deploy-gateway-api.md) §1, [deploy-orchestrator.md](deploy-orchestrator.md) §1, [deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md), [deploy-prometheus.md](deploy-prometheus.md), [deploy-alloy-loki.md](deploy-alloy-loki.md).
 
-## Rollout order for more apps
+## Rollout order (sync waves)
 
-| Phase | Argo Application | Manifest path |
-|-------|------------------|---------------|
-| 1 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev` |
-| 2 | `gateway-inference-dev` | `manifests/gateway-inference/overlays/dev` |
-| 3 | `gateway-embedding-dev` | `manifests/gateway-embedding/overlays/dev` |
-| 4 | `gateway-reranker-dev` | `manifests/gateway-reranker/overlays/dev` |
-| 5 | `orchestrator-dev` | `manifests/orchestrator/overlays/dev` |
-| 6 | `mcp-github-dev` | `manifests/tool/overlays/dev` |
-| 7 | `rag-query-dev` | `manifests/rag/overlays/dev` |
-| 8 | `web-dev` | `manifests/web/overlays/dev` |
-| 9+ | cloudflared | see plan in repo history |
+Argo CD sync waves order cold start roughly as:
 
-Optional later: an **app-of-apps** Application pointing at `argocd/applications/` so new apps need only a Git commit.
+| Wave | Argo Application | Manifest path |
+|------|------------------|---------------|
+| 0 | `vllm-inference` | `manifests/ai` |
+| 1 | `observability` | `manifests/observability` |
+| (default) | `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev`, `gateway-api-dev`, `orchestrator-dev`, `mcp-github-dev`, `rag-query-dev`, `web-dev` | respective `manifests/*/overlays/dev` |
+| 9 | `cloudflared-dev` | `manifests/ingress` |
+
+Add a new app: create `argocd/applications/<name>.yaml`, list it in `argocd/applications/kustomization.yaml`, commit, push — `huntai-apps` picks it up automatically.

@@ -1,7 +1,10 @@
 # Deploy Alloy (Grafana Cloud Loki logs)
 
+Managed by Argo CD Application `observability` together with Prometheus. Bootstrap via [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
+
 ```bash
-sudo k3s kubectl apply -f manifests/observability/alloy-loki-cloud.yaml
+sudo k3s kubectl get application observability -n argocd
+sudo k3s kubectl get pods -n monitoring -l app.kubernetes.io/name=alloy-logs -o wide
 ```
 
 Patch Loki secret (`logs:write`) after apply:

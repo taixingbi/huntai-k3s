@@ -9,12 +9,8 @@
 # is unhealthy but restarting the pod does not help (see Alloy HTTP docs).
 #
 # Alloy docs: https://grafana.com/docs/alloy/latest/collect/logs-in-kubernetes/
+# Namespace `monitoring` is created by prometheus-grafana.yaml in this kustomization.
 
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: monitoring
----
 apiVersion: v1
 kind: ServiceAccount
 metadata:

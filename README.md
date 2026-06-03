@@ -9,13 +9,14 @@ Manifests and scripts for:
 
 | Path | Purpose |
 |---|---|
-| `argocd/applications/` | Argo CD Application manifests (GitOps bootstrap) |
+| `argocd/app-of-apps.yaml` | Bootstrap all Argo CD Applications (one-time) |
+| `argocd/applications/` | Argo CD Application manifests (GitOps) |
 | `manifests/gateway-api/` | Gateway API Kustomize base + dev overlay (GitOps source for `gateway-api-dev`) |
 | `scripts/install-k3s-server.sh` | Install k3s server and print join token/url |
 | `scripts/install-k3s-agent.sh` | Join an agent with `K3S_URL` + `K3S_TOKEN` |
 | `scripts/install-nvidia-gpu-operator.sh` | Install GPU Operator for k3s containerd |
 | `manifests/gpu/gpu-vectoradd-sample.yaml` | One-shot GPU smoke test (`nvidia-smi`) |
-| `manifests/ai/inference-qwen25-7b.yaml` | vLLM inference workload + services (`ai`) |
+| `manifests/ai/` | vLLM inference in `ai` via Argo CD (`vllm-inference`; NodePort `30080`) |
 | `manifests/gateway-inference/overlays/dev` | Chat gateway in `ai-dev` via Argo CD (`gateway-inference-dev`; ClusterIP `:8000`, NodePort `30180`) |
 | `manifests/gateway-embedding/overlays/dev` | Embedding gateway in `ai-dev` via Argo CD (`gateway-embedding-dev`; NodePort `30181` → vLLM `:8001`) |
 | `manifests/gateway-reranker/overlays/dev` | Reranker gateway in `ai-dev` via Argo CD (`gateway-reranker-dev`; NodePort `30182` → backend `:8002`) |
@@ -23,10 +24,9 @@ Manifests and scripts for:
 | `manifests/orchestrator/` | Orchestrator in `ai-dev` (Argo CD `orchestrator-dev`; NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
 | `manifests/gateway-api/overlays/dev` | Gateway API (FastAPI edge) in `ai-dev` via Argo CD (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
 | `manifests/web/overlays/dev` | Next.js web UI in `ai-dev` via Argo CD (`web-dev`; ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
-| `manifests/ingress/cloudflared-dev.yaml` | Cloudflare Tunnel in `ai-dev` → `dev.taixingai.com` (web), `argocd.taixingai.com` (Argo CD) ([docs/deploy-dev-cloudflare-tunnel.md](docs/deploy-dev-cloudflare-tunnel.md)) |
+| `manifests/ingress/` | Cloudflare Tunnel in `ai-dev` via Argo CD (`cloudflared-dev`; `dev.taixingai.com`, `argocd.taixingai.com`) |
 | `manifests/tool/` | GitHub MCP tool in `ai-dev` (Argo CD `mcp-github-dev`; NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
-| `manifests/observability/prometheus-grafana.yaml` | Prometheus + Grafana Cloud remote_write |
-| `manifests/observability/alloy-loki-cloud.yaml` | Alloy DaemonSet logs -> Grafana Cloud Loki |
+| `manifests/observability/` | Prometheus + Alloy via Argo CD (`observability`; Grafana Cloud remote_write + Loki) |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |
 | `grafana-import/alert/prometheus-alert-rules.yaml` | Prometheus-format alert rules |
 | `tmp.md` / `tmp/` | Local scratch (gitignored; never store real secrets) |
