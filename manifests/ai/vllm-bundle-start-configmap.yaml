@@ -51,8 +51,20 @@ data:
 
   healthcheck.py: |
     import sys
+    import urllib.error
     import urllib.request
 
-    for port in (8000, 8001, 8002):
-        urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=3)
+    endpoints = (("chat", 8000), ("embed", 8001), ("rerank", 8002))
+    failed = []
+    for name, port in endpoints:
+        url = f"http://127.0.0.1:{port}/health"
+        try:
+            urllib.request.urlopen(url, timeout=3)
+            print(f"ok {name} {url}")
+        except (urllib.error.URLError, TimeoutError) as e:
+            print(f"FAIL {name} {url}: {e}", file=sys.stderr)
+            failed.append(name)
+    if failed:
+        print(f"not ready: {', '.join(failed)}", file=sys.stderr)
+        sys.exit(1)
     sys.exit(0)
