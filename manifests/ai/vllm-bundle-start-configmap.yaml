@@ -1,0 +1,59 @@
+# Entrypoint for vLLM bundle (C1): one container, three vLLM processes on one GPU.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vllm-bundle-start
+  namespace: ai
+data:
+  start-vllm-bundle.sh: |
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    log() { echo "[bundle] $*"; }
+
+    trap 'log "shutting down"; jobs -p | xargs -r kill 2>/dev/null || true' EXIT TERM INT
+
+    log "starting embed (BAAI/bge-m3) on :8001"
+    vllm serve BAAI/bge-m3 \
+      --host 0.0.0.0 --port 8001 \
+      --task embed \
+      --gpu-memory-utilization 0.15 \
+      --max-model-len 8192 \
+      2>&1 | sed -u 's/^/[embed] /' &
+
+    log "starting rerank (BAAI/bge-reranker-v2-m3) on :8002"
+    vllm serve BAAI/bge-reranker-v2-m3 \
+      --host 0.0.0.0 --port 8002 \
+      --task score \
+      --gpu-memory-utilization 0.10 \
+      --max-model-len 512 \
+      2>&1 | sed -u 's/^/[rerank] /' &
+
+    log "starting chat (Qwen2.5-7B-Instruct + LoRA) on :8000"
+    vllm serve Qwen/Qwen2.5-7B-Instruct \
+      --host 0.0.0.0 --port 8000 \
+      --gpu-memory-utilization 0.50 \
+      --max-model-len 3072 \
+      --max-num-seqs 4 \
+      --enable-lora \
+      --max-lora-rank 64 \
+      --max-loras 4 \
+      --lora-modules router-qwen2.5-7b-sft-v1.00=taixingbi/router-qwen2.5-7b-sft-v1.00 \
+      --lora-modules router-qwen2.5-7b-dpo-v1.00=taixingbi/router-qwen2.5-7b-dpo-v1.00 \
+      2>&1 | sed -u 's/^/[chat] /' &
+
+    log "all vLLM processes launched; waiting for any exit"
+    while true; do
+      if ! wait -n; then
+        log "a vLLM process exited with error"
+        exit 1
+      fi
+    done
+
+  healthcheck.py: |
+    import sys
+    import urllib.request
+
+    for port in (8000, 8001, 8002):
+        urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=3)
+    sys.exit(0)

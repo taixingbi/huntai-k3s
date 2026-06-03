@@ -190,7 +190,7 @@ If you later protect `argocd.taixingai.com` with Cloudflare Access, keep `/api/w
 ```
 argocd/app-of-apps.yaml              # one-time bootstrap → Application huntai-apps
 argocd/applications/                 # child Application CRs (kustomization.yaml lists all)
-manifests/ai/                          # vLLM + vllm-host-backends (vllm-inference)
+manifests/ai/                          # vLLM bundle chat+embed+rerank (vllm-inference)
 manifests/qdrant/overlays/dev/       # qdrant-dev
 manifests/observability/             # Prometheus + Alloy (observability)
 manifests/gateway-*/overlays/dev/    # inference, embedding, reranker, api gateways

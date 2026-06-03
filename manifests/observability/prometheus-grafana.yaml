@@ -7,8 +7,8 @@
 #   - workload=gateway-api: FastAPI edge gateway /metrics (Service layer-gateway-api, ai-dev)
 #   - workload=rag-query: RAG query FastMCP HTTP /metrics (Service layer-rag-query, ai-dev) when exposed by the image
 #   - workload=gpu-telemetry: DCGM per-GPU metrics (gpu-operator)
-#   - workload=embedding: vLLM embed on node LAN :8001 (static targets; pod→host routing)
-#   - workload=reranker: vLLM reranker on node LAN :8002 (static targets; pod→host routing)
+#   - workload=embedding: vLLM embed per-node Services vllm-embed-gpu-node-* (ai)
+#   - workload=reranker: vLLM rerank per-node Services vllm-rerank-gpu-node-* (ai)
 # Stack aligns with: https://github.com/taixingbi/layer-observability-grafana
 # Pod logs → Grafana Cloud Loki: companion manifest `alloy-loki-cloud.yaml` (Alloy DaemonSet, loki.write).
 #
@@ -217,45 +217,65 @@ data:
           - target_label: workload
             replacement: gpu-telemetry
 
-      # vLLM embedding (BGE etc.): host:port on GPU nodes; aligns with layer-observability static jobs.
-      - job_name: vllm-embedding-gpu-node-1
+      # vLLM embedding (BGE): one target per bundle pod via per-node Services.
+      - job_name: vllm-embedding
         metrics_path: /metrics
-        static_configs:
-          - targets: ["192.168.86.173:8001"]
-            labels:
-              node: gpu-node-1
-              workload: embedding
-              service: embedding
-              model: BAAI/bge-m3
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - ai
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: vllm-embed-gpu-node-.*
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: kubernetes_node
+          - source_labels: [__meta_kubernetes_service_name]
+            regex: vllm-embed-gpu-node-(.*)
+            target_label: node
+            replacement: gpu-node-$1
+          - target_label: workload
+            replacement: embedding
+          - target_label: service
+            replacement: embedding
+          - target_label: model
+            replacement: BAAI/bge-m3
 
-      - job_name: vllm-embedding-gpu-node-2
+      # vLLM reranker: one target per bundle pod via per-node Services.
+      - job_name: vllm-reranker
         metrics_path: /metrics
-        static_configs:
-          - targets: ["192.168.86.176:8001"]
-            labels:
-              node: gpu-node-2
-              workload: embedding
-              service: embedding
-              model: BAAI/bge-m3
-
-      # vLLM reranker: host:port on GPU nodes.
-      - job_name: vllm-reranker-gpu-node-1
-        metrics_path: /metrics
-        static_configs:
-          - targets: ["192.168.86.173:8002"]
-            labels:
-              node: gpu-node-1
-              workload: reranker
-              service: reranker
-
-      - job_name: vllm-reranker-gpu-node-2
-        metrics_path: /metrics
-        static_configs:
-          - targets: ["192.168.86.176:8002"]
-            labels:
-              node: gpu-node-2
-              workload: reranker
-              service: reranker
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - ai
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_name]
+            action: keep
+            regex: vllm-rerank-gpu-node-.*
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: kubernetes_pod_name
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            target_label: kubernetes_node
+          - source_labels: [__meta_kubernetes_service_name]
+            regex: vllm-rerank-gpu-node-(.*)
+            target_label: node
+            replacement: gpu-node-$1
+          - target_label: workload
+            replacement: reranker
+          - target_label: service
+            replacement: reranker
 ---
 apiVersion: v1
 kind: Secret

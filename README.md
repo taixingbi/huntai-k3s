@@ -17,7 +17,7 @@ Manifests and scripts for:
 | `scripts/install-nvidia-gpu-operator.sh` | Install GPU Operator for k3s containerd |
 | `manifests/gpu/gpu-vectoradd-sample.yaml` | One-shot GPU smoke test (`nvidia-smi`) |
 | `manifests/qdrant/overlays/dev` | Qdrant in `ai-dev` via Argo CD (`qdrant-dev`; ClusterIP `:6333`) |
-| `manifests/ai/` | vLLM inference + host-backend Services in `ai` via Argo CD (`vllm-inference`) |
+| `manifests/ai/` | vLLM bundle (chat+embed+rerank per GPU node) in `ai` via Argo CD (`vllm-inference`) |
 | `manifests/gateway-inference/overlays/dev` | Chat gateway in `ai-dev` via Argo CD (`gateway-inference-dev`; ClusterIP `:8000`, NodePort `30180`) |
 | `manifests/gateway-embedding/overlays/dev` | Embedding gateway in `ai-dev` via Argo CD (`gateway-embedding-dev`; NodePort `30181` → vLLM `:8001`) |
 | `manifests/gateway-reranker/overlays/dev` | Reranker gateway in `ai-dev` via Argo CD (`gateway-reranker-dev`; NodePort `30182` → backend `:8002`) |

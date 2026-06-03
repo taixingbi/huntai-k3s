@@ -1,0 +1,279 @@
+# Per-GPU-node vLLM bundle (C1): one Pod, one container, three vLLM processes (chat/embed/rerank).
+# GPU nodes: gpu-node-1, gpu-node-2. See docs/deploy-vllm-inference.md for rollout and VRAM tuning.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-bundle-gpu-node-1
+  namespace: ai
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+spec:
+  progressDeadlineSeconds: 1800
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: vllm-bundle
+      vllm-node: gpu-node-1
+  template:
+    metadata:
+      labels:
+        app: vllm-bundle
+        vllm-node: gpu-node-1
+    spec:
+      automountServiceAccountToken: false
+      runtimeClassName: nvidia
+      dnsPolicy: Default
+      nodeSelector:
+        kubernetes.io/hostname: gpu-node-1
+      containers:
+        - name: vllm-bundle
+          image: vllm/vllm-openai:latest
+          command: ["/bin/bash", "/scripts/start-vllm-bundle.sh"]
+          ports:
+            - name: chat-http
+              containerPort: 8000
+            - name: embed-http
+              containerPort: 8001
+            - name: rerank-http
+              containerPort: 8002
+          env:
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+            requests:
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: bundle-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: dshm
+              mountPath: /dev/shm
+          startupProbe:
+            exec:
+              command: ["python3", "/scripts/healthcheck.py"]
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 120
+          readinessProbe:
+            exec:
+              command: ["python3", "/scripts/healthcheck.py"]
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["python3", "/scripts/healthcheck.py"]
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 5
+      volumes:
+        - name: bundle-scripts
+          configMap:
+            name: vllm-bundle-start
+            defaultMode: 0755
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm-bundle-gpu-node-2
+  namespace: ai
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+spec:
+  progressDeadlineSeconds: 1800
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: vllm-bundle
+      vllm-node: gpu-node-2
+  template:
+    metadata:
+      labels:
+        app: vllm-bundle
+        vllm-node: gpu-node-2
+    spec:
+      automountServiceAccountToken: false
+      runtimeClassName: nvidia
+      dnsPolicy: Default
+      nodeSelector:
+        kubernetes.io/hostname: gpu-node-2
+      containers:
+        - name: vllm-bundle
+          image: vllm/vllm-openai:latest
+          command: ["/bin/bash", "/scripts/start-vllm-bundle.sh"]
+          ports:
+            - name: chat-http
+              containerPort: 8000
+            - name: embed-http
+              containerPort: 8001
+            - name: rerank-http
+              containerPort: 8002
+          env:
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+            requests:
+              nvidia.com/gpu: "1"
+          volumeMounts:
+            - name: bundle-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: dshm
+              mountPath: /dev/shm
+          startupProbe:
+            exec:
+              command: ["python3", "/scripts/healthcheck.py"]
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 120
+          readinessProbe:
+            exec:
+              command: ["python3", "/scripts/healthcheck.py"]
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["python3", "/scripts/healthcheck.py"]
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 5
+      volumes:
+        - name: bundle-scripts
+          configMap:
+            name: vllm-bundle-start
+            defaultMode: 0755
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 16Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-inference
+  namespace: ai
+  labels:
+    app: vllm-bundle
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+  ports:
+    - name: http
+      port: 8000
+      targetPort: chat-http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inference-qwen25-7b
+  namespace: ai
+  labels:
+    app: vllm-bundle
+spec:
+  type: NodePort
+  selector:
+    app: vllm-bundle
+  ports:
+    - name: http
+      port: 8000
+      targetPort: chat-http
+      nodePort: 30080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-embed-gpu-node-1
+  namespace: ai
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+  ports:
+    - name: http
+      port: 8001
+      targetPort: embed-http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-embed-gpu-node-2
+  namespace: ai
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+  ports:
+    - name: http
+      port: 8001
+      targetPort: embed-http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-rerank-gpu-node-1
+  namespace: ai
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+  ports:
+    - name: http
+      port: 8002
+      targetPort: rerank-http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-rerank-gpu-node-2
+  namespace: ai
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+  ports:
+    - name: http
+      port: 8002
+      targetPort: rerank-http

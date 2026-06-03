@@ -2,9 +2,9 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 
 **Dev** rows are deployed via Argo CD. **qa** / **prod** rows are **reserved** (no overlays yet).
 
-30080 → inference (vLLM) 
-30081 → embedding (vLLM) — reserved (host :8001 today)
-30082 → reranker (vLLM) — reserved (host :8002 today)
+30080 → inference / chat (vLLM bundle NodePort)
+30081 → embedding (vLLM) — in-cluster `vllm-embed-gpu-node-*:8001` (no NodePort)
+30082 → reranker (vLLM) — in-cluster `vllm-rerank-gpu-node-*:8002` (no NodePort)
 
 30180 → gateway-inference (dev) 
 30280 → gateway-inference (qa) — reserved
