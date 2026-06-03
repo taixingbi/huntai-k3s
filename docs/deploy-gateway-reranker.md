@@ -6,7 +6,7 @@ Endpoints: `POST /v1/rerank`, `GET /health`, `GET /ready`, `GET /version`, `GET 
 
 ## 1) Configure backends (no `secretRef`)
 
-The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-reranker/base/deployment.yaml`. The key variable for rerank traffic is **`RERANK_BACKENDS`** (`name=url,name=url`) and defaults to GPU-node reranker backends on `:8002`.
+The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-reranker/base/deployment.yaml`. The key variable for rerank traffic is **`RERANK_BACKENDS`** (`name=url,name=url`). Defaults use in-cluster DNS for host vLLM rerank on GPU nodes (`vllm-rerank-gpu-node-*.ai.svc.cluster.local:8002`; see `manifests/ai/vllm-host-backends.yaml`).
 
 ```bash
 # optional: confirm RERANK_BACKENDS on the live Deployment

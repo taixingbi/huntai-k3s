@@ -29,12 +29,12 @@ data:
 
     backends:
       - name: gpu-node-1
-        url: http://192.168.86.173:30080
+        url: http://vllm-inference.ai.svc.cluster.local:8000
         soft_limit: 20
         hard_limit: 28
         drained: false
       - name: gpu-node-2
-        url: http://192.168.86.176:30080
+        url: http://vllm-inference.ai.svc.cluster.local:8000
         soft_limit: 20
         hard_limit: 28
         drained: false

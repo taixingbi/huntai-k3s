@@ -16,7 +16,8 @@ Manifests and scripts for:
 | `scripts/install-k3s-agent.sh` | Join an agent with `K3S_URL` + `K3S_TOKEN` |
 | `scripts/install-nvidia-gpu-operator.sh` | Install GPU Operator for k3s containerd |
 | `manifests/gpu/gpu-vectoradd-sample.yaml` | One-shot GPU smoke test (`nvidia-smi`) |
-| `manifests/ai/` | vLLM inference in `ai` via Argo CD (`vllm-inference`; NodePort `30080`) |
+| `manifests/qdrant/overlays/dev` | Qdrant in `ai-dev` via Argo CD (`qdrant-dev`; ClusterIP `:6333`) |
+| `manifests/ai/` | vLLM inference + host-backend Services in `ai` via Argo CD (`vllm-inference`) |
 | `manifests/gateway-inference/overlays/dev` | Chat gateway in `ai-dev` via Argo CD (`gateway-inference-dev`; ClusterIP `:8000`, NodePort `30180`) |
 | `manifests/gateway-embedding/overlays/dev` | Embedding gateway in `ai-dev` via Argo CD (`gateway-embedding-dev`; NodePort `30181` → vLLM `:8001`) |
 | `manifests/gateway-reranker/overlays/dev` | Reranker gateway in `ai-dev` via Argo CD (`gateway-reranker-dev`; NodePort `30182` → backend `:8002`) |
@@ -29,7 +30,8 @@ Manifests and scripts for:
 | `manifests/observability/` | Prometheus + Alloy via Argo CD (`observability`; Grafana Cloud remote_write + Loki) |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |
 | `grafana-import/alert/prometheus-alert-rules.yaml` | Prometheus-format alert rules |
-| `tmp.md` / `tmp/` | Local scratch (gitignored; never store real secrets) |
+| `docs/cluster-secrets.md` | One-time secret bootstrap checklist |
+| `docs/backup-restore.md` | Qdrant, Prometheus PVC, secrets, tunnel backup |
 
 ## Prerequisites
 

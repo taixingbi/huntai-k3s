@@ -19,12 +19,12 @@ Upstream: [schema.md](https://github.com/taixingbi/layer-rag-query-v1/blob/main/
 
 **Collection naming:** manifest sets `ENV=dev`; `collection_base` `taixing_knowledge` resolves to Qdrant collection `taixing_knowledge_dev`.
 
-Environment variables follow upstream [`app/core/config.py`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/app/core/config.py) and [`.env.example`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/.env.example). The dev manifest uses in-cluster Service DNS for embedding, reranker, and inference gateways (`http://layer-gateway-*:8000`). Qdrant stays on LAN (`192.168.86.179:6333`) until in-cluster. Smoke curls below use NodePort `30183` on the control plane.
+Environment variables follow upstream [`app/core/config.py`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/app/core/config.py) and [`.env.example`](https://github.com/taixingbi/layer-rag-query-v1/blob/main/.env.example). The dev manifest uses in-cluster Service DNS for Qdrant (`http://qdrant:6333`) and gateways (`http://layer-gateway-*:8000`). Smoke curls below use NodePort `30183` on the control plane.
 
 ## Prerequisites
 
-- Qdrant reachable at `QDRANT_URL` (manifest default: `http://192.168.86.179:6333` — adjust if yours differs).
-- Gateway Services in `ai-dev`: `layer-gateway-embedding`, `layer-gateway-reranker`, `layer-gateway-inference` (Argo apps must be synced).
+- Qdrant in-cluster: Argo CD `qdrant-dev` synced ([deploy-qdrant.md](deploy-qdrant.md)).
+- Gateway Services in `ai-dev`: `layer-gateway-embedding`, `layer-gateway-reranker`, `layer-gateway-inference`.
 - Port map: [port.md](port.md) (`30183` dev for LAN smoke tests).
 
 ## 1) Configure env (no `secretRef` by default)
@@ -34,6 +34,7 @@ Edit [manifests/rag/base/deployment.yaml](../manifests/rag/base/deployment.yaml)
 | Variable | Dev manifest |
 |----------|----------------|
 | `ENV` | `dev` |
+| `QDRANT_URL` | `http://qdrant:6333` |
 | `EMBEDDING_URL` | `http://layer-gateway-embedding:8000` |
 | `RERANK_URL` | `http://layer-gateway-reranker:8000` |
 | `INFERENCE_URL` | `http://layer-gateway-inference:8000` |
@@ -239,6 +240,8 @@ From a host on the LAN, verify backends the manifest points at (adjust IP if nee
 ```bash
 # Qdrant
 curl -sS http://192.168.86.179:6333/collections | jq -r '.result.collections[].name' | grep taixing_knowledge_dev
+# in-cluster Qdrant (from a debug pod or after port-forward):
+# curl -sS http://qdrant.ai-dev.svc.cluster.local:6333/collections | jq .
 
 # Embedding gateway (30181)
 curl -sS -X POST http://192.168.86.179:30181/v1/embeddings \

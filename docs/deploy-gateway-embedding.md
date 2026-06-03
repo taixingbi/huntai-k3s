@@ -6,7 +6,7 @@ Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `
 
 ## 1) Configure backends (no `secretRef`)
 
-The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-embedding/base/deployment.yaml` (same names as upstream [.env.example](https://github.com/taixingbi/layer-gateway-embed-v1/blob/main/.env.example)). The important variable is **`EMBED_BACKENDS`** (`name=url,name=url`). Defaults point at vLLM embed on the GPU nodes at `:8001`, consistent with `manifests/observability/prometheus-grafana.yaml` static targets. Edit the GitOps manifest and push to `main`.
+The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-embedding/base/deployment.yaml` (same names as upstream [.env.example](https://github.com/taixingbi/layer-gateway-embed-v1/blob/main/.env.example)). The important variable is **`EMBED_BACKENDS`** (`name=url,name=url`). Defaults use in-cluster DNS for host vLLM embed on GPU nodes (`vllm-embed-gpu-node-*.ai.svc.cluster.local:8001`; see `manifests/ai/vllm-host-backends.yaml`). Edit the GitOps manifest and push to `main`.
 
 ```bash
 # optional: confirm EMBED_BACKENDS on the live Deployment

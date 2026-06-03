@@ -1,21 +1,26 @@
-# layer-web-v1 — Next.js 15 BFF (/api/v1/* -> layer-gateway-api).
+# Qdrant vector DB for RAG (dev). PVC on local-path; prefer control plane for data locality.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: layer-web
+  name: qdrant
   labels:
+    app: qdrant
     environment: dev
 spec:
   replicas: 1
   revisionHistoryLimit: 3
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
-      app: layer-web
+      app: qdrant
   template:
     metadata:
       labels:
+        app: qdrant
         environment: dev
     spec:
+      automountServiceAccountToken: false
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -26,49 +31,40 @@ spec:
                     operator: In
                     values:
                       - server-node-1
-      automountServiceAccountToken: false
       containers:
-        - name: web
-          image: ghcr.io/taixingbi/layer-web-v1:bb1bba22e477
-          imagePullPolicy: Always
+        - name: qdrant
+          image: qdrant/qdrant:v1.12.5
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
-              containerPort: 3000
-          env:
-            - name: PORT
-              value: "3000"
-            - name: HOSTNAME
-              value: "0.0.0.0"
-            - name: APP_URL
-              value: "https://dev.taixingai.com"
-            - name: GATEWAY_BASE_URL
-              value: "http://layer-gateway-api:8000"
-            - name: WEB_SERVICE_NAME
-              value: "layer-web"
-            - name: AUTH_SESSION_MAX_AGE_SECONDS
-              value: "3600"
-            - name: COOKIE_SECURE
-              value: "true"
+              containerPort: 6333
+            - name: grpc
+              containerPort: 6334
           readinessProbe:
             httpGet:
-              path: /
+              path: /readyz
               port: http
-            initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
           livenessProbe:
             httpGet:
-              path: /
+              path: /livez
               port: http
-            initialDelaySeconds: 20
             periodSeconds: 30
             timeoutSeconds: 5
             failureThreshold: 3
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 512Mi
             limits:
               cpu: "2"
-              memory: 512Mi
+              memory: 2Gi
+          volumeMounts:
+            - name: storage
+              mountPath: /qdrant/storage
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: qdrant-data

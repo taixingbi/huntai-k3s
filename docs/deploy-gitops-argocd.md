@@ -239,7 +239,7 @@ argocd/app-of-apps.yaml                         # Bootstrap all Applications (on
 
 ## Secrets
 
-Never commit secrets. Create cluster secrets manually before sync (e.g. `layer-gateway-api-secrets`, `layer-orchestrator-secrets` in `ai-dev`; `cloudflared-tunnel-credentials` in `ai-dev`; Grafana Cloud secrets in `monitoring`). See [deploy-gateway-api.md](deploy-gateway-api.md) §1, [deploy-orchestrator.md](deploy-orchestrator.md) §1, [deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md), [deploy-prometheus.md](deploy-prometheus.md), [deploy-alloy-loki.md](deploy-alloy-loki.md).
+Never commit secrets. Create cluster secrets manually before sync — see [cluster-secrets.md](cluster-secrets.md). State backup: [backup-restore.md](backup-restore.md).
 
 ## Rollout order (sync waves)
 
@@ -249,7 +249,7 @@ Argo CD sync waves order cold start roughly as:
 |------|------------------|---------------|
 | 0 | `vllm-inference` | `manifests/ai` |
 | 1 | `observability` | `manifests/observability` |
-| 2 | `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev` | `manifests/gateway-*/overlays/dev` |
+| 2 | `qdrant-dev`, `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev` | `manifests/qdrant/overlays/dev`, `manifests/gateway-*/overlays/dev` |
 | 3 | `rag-query-dev`, `mcp-github-dev` | `manifests/rag/overlays/dev`, `manifests/tool/overlays/dev` |
 | 4 | `orchestrator-dev` | `manifests/orchestrator/overlays/dev` |
 | 5 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev` |

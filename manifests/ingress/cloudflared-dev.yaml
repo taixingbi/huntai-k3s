@@ -56,8 +56,16 @@ spec:
         app: cloudflared
         environment: dev
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: server-node-1
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - server-node-1
       automountServiceAccountToken: false
       containers:
         - name: cloudflared

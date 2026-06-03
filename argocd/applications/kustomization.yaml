@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - vllm-inference.yaml
   - observability.yaml
+  - qdrant-dev.yaml
   - gateway-inference-dev.yaml
   - gateway-embedding-dev.yaml
   - gateway-reranker-dev.yaml
