@@ -32,6 +32,7 @@ spec:
         vllm-node: gpu-node-1
     spec:
       automountServiceAccountToken: false
+      enableServiceLinks: false
       runtimeClassName: nvidia
       dnsPolicy: Default
       nodeSelector:
@@ -118,6 +119,7 @@ spec:
       automountServiceAccountToken: false
       runtimeClassName: nvidia
       dnsPolicy: Default
+      enableServiceLinks: false
       nodeSelector:
         kubernetes.io/hostname: gpu-node-2
       containers:

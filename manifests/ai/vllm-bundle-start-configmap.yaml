@@ -13,21 +13,21 @@ data:
 
     trap 'log "shutting down"; jobs -p | xargs -r kill 2>/dev/null || true' EXIT TERM INT
 
+    # vLLM 0.22: no --task on "vllm serve"; pooling/rerank models auto-detect.
     log "starting embed (BAAI/bge-m3) on :8001"
     vllm serve BAAI/bge-m3 \
       --host 0.0.0.0 --port 8001 \
-      --task embed \
+      --hf-overrides '{"architectures": ["BgeM3EmbeddingModel"]}' \
       --gpu-memory-utilization 0.15 \
       --max-model-len 8192 \
-      2>&1 | sed -u 's/^/[embed] /' &
+      &
 
     log "starting rerank (BAAI/bge-reranker-v2-m3) on :8002"
     vllm serve BAAI/bge-reranker-v2-m3 \
       --host 0.0.0.0 --port 8002 \
-      --task score \
       --gpu-memory-utilization 0.10 \
       --max-model-len 512 \
-      2>&1 | sed -u 's/^/[rerank] /' &
+      &
 
     log "starting chat (Qwen2.5-7B-Instruct + LoRA) on :8000"
     vllm serve Qwen/Qwen2.5-7B-Instruct \
@@ -38,9 +38,8 @@ data:
       --enable-lora \
       --max-lora-rank 64 \
       --max-loras 4 \
-      --lora-modules router-qwen2.5-7b-sft-v1.00=taixingbi/router-qwen2.5-7b-sft-v1.00 \
-      --lora-modules router-qwen2.5-7b-dpo-v1.00=taixingbi/router-qwen2.5-7b-dpo-v1.00 \
-      2>&1 | sed -u 's/^/[chat] /' &
+      --lora-modules router-qwen2.5-7b-sft-v1.00=taixingbi/router-qwen2.5-7b-sft-v1.00 router-qwen2.5-7b-dpo-v1.00=taixingbi/router-qwen2.5-7b-dpo-v1.00 \
+      &
 
     log "all vLLM processes launched; waiting for any exit"
     while true; do
