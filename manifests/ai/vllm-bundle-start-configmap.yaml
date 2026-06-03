@@ -17,7 +17,8 @@ data:
     # On a 24GB GPU, each process uses gpu-memory-utilization * full VRAM independently;
     # keep sum ~0.95 and start small models before chat (chat weights ~15.5GiB + KV).
     wait_for_health() {
-      local port="$1" name="$2" max_attempts="${3:-180}"
+      # 5s sleep between attempts; cold HF pulls for bge-m3 can exceed 15m.
+      local port="$1" name="$2" max_attempts="${3:-360}"
       for ((i = 1; i <= max_attempts; i++)); do
         if python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${port}/health', timeout=3)" 2>/dev/null; then
           log "$name ready on :$port"
@@ -44,10 +45,10 @@ data:
       --max-model-len 512 \
       &
 
-    log "waiting for embed /health on :8001 (up to 15m)"
-    wait_for_health 8001 embed
-    log "waiting for rerank /health on :8002 (up to 15m)"
-    wait_for_health 8002 rerank
+    log "waiting for embed /health on :8001 (up to 40m)"
+    wait_for_health 8001 embed 480
+    log "waiting for rerank /health on :8002 (up to 30m)"
+    wait_for_health 8002 rerank 360
 
     # Chat: embed+rerank leave ~3–4GiB used; vLLM checks util * total_VRAM <= free at startup.
     # On a 24GB card with ~20GiB free, util must stay ~<=0.84 (0.86 needs 20.26GiB and fails init).

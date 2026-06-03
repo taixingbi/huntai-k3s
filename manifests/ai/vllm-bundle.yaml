@@ -14,7 +14,7 @@ metadata:
     app: vllm-bundle
     vllm-node: gpu-node-1
 spec:
-  progressDeadlineSeconds: 1800
+  progressDeadlineSeconds: 7200
   replicas: 1
   strategy:
     type: RollingUpdate
@@ -67,7 +67,8 @@ spec:
               command: ["python3", "/scripts/healthcheck.py"]
             periodSeconds: 15
             timeoutSeconds: 10
-            failureThreshold: 120
+            # Cold start: embed HF ~20m + rerank + chat load; 360*15s = 90m budget.
+            failureThreshold: 360
           readinessProbe:
             exec:
               command: ["python3", "/scripts/healthcheck.py"]
@@ -99,7 +100,7 @@ metadata:
     app: vllm-bundle
     vllm-node: gpu-node-2
 spec:
-  progressDeadlineSeconds: 1800
+  progressDeadlineSeconds: 7200
   replicas: 1
   strategy:
     type: RollingUpdate
@@ -152,7 +153,7 @@ spec:
               command: ["python3", "/scripts/healthcheck.py"]
             periodSeconds: 15
             timeoutSeconds: 10
-            failureThreshold: 120
+            failureThreshold: 360
           readinessProbe:
             exec:
               command: ["python3", "/scripts/healthcheck.py"]
