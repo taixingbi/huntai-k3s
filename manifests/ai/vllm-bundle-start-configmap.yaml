@@ -50,20 +50,14 @@ data:
     log "waiting for rerank /health on :8002 (up to 30m)"
     wait_for_health 8002 rerank 360
 
-    # Chat: embed+rerank leave ~3–4GiB used; vLLM checks util * total_VRAM <= free at startup.
-    # On a 24GB card with ~20GiB free, util must stay ~<=0.84 (0.86 needs 20.26GiB and fails init).
-    # enforce-eager avoids extra CUDA-graph reservation; max-loras 2 matches the two router adapters.
-    log "starting chat (Qwen2.5-7B-Instruct + LoRA) on :8000"
+    # Chat: base Qwen only (LoRA disabled until bundle is stable on 24GB). util 0.8 fits free VRAM after embed/rerank.
+    log "starting chat (Qwen2.5-7B-Instruct) on :8000"
     vllm serve Qwen/Qwen2.5-7B-Instruct \
       --host 0.0.0.0 --port 8000 \
-      --gpu-memory-utilization 0.84 \
+      --gpu-memory-utilization 0.8 \
       --max-model-len 2048 \
       --max-num-seqs 1 \
       --enforce-eager \
-      --enable-lora \
-      --max-lora-rank 64 \
-      --max-loras 2 \
-      --lora-modules router-qwen2.5-7b-sft-v1.00=taixingbi/router-qwen2.5-7b-sft-v1.00 router-qwen2.5-7b-dpo-v1.00=taixingbi/router-qwen2.5-7b-dpo-v1.00 \
       &
 
     log "all vLLM processes launched; waiting for any exit"

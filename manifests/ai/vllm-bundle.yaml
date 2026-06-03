@@ -49,6 +49,8 @@ spec:
             - name: rerank-http
               containerPort: 8002
           env:
+            - name: HF_HOME
+              value: /root/.cache/huggingface
             - name: HF_HUB_ENABLE_HF_TRANSFER
               value: "1"
           resources:
@@ -62,6 +64,8 @@ spec:
               readOnly: true
             - name: dshm
               mountPath: /dev/shm
+            - name: hf-cache
+              mountPath: /root/.cache/huggingface
           startupProbe:
             exec:
               command: ["python3", "/scripts/healthcheck.py"]
@@ -90,6 +94,10 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 16Gi
+        - name: hf-cache
+          hostPath:
+            path: /data/hf-cache
+            type: DirectoryOrCreate
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -135,6 +143,8 @@ spec:
             - name: rerank-http
               containerPort: 8002
           env:
+            - name: HF_HOME
+              value: /root/.cache/huggingface
             - name: HF_HUB_ENABLE_HF_TRANSFER
               value: "1"
           resources:
@@ -148,6 +158,8 @@ spec:
               readOnly: true
             - name: dshm
               mountPath: /dev/shm
+            - name: hf-cache
+              mountPath: /root/.cache/huggingface
           startupProbe:
             exec:
               command: ["python3", "/scripts/healthcheck.py"]
@@ -175,6 +187,10 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 16Gi
+        - name: hf-cache
+          hostPath:
+            path: /data/hf-cache
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
