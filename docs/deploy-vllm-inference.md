@@ -6,7 +6,7 @@ Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node
 
 | Port | Role | Model |
 |------|------|--------|
-| 8000 | chat | `Qwen/Qwen2.5-7B-Instruct` (LoRA off until stable) |
+| 8000 | chat | `Qwen/Qwen2.5-7B-Instruct` + router LoRAs (see below) |
 | 8001 | embed | `BAAI/bge-m3` (pooling; `--hf-overrides` for `BgeM3EmbeddingModel`) |
 | 8002 | rerank | `BAAI/bge-reranker-v2-m3` (`/v1/rerank`; vLLM 0.22 auto-detect) |
 
@@ -44,13 +44,13 @@ The bundle mounts `hostPath: /data/hf-cache` → `/root/.cache/huggingface` and 
 
 | Process | util | Notes |
 |---------|------|--------|
-| chat | 0.8 | Base Qwen only; `max-model-len` 2048, `max-num-seqs` 1, `--enforce-eager` |
+| chat | 0.84 | Base Qwen + 2 router LoRAs; `max-model-len` 2048, `max-num-seqs` 1, `--enforce-eager` |
 | embed | 0.08 | Started first; waits up to 40m for `/health` |
 | rerank | 0.05 | Waits up to 30m after embed ready |
 
 Chat starts only after embed and rerank pass `/health`. Each process uses util × **total** VRAM; on a 24GB 3090 with siblings loaded, util above ~0.84 can fail init (`Free memory ... less than desired`). Edit the ConfigMap script and roll out; any script change restarts the whole bundle on that node.
 
-If chat still fails: lower util (0.78), lower embed/rerank util, or re-enable LoRA only after stable (see below).
+If chat still fails: lower util (0.78–0.82), lower embed/rerank util, or disable LoRA temporarily.
 
 ## Migration from host / old chat Deployment
 
@@ -70,24 +70,24 @@ sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/he
 
 **Rollback:** revert Git commit; optionally restart host vLLM on previous ports.
 
-## Router SFT / DPO LoRA adapters (disabled for now)
+## Router SFT / DPO LoRA adapters
 
-LoRA is **off** in the bundle script to stabilize VRAM on 24GB GPUs. Chat serves only `Qwen/Qwen2.5-7B-Instruct`. Use that id in gateway/clients until LoRA is re-enabled.
-
-To add LoRA later, restore in `vllm-bundle-start-configmap.yaml` (after stable `nvidia-smi`):
-
-- `--enable-lora`, `--max-loras 2`, `--lora-modules` for:
+Chat loads two LoRA adapters via `--enable-lora` in `vllm-bundle-start-configmap.yaml`:
 
 | Model id | HF repo |
 |----------|---------|
 | `router-qwen2.5-7b-sft-v1.00` | `taixingbi/router-qwen2.5-7b-sft-v1.00` |
 | `router-qwen2.5-7b-dpo-v1.00` | `taixingbi/router-qwen2.5-7b-dpo-v1.00` |
 
-Then raise chat util cautiously (e.g. 0.82–0.84) and retest. Verify:
+Orchestrator **`ROUTER_MODEL`** defaults to `router-qwen2.5-7b-sft-v1.00` (override per request with `router_model` on eval). General chat/RAG synthesis still uses `Qwen/Qwen2.5-7B-Instruct`.
+
+Verify after rollout:
 
 ```bash
 curl -sS http://192.168.86.173:30080/v1/models | jq '.data[].id'
 ```
+
+Expect base Qwen plus both router LoRA ids. If init fails with `Free memory ... less than desired`, lower chat util to 0.82 or disable LoRA.
 
 **Merged weights (alternative):** `export_merge.py` and point chat `--model` at merged weights instead of `--enable-lora`.
 
