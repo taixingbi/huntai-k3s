@@ -66,7 +66,7 @@ data:
 
     trap 'log "shutting down"; jobs -p | xargs -r kill 2>/dev/null || true' EXIT TERM INT
 
-    # vLLM 0.22: no --task on "vllm serve"; pooling/rerank models auto-detect.
+    # vLLM: embed needs --runner pooling; rerank/score models auto-detect on latest images.
     # On a 24GB GPU, each process uses gpu-memory-utilization * full VRAM independently;
     # keep sum ~0.95 and start small models before chat (chat weights ~15.5GiB + KV).
     wait_for_health() {
@@ -84,10 +84,12 @@ data:
     }
 
     log "starting embed (BAAI/bge-m3) on :8001"
-    # Do not override architectures: BgeM3EmbeddingModel breaks /v1/embeddings (501).
-    # vLLM auto-detects BAAI/bge-m3 as XLMRobertaModel pooling (same as rerank auto-detect).
+    # Pooling runner + BgeM3EmbeddingModel: without --runner pooling, /v1/embeddings returns 501.
+    # hf-overrides loads sparse/colbert weights (see vLLM pooling_models/specific_models.md).
     vllm serve BAAI/bge-m3 \
       --host 0.0.0.0 --port 8001 \
+      --runner pooling \
+      --hf-overrides '{"architectures": ["BgeM3EmbeddingModel"]}' \
       --gpu-memory-utilization 0.08 \
       --max-model-len 8192 \
       &

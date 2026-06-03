@@ -7,7 +7,7 @@ Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node
 | Port | Role | Model |
 |------|------|--------|
 | 8000 | chat | `Qwen/Qwen2.5-7B-Instruct` + router LoRAs (see below) |
-| 8001 | embed | `BAAI/bge-m3` (pooling; vLLM auto-detect — do not override `architectures`) |
+| 8001 | embed | `BAAI/bge-m3` (`--runner pooling` + `--hf-overrides` for `BgeM3EmbeddingModel`) |
 | 8002 | rerank | `BAAI/bge-reranker-v2-m3` (`/v1/rerank`; vLLM 0.22 auto-detect) |
 
 Startup script: ConfigMap `vllm-bundle-start` → [`manifests/ai/vllm-bundle-start-configmap.yaml`](../manifests/ai/vllm-bundle-start-configmap.yaml).
