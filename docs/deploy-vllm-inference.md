@@ -38,6 +38,14 @@ sudo chmod 1777 /data/hf-cache   # or chown to the user the container runs as
 
 The bundle mounts `hostPath: /data/hf-cache` → `/root/.cache/huggingface` and sets `HF_HOME` to that path. Allow **~50–80GiB** free per node (Qwen + bge-m3 + reranker). If you previously ran vLLM on the host, you can bind the existing cache directory instead of an empty `/data/hf-cache`.
 
+**InitContainer `prefetch-hf-cache`** runs before the GPU container: `snapshot_download` for embed/rerank/chat (and optional router LoRAs when `PREFETCH_ROUTER_LORAS=true`) into the same hostPath. Skips re-download when blobs already exist; first cold node still needs network time but vLLM no longer pulls weights during GPU startup.
+
+```bash
+sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -c prefetch-hf-cache
+```
+
+For gated Hub repos, add `HF_TOKEN` to the init and main container (Secret optional).
+
 ## GPU memory (conservative defaults)
 
 `--gpu-memory-utilization` is a vLLM soft limit, not Kubernetes isolation:

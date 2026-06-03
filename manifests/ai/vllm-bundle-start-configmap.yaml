@@ -5,6 +5,59 @@ metadata:
   name: vllm-bundle-start
   namespace: ai
 data:
+  prefetch-hf-models.sh: |
+    #!/usr/bin/env bash
+    # InitContainer: snapshot_download into HF_HOME (hostPath) before vLLM holds the GPU.
+    set -euo pipefail
+    export HF_HOME="${HF_HOME:-/root/.cache/huggingface}"
+    mkdir -p "${HF_HOME}"
+    exec python3 -u /scripts/prefetch_hf_models.py
+
+  prefetch_hf_models.py: |
+    import os
+    import sys
+
+    from huggingface_hub import snapshot_download
+
+    def log(msg: str) -> None:
+        print(f"[prefetch] {msg}", flush=True)
+
+    def main() -> None:
+        cache_dir = os.environ.get("HF_HOME", "/root/.cache/huggingface")
+        os.makedirs(cache_dir, exist_ok=True)
+        token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
+
+        repos = [
+            "BAAI/bge-m3",
+            "BAAI/bge-reranker-v2-m3",
+            "Qwen/Qwen2.5-7B-Instruct",
+        ]
+        if os.environ.get("PREFETCH_ROUTER_LORAS", "false").lower() == "true":
+            repos.extend(
+                [
+                    "taixingbi/router-qwen2.5-7b-sft-v1.00",
+                    "taixingbi/router-qwen2.5-7b-dpo-v1.00",
+                ]
+            )
+
+        for repo_id in repos:
+            log(f"ensuring {repo_id} in {cache_dir}")
+            snapshot_download(
+                repo_id=repo_id,
+                cache_dir=cache_dir,
+                token=token,
+            )
+            log(f"ok {repo_id}")
+
+        log("all models present in cache")
+
+    if __name__ == "__main__":
+        try:
+            main()
+        except Exception as exc:
+            print(f"[prefetch] failed: {exc}", file=sys.stderr, flush=True)
+            raise
+
   start-vllm-bundle.sh: |
     #!/usr/bin/env bash
     set -euo pipefail

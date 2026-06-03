@@ -37,6 +37,31 @@ spec:
       dnsPolicy: Default
       nodeSelector:
         kubernetes.io/hostname: gpu-node-1
+      initContainers:
+        - name: prefetch-hf-cache
+          image: vllm/vllm-openai:latest
+          command: ["/bin/bash", "/scripts/prefetch-hf-models.sh"]
+          env:
+            - name: HF_HOME
+              value: /root/.cache/huggingface
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+            # Set false when chat runs without router LoRAs.
+            - name: PREFETCH_ROUTER_LORAS
+              value: "true"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+          volumeMounts:
+            - name: bundle-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: hf-cache
+              mountPath: /root/.cache/huggingface
       containers:
         - name: vllm-bundle
           image: vllm/vllm-openai:latest
@@ -71,7 +96,7 @@ spec:
               command: ["python3", "/scripts/healthcheck.py"]
             periodSeconds: 15
             timeoutSeconds: 10
-            # Cold start: embed HF ~20m + rerank + chat load; 360*15s = 90m budget.
+            # Init prefetch + vLLM load; 360*15s = 90m budget.
             failureThreshold: 360
           readinessProbe:
             exec:
@@ -131,6 +156,30 @@ spec:
       enableServiceLinks: false
       nodeSelector:
         kubernetes.io/hostname: gpu-node-2
+      initContainers:
+        - name: prefetch-hf-cache
+          image: vllm/vllm-openai:latest
+          command: ["/bin/bash", "/scripts/prefetch-hf-models.sh"]
+          env:
+            - name: HF_HOME
+              value: /root/.cache/huggingface
+            - name: HF_HUB_ENABLE_HF_TRANSFER
+              value: "1"
+            - name: PREFETCH_ROUTER_LORAS
+              value: "true"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "4"
+              memory: 8Gi
+          volumeMounts:
+            - name: bundle-scripts
+              mountPath: /scripts
+              readOnly: true
+            - name: hf-cache
+              mountPath: /root/.cache/huggingface
       containers:
         - name: vllm-bundle
           image: vllm/vllm-openai:latest
