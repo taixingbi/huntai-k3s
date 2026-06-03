@@ -55,7 +55,7 @@ spec:
             - name: ROUTER_MODEL
               value: "router-qwen2.5-7b-sft-v1.00"
             - name: ROUTER_PROMPT_VERSION
-              value: "router-v2.0.0"
+              value: "router-v2.01-compact"
             - name: LLM_API_KEY
               value: "not-used-in-dev"
             - name: RAG_HTTP_BASE_URL

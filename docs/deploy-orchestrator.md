@@ -56,6 +56,7 @@ Edit [manifests/orchestrator/base/deployment.yaml](../manifests/orchestrator/bas
 | `LLM_GATEWAY_BASE_URL` | `http://layer-gateway-inference:8000` |
 | `LLM_MODEL` | `Qwen/Qwen2.5-7B-Instruct` |
 | `ROUTER_MODEL` | `router-qwen2.5-7b-sft-v1.00` (vLLM LoRA id; DPO: `router-qwen2.5-7b-dpo-v1.00`) |
+| `ROUTER_PROMPT_VERSION` | `router-v2.01-compact` (fits vLLM `max-model-len` 2048 with history) |
 | `RAG_HTTP_BASE_URL` | `http://layer-rag-query:8000` |
 | `RAG_COLLECTION_BASE` | `taixing_knowledge` |
 | `RAG_K` / `RAG_K_MAX` | `5` / `40` |
