@@ -13,7 +13,8 @@ data:
     scheduler:
       tick_ms: 10
       queue_max_size: 500
-      queue_max_age_ms: 2000
+      # Allow scheduler time to assign a backend; 2s caused queue_age_fallback → OpenAI.
+      queue_max_age_ms: 30000
       dispatch_batch_size: 20
 
     routing:
@@ -28,13 +29,14 @@ data:
       hot_target_share: 0.55
 
     backends:
+      # One URL per GPU node (chat NodePort 30080). Do not point both at the same Service.
       - name: gpu-node-1
-        url: http://vllm-inference.ai.svc.cluster.local:8000
+        url: http://192.168.86.173:30080
         soft_limit: 20
         hard_limit: 28
         drained: false
       - name: gpu-node-2
-        url: http://vllm-inference.ai.svc.cluster.local:8000
+        url: http://192.168.86.176:30080
         soft_limit: 20
         hard_limit: 28
         drained: false
@@ -50,7 +52,7 @@ data:
       retryable_statuses: [502, 503, 504]
 
     openai_fallback:
-      enabled: true
+      enabled: false
       backend_name: openai-fallback
       base_url: https://api.openai.com
       model: gpt-4o-mini

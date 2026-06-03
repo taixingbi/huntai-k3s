@@ -110,3 +110,47 @@ curl -N http://192.168.86.179:30180/v1/chat/completions \
     "stream": true
   }'
 ```
+
+Verify the response **`model`** is `Qwen/Qwen2.5-7B-Instruct` (not `gpt-4o-mini`). If you see OpenAI model ids, check gateway logs for `queue_age_fallback` (see §7).
+
+## 7) Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|--------|-----|
+| Chat returns `gpt-4o-mini-*` | `openai_fallback.enabled: true` and `queue_age_fallback` after `queue_max_age_ms` | Set `openai_fallback.enabled: false`; raise `queue_max_age_ms` (e.g. 30000) in [`configmap.yaml`](../manifests/gateway-inference/base/configmap.yaml); restart gateway |
+| Gateway logs `queue_age_fallback` every ~2s | Scheduler did not assign a GPU backend before wait expired (often circuits open or duplicate backend URLs) | Per-node backend URLs (`:30080` on each GPU node); restart `layer-gateway-inference` to reset circuits |
+| `GET /ready` OK but chat wrong | `/ready` only probes `GET /health`, not chat routing | §5 model check + gateway logs |
+| Orchestrator `DecodingError` on `/ready` | LLM probe got non-JSON (often while fallback misconfigured) | Fix gateway chat path first; then `curl :30184/ready` |
+
+After config change:
+
+```bash
+sudo k3s kubectl apply -k manifests/gateway-inference/overlays/dev
+sudo k3s kubectl rollout restart deploy/layer-gateway-inference -n ai-dev
+curl -sS http://192.168.86.179:30180/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"ping"}],"max_tokens":8}' \
+  | jq '.model'
+```
+
+Verify the response **`model`** is `Qwen/Qwen2.5-7B-Instruct` (not `gpt-4o-mini`). If you see OpenAI model ids, check gateway logs for `queue_age_fallback` (see §7).
+
+## 7) Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|--------|-----|
+| Chat returns `gpt-4o-mini-*` | `openai_fallback.enabled: true` and `queue_age_fallback` after `queue_max_age_ms` | Set `openai_fallback.enabled: false`; raise `queue_max_age_ms` (e.g. 30000) in [`configmap.yaml`](../manifests/gateway-inference/base/configmap.yaml); restart gateway |
+| Gateway logs `queue_age_fallback` every ~2s | Scheduler did not assign a GPU backend before wait expired (often circuits open or duplicate backend URLs) | Per-node backend URLs (`:30080` on each GPU node); restart `layer-gateway-inference` to reset circuits |
+| `GET /ready` OK but chat wrong | `/ready` only probes `GET /health`, not chat routing | §5 model check + gateway logs |
+| Orchestrator `DecodingError` on `/ready` | LLM probe got non-JSON (often while fallback misconfigured) | Fix gateway chat path first; then `curl :30184/ready` |
+
+After config change:
+
+```bash
+sudo k3s kubectl apply -k manifests/gateway-inference/overlays/dev
+sudo k3s kubectl rollout restart deploy/layer-gateway-inference -n ai-dev
+curl -sS http://192.168.86.179:30180/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"ping"}],"max_tokens":8}' \
+  | jq '.model'
+```
