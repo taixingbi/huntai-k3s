@@ -54,22 +54,11 @@ After pushing this repo to `main`:
 ```bash
 cd ~/shared/huntai-k3s
 
-# Secrets must exist before pods start (create once; see per-service deploy docs)
-sudo k3s kubectl get secret layer-gateway-api-secrets -n ai-dev
-sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-dev
-sudo k3s kubectl get secret layer-orchestrator-secrets -n ai-dev
-sudo k3s kubectl get secret layer-mcp-github-v1-secrets -n ai-dev
-sudo k3s kubectl get secret cloudflared-tunnel-credentials -n ai-dev
-sudo k3s kubectl get secret prometheus-grafana-cloud-remote-write -n monitoring
-sudo k3s kubectl get secret alloy-grafana-cloud-loki -n monitoring
-
-# Register all Applications (one-time; workloads sync from Git after push)
+# Secrets must exist before pods start — see cluster-secrets.md
 sudo k3s kubectl apply -f argocd/app-of-apps.yaml
 ```
 
-This creates Application `huntai-apps`, which syncs every manifest under `argocd/applications/` (vLLM, observability, gateways, orchestrator, RAG, web, cloudflared). New apps only need a YAML file in that directory plus a Git push.
-
-**Alternative:** apply individual files under `argocd/applications/` if you prefer phased rollout.
+This creates Application `huntai-apps`, which syncs every manifest under `argocd/applications/` (vLLM, observability, Qdrant, gateways, orchestrator, RAG, web, cloudflared). New apps: add YAML under `argocd/applications/`, list it in `argocd/applications/kustomization.yaml`, commit, push.
 
 ## 5) Verify sync
 
@@ -102,7 +91,7 @@ In the UI:
 
 ## 6) Change workloads via Git
 
-Edit files under `manifests/gateway-api/`, `manifests/gateway-inference/`, `manifests/gateway-embedding/`, `manifests/gateway-reranker/`, `manifests/orchestrator/`, `manifests/tool/`, `manifests/rag/`, or `manifests/web/`, commit, and push to `main`. Argo CD auto-syncs (`prune` + `selfHeal` enabled).
+Edit files under `manifests/` (gateways, orchestrator, tool, rag, web, qdrant, ai, observability, ingress), commit, and push to `main`. Argo CD auto-syncs (`prune` + `selfHeal` enabled).
 
 ### Orchestrator image pin (automatic)
 
@@ -199,42 +188,17 @@ If you later protect `argocd.taixingai.com` with Cloudflare Access, keep `/api/w
 ## Layout
 
 ```
-argocd/applications/gateway-api-dev.yaml      # Argo CD Application (bootstrap via kubectl)
-argocd/applications/gateway-inference-dev.yaml
-argocd/applications/gateway-embedding-dev.yaml
-argocd/applications/gateway-reranker-dev.yaml
-argocd/applications/orchestrator-dev.yaml
-argocd/applications/mcp-github-dev.yaml
-argocd/applications/rag-query-dev.yaml
-argocd/applications/web-dev.yaml
-manifests/gateway-api/
-├── base/                                       # Deployment + Service
-└── overlays/dev/                               # namespace ai-dev, dev env
-manifests/gateway-inference/
-├── base/                                       # ConfigMap + Deployment + Service
-└── overlays/dev/                               # Argo CD gateway-inference-dev
-manifests/gateway-embedding/
-├── base/
-└── overlays/dev/
-manifests/gateway-reranker/
-├── base/
-└── overlays/dev/
-manifests/orchestrator/
-├── base/
-└── overlays/dev/
-manifests/tool/                                 # layer-mcp-github-v1 (mcp-github-dev)
-├── base/
-└── overlays/dev/
-manifests/rag/                                  # layer-rag-query-v1 (rag-query-dev)
-├── base/
-└── overlays/dev/
-manifests/web/                                  # layer-web-v1 (web-dev)
-├── base/
-└── overlays/dev/
-manifests/ai/                                   # vLLM (vllm-inference Argo app)
-manifests/observability/                        # Prometheus + Alloy (observability Argo app)
-manifests/ingress/                              # Cloudflare tunnel (cloudflared-dev Argo app)
-argocd/app-of-apps.yaml                         # Bootstrap all Applications (one-time apply)
+argocd/app-of-apps.yaml              # one-time bootstrap → Application huntai-apps
+argocd/applications/                 # child Application CRs (kustomization.yaml lists all)
+manifests/ai/                          # vLLM + vllm-host-backends (vllm-inference)
+manifests/qdrant/overlays/dev/       # qdrant-dev
+manifests/observability/             # Prometheus + Alloy (observability)
+manifests/gateway-*/overlays/dev/    # inference, embedding, reranker, api gateways
+manifests/orchestrator/overlays/dev/
+manifests/tool/overlays/dev/         # mcp-github-dev
+manifests/rag/overlays/dev/
+manifests/web/overlays/dev/
+manifests/ingress/                   # cloudflared-dev
 ```
 
 ## Secrets

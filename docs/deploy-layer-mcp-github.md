@@ -53,25 +53,17 @@ Allowlisted repo short names are baked into the image ([`app/allowlist/repos.py`
 
 ## 2) Deploy via Argo CD (GitOps)
 
-MCP GitHub dev is managed by Argo CD Application **`mcp-github-dev`**. See [deploy-gitops-argocd.md](deploy-gitops-argocd.md) for install and verify steps.
-
-**One-time:** register the Application (not automatic from Git until you apply this manifest):
+Managed by **`mcp-github-dev`** via [app-of-apps](deploy-gitops-argocd.md).
 
 ```bash
-cd ~/shared/huntai-platform/huntai-k3s
-sudo k3s kubectl apply -f argocd/applications/mcp-github-dev.yaml
+cd ~/shared/huntai-k3s
 sudo k3s kubectl get application mcp-github-dev -n argocd
 ```
 
-Ensure `manifests/tool/overlays/dev/` is on `main` in [taixingbi/huntai-k3s](https://github.com/taixingbi/huntai-k3s) before the first sync.
-
 ```bash
-# optional: preload pinned tag from Git (see deploy-gitops-argocd.md)
+# optional: preload pinned tag from Git
 TAG=$(grep newTag manifests/tool/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
 sudo k3s ctr images pull "ghcr.io/taixingbi/layer-mcp-github-v1:${TAG}"
-
-# optional: remove legacy deployment (pre-v1 rename)
-sudo k3s kubectl delete deployment,service layer-mcp-github -n ai-dev --ignore-not-found
 
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-mcp-github-v1 -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30191

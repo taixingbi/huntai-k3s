@@ -77,7 +77,6 @@ Orchestrator dev is managed by Argo CD Application `orchestrator-dev`. See [depl
 TAG=$(grep newTag manifests/orchestrator/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
 sudo k3s ctr images pull "ghcr.io/taixingbi/layer-orchestrator-v1:${TAG}"
 
-sudo k3s kubectl apply -f argocd/applications/orchestrator-dev.yaml
 sudo k3s kubectl get application orchestrator-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-orchestrator -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30184

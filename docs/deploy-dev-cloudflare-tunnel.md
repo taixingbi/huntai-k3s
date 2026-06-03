@@ -127,8 +127,6 @@ Expect logs like `Registered tunnel connection` and no credential errors.
 | `FRONTEND_URL` | layer-gateway-api | `https://dev.taixingai.com` |
 
 ```bash
-sudo k3s kubectl apply -f argocd/applications/web-dev.yaml
-# Gateway API: managed by Argo CD (gateway-api-dev); push manifest changes or sync in UI
 sudo k3s kubectl rollout restart deployment/layer-web deployment/layer-gateway-api -n ai-dev
 ```
 
@@ -175,20 +173,6 @@ Browser: [https://argocd.taixingai.com](https://argocd.taixingai.com) — login 
 
 Optional later: [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/policies/access/) policy on `argocd.taixingai.com` (not configured in this pass).
 
-## Alternative: host-run cloudflared (legacy)
-
-Use only for quick debugging without applying the Deployment. On **server-node-1**, cluster DNS from the host may fail; use NodePort:
-
-```yaml
-# ~/.cloudflared/config.yml (not in git)
-ingress:
-  - hostname: dev.taixingai.com
-    service: http://127.0.0.1:30186
-  - service: http_status:404
-```
-
-Run: `cloudflared tunnel run <tunnel-id>`. Do **not** run host and in-cluster connectors at the same time.
-
 ## Troubleshooting
 
 | Symptom | Check |
@@ -199,10 +183,6 @@ Run: `cloudflared tunnel run <tunnel-id>`. Do **not** run host and in-cluster co
 | **404** hostname | DNS route §3; hostname in ConfigMap ingress (`dev.taixingai.com` or `argocd.taixingai.com`) |
 | Argo CD x509 in cloudflared logs | `originRequest.noTLSVerify: true` under `argocd.taixingai.com` ingress rule |
 | Argo CD redirect loop / wrong URL | `argocd-cm` `url: https://argocd.taixingai.com` §8 |
-| Duplicate / flaky tunnel | Only one connector: stop host systemd **or** scale in-cluster to 0 |
+| Duplicate / flaky tunnel | Only one connector: stop host systemd cloudflared if migrating to in-cluster |
 | Login OK, chat **401** | Gateway secrets; `APP_URL` / `FRONTEND_URL` HTTPS |
 | Wrong reset link | Supabase Site URL |
-
-## Prod (later)
-
-Copy pattern to `manifests/ingress/cloudflared-prod.yaml` in `ai-prod`, separate tunnel Secret and hostname (e.g. `taixingai.com`). Not in this pass.

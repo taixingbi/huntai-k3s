@@ -13,11 +13,11 @@ The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are *
 sudo k3s kubectl -n ai-dev get deploy layer-gateway-embedding -o yaml | grep -A1 EMBED_BACKENDS
 ```
 
-## 2) Deploy manifests
+## 2) Deploy (Argo CD / GitOps)
+
+Managed by `gateway-embedding-dev` via [app-of-apps](deploy-gitops-argocd.md).
 
 ```bash
-# dev (Argo CD / GitOps source)
-sudo k3s kubectl apply -f argocd/applications/gateway-embedding-dev.yaml
 sudo k3s kubectl get application gateway-embedding-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-embedding
 sudo k3s kubectl get svc -A -o wide | grep 30181

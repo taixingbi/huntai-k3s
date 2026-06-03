@@ -1,6 +1,6 @@
 # GHCR rollout (one-time and verification)
 
-Container images for HuntAI services are published to **GitHub Container Registry** (`ghcr.io/taixingbi/<repo>`) by each service repo’s **Push to GHCR** workflow. GitOps pins `newTag` and `digest` in `huntai-k3s` via `scripts/pin-kustomize-image.sh` / `scripts/pin-gitops-image.sh`.
+Container images for HuntAI services are published to **GitHub Container Registry** (`ghcr.io/taixingbi/<repo>`) by each service repo’s **Push to GHCR** workflow. GitOps pins `newTag` and `digest` in `huntai-k3s` via `scripts/pin-kustomize-image.sh` (or `pin-gitops-image.sh` when CI verifies `images[].name`).
 
 ## One-time (GitHub org / packages)
 

@@ -42,14 +42,13 @@ Edit [manifests/rag/base/deployment.yaml](../manifests/rag/base/deployment.yaml)
 
 ## 2) Deploy via Argo CD (GitOps)
 
+Managed by `rag-query-dev` via [app-of-apps](deploy-gitops-argocd.md).
+
 ```bash
 # optional: preload image on the node
 sudo k3s ctr images pull ghcr.io/taixingbi/layer-rag-query-v1:latest
 
-# one-time: register Argo CD app
-sudo k3s kubectl apply -f argocd/applications/rag-query-dev.yaml
 sudo k3s kubectl get application rag-query-dev -n argocd
-
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-rag-query -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30183
 ```
@@ -235,13 +234,12 @@ sed -n 's/^data: //p' /tmp/mcp-rag-stream.txt | tail -1 | jq -r '.result.content
 
 ### 3.7 Upstream dependencies (optional)
 
-From a host on the LAN, verify backends the manifest points at (adjust IP if needed):
+From a host on the LAN, verify backends (NodePort smoke tests; adjust IP if needed):
 
 ```bash
-# Qdrant
-curl -sS http://192.168.86.179:6333/collections | jq -r '.result.collections[].name' | grep taixing_knowledge_dev
-# in-cluster Qdrant (from a debug pod or after port-forward):
-# curl -sS http://qdrant.ai-dev.svc.cluster.local:6333/collections | jq .
+# Qdrant (in-cluster)
+curl -sS http://qdrant.ai-dev.svc.cluster.local:6333/collections | jq -r '.result.collections[].name' | grep taixing_knowledge_dev
+# or from a debug pod in ai-dev: curl -sS http://qdrant:6333/collections | jq .
 
 # Embedding gateway (30181)
 curl -sS -X POST http://192.168.86.179:30181/v1/embeddings \

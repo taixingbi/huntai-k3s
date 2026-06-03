@@ -47,8 +47,7 @@ Optional (not in manifest): `GATEWAY_BEARER_TOKEN` (service/stub fallback when b
 # optional: preload image after upstream CI
 sudo k3s ctr images pull ghcr.io/taixingbi/layer-web-v1:latest
 
-# one-time: register Argo CD app
-sudo k3s kubectl apply -f argocd/applications/web-dev.yaml
+# GitOps via app-of-apps (deploy-gitops-argocd.md)
 sudo k3s kubectl get application web-dev -n argocd
 
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-web -o wide

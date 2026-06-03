@@ -97,13 +97,13 @@ sudo k3s kubectl delete pod cuda-vectoradd
 
 ## 4) GitOps (Argo CD)
 
-Install Argo CD, bootstrap Applications, and deploy the first app (`gateway-api-dev`) from Git:
+Install Argo CD and bootstrap all Applications via app-of-apps:
 
 - `docs/deploy-gitops-argocd.md`
 
 ## 5) Deploy workloads + observability
 
-Detailed steps for vLLM, inference gateway (dev/prod), embedding gateway (dev), reranker gateway (dev), RAG query (dev), orchestrator (dev), Prometheus, Alloy, and Grafana import now live in:
+Component deploy guides (vLLM, Qdrant, gateways, RAG, orchestrator, web, tunnel, Prometheus, Alloy):
 
 - `docs/deploy-workloads-and-observability.md`
 

@@ -29,8 +29,9 @@ sudo k3s kubectl get secret layer-gateway-inference-secrets -n ai-dev \
 
 ## 2) Deploy (Argo CD / GitOps)
 
+Managed by `gateway-inference-dev` via [app-of-apps](deploy-gitops-argocd.md).
+
 ```bash
-sudo k3s kubectl apply -f argocd/applications/gateway-inference-dev.yaml
 sudo k3s kubectl get application gateway-inference-dev -n argocd
 sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-gateway-inference
 sudo k3s kubectl get svc -A -o wide | grep 30180
