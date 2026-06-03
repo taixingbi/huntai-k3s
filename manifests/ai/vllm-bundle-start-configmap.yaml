@@ -84,9 +84,10 @@ data:
     }
 
     log "starting embed (BAAI/bge-m3) on :8001"
+    # Do not override architectures: BgeM3EmbeddingModel breaks /v1/embeddings (501).
+    # vLLM auto-detects BAAI/bge-m3 as XLMRobertaModel pooling (same as rerank auto-detect).
     vllm serve BAAI/bge-m3 \
       --host 0.0.0.0 --port 8001 \
-      --hf-overrides '{"architectures": ["BgeM3EmbeddingModel"]}' \
       --gpu-memory-utilization 0.08 \
       --max-model-len 8192 \
       &

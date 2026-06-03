@@ -110,7 +110,7 @@ echo
 
 ### 4.1 `POST /orchestrator/answer` (JSON, non-stream)
 
-Uses the same internal pipeline as SSE; response is one aggregated JSON object. `route` is lowercase (e.g. `rag`, `direct_reply`).
+Uses the same internal pipeline as SSE; response is one aggregated JSON object. **`route`**, **`conversation_id`**, and **`is_new_conversation`** live under **`meta`** (not top-level). Tool RAG uses **`meta.route.tool`: `"rag_private_kb"`** (legacy flat route name **`rag`**).
 
 ```bash
 curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
@@ -121,15 +121,16 @@ curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
   -H "X-User-Id: taixing" \
   -H "X-User-Roles: hr" \
   -H "X-User-Groups: engineering" \
-  H "X-User-Teams: rag-platform" \
+  -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is taixing visa status in us?",
-    "conversation_id": "conv-smoke-1"
-  }' | jq '{answer, route, conversation_id, is_new_conversation, latency_ms, usage}'
+    "conversation_id": "conv-smoke-1",
+    "stream": false
+  }' | jq '{answer, meta, status, latency_ms, usage}'
 echo
 ```
 
-**Pass:** non-empty `answer`; `conversation_id` present; `route` set. For **`route: "rag"`**, expect **`latency_ms.rag`** with nested service keys. For **`route: "tool"`** (github), expect **`latency_ms.github`** (see §4.5), not flat `github_readme` at the top level.
+**Pass:** non-empty `answer.text`; `meta.conversation_id` present; `meta.route` set. For **`meta.route.tool`: `"rag_private_kb"`**, expect **`latency_ms.tool_rag`** (or nested RAG keys under `latency_ms`). For **`github_search`**, expect **`latency_ms.tool_github_search`** (see §4.5).
 
 ### 4.2 `POST /orchestrator/answer` with `history`
 
