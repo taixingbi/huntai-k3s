@@ -76,6 +76,18 @@ sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/he
 
 5. Confirm embedding/rerank gateways: `curl http://192.168.86.179:30181/ready` and `30182/ready`.
 
+### ConfigMap changes require a Pod restart
+
+Updating `vllm-bundle-start` **does not reload** running bundle Pods (scripts are mounted at Pod start). After Argo syncs a script change, roll both Deployments (or bump `huntai.ai/vllm-bundle-start-revision` on the Pod template):
+
+```bash
+sudo k3s kubectl rollout restart deploy/vllm-bundle-gpu-node-1 deploy/vllm-bundle-gpu-node-2 -n ai
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45m
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
+```
+
+`healthcheck.py` now probes `POST /v1/embeddings` on `:8001` so a Pod is not Ready when embed returns **501** (`The model does not support Embeddings API`). That usually means the bundle is still on an old start script — restart as above. Embed must use **`--runner pooling`** plus **`BgeM3EmbeddingModel`** hf-overrides (see ConfigMap).
+
 **Rollback:** revert Git commit; optionally restart host vLLM on previous ports.
 
 ## Router SFT / DPO LoRA adapters

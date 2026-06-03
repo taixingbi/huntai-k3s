@@ -131,20 +131,50 @@ data:
     done
 
   healthcheck.py: |
+    import json
     import sys
     import urllib.error
     import urllib.request
+
+    def check_health(name: str, port: int) -> None:
+        url = f"http://127.0.0.1:{port}/health"
+        urllib.request.urlopen(url, timeout=3)
+
+    def check_embed_api() -> None:
+        body = json.dumps({"model": "BAAI/bge-m3", "input": "ping"}).encode()
+        req = urllib.request.Request(
+            "http://127.0.0.1:8001/v1/embeddings",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status >= 400:
+                raise urllib.error.HTTPError(
+                    req.full_url, resp.status, "embed probe failed", resp.headers, None
+                )
+            payload = json.loads(resp.read().decode("utf-8") or "{}")
+        if not isinstance(payload, dict) or not payload.get("data"):
+            err = payload.get("error") if isinstance(payload, dict) else payload
+            raise RuntimeError(f"embed probe empty response: {err!r}")
 
     endpoints = (("chat", 8000), ("embed", 8001), ("rerank", 8002))
     failed = []
     for name, port in endpoints:
         url = f"http://127.0.0.1:{port}/health"
         try:
-            urllib.request.urlopen(url, timeout=3)
+            check_health(name, port)
             print(f"ok {name} {url}")
-        except (urllib.error.URLError, TimeoutError) as e:
+        except (urllib.error.URLError, TimeoutError, urllib.error.HTTPError) as e:
             print(f"FAIL {name} {url}: {e}", file=sys.stderr)
             failed.append(name)
+    if not failed:
+        try:
+            check_embed_api()
+            print("ok embed /v1/embeddings")
+        except Exception as e:
+            print(f"FAIL embed /v1/embeddings: {e}", file=sys.stderr)
+            failed.append("embed_api")
     if failed:
         print(f"not ready: {', '.join(failed)}", file=sys.stderr)
         sys.exit(1)
