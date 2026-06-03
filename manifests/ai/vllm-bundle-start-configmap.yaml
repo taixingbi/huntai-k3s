@@ -84,12 +84,13 @@ data:
     }
 
     log "starting embed (BAAI/bge-m3) on :8001"
-    # Pooling runner + BgeM3EmbeddingModel: without --runner pooling, /v1/embeddings returns 501.
-    # hf-overrides loads sparse/colbert weights (see vLLM pooling_models/specific_models.md).
+    # Dense RAG embeddings only: use standard pooling + task=embed for /v1/embeddings.
+    # BgeM3EmbeddingModel hf-overrides enables sparse/colbert via /pooling but breaks OpenAI API (501).
     vllm serve BAAI/bge-m3 \
       --host 0.0.0.0 --port 8001 \
       --runner pooling \
-      --hf-overrides '{"architectures": ["BgeM3EmbeddingModel"]}' \
+      --pooler-config '{"task":"embed"}' \
+      --enforce-eager \
       --gpu-memory-utilization 0.08 \
       --max-model-len 8192 \
       &

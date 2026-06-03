@@ -7,7 +7,7 @@ Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node
 | Port | Role | Model |
 |------|------|--------|
 | 8000 | chat | `Qwen/Qwen2.5-7B-Instruct` + router LoRAs (see below) |
-| 8001 | embed | `BAAI/bge-m3` (`--runner pooling` + `--hf-overrides` for `BgeM3EmbeddingModel`) |
+| 8001 | embed | `BAAI/bge-m3` (`--runner pooling`, `--pooler-config task=embed`; no `BgeM3EmbeddingModel` override) |
 | 8002 | rerank | `BAAI/bge-reranker-v2-m3` (`/v1/rerank`; vLLM 0.22 auto-detect) |
 
 Startup script: ConfigMap `vllm-bundle-start` → [`manifests/ai/vllm-bundle-start-configmap.yaml`](../manifests/ai/vllm-bundle-start-configmap.yaml).
@@ -86,7 +86,7 @@ sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45
 sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
 ```
 
-`healthcheck.py` now probes `POST /v1/embeddings` on `:8001` so a Pod is not Ready when embed returns **501** (`The model does not support Embeddings API`). That usually means the bundle is still on an old start script — restart as above. Embed must use **`--runner pooling`** plus **`BgeM3EmbeddingModel`** hf-overrides (see ConfigMap).
+`healthcheck.py` now probes `POST /v1/embeddings` on `:8001` so a Pod is not Ready when embed returns **501** (`The model does not support Embeddings API`). Restart after script changes. Embed must use **`--runner pooling`** and **`--pooler-config '{"task":"embed"}'`** (do **not** use `BgeM3EmbeddingModel` hf-overrides — that mode serves sparse/colbert via `/pooling` only).
 
 **Rollback:** revert Git commit; optionally restart host vLLM on previous ports.
 
