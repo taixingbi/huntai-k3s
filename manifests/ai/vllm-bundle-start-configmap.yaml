@@ -14,27 +14,45 @@ data:
     trap 'log "shutting down"; jobs -p | xargs -r kill 2>/dev/null || true' EXIT TERM INT
 
     # vLLM 0.22: no --task on "vllm serve"; pooling/rerank models auto-detect.
+    # On a 24GB GPU, each process uses gpu-memory-utilization * full VRAM independently;
+    # keep sum ~0.95 and start small models before chat (chat weights ~15.5GiB + KV).
+    wait_for_health() {
+      local port="$1" name="$2" max_attempts="${3:-180}"
+      for ((i = 1; i <= max_attempts; i++)); do
+        if python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${port}/health', timeout=3)" 2>/dev/null; then
+          log "$name ready on :$port"
+          return 0
+        fi
+        sleep 5
+      done
+      log "timeout waiting for $name on :$port"
+      return 1
+    }
+
     log "starting embed (BAAI/bge-m3) on :8001"
     vllm serve BAAI/bge-m3 \
       --host 0.0.0.0 --port 8001 \
       --hf-overrides '{"architectures": ["BgeM3EmbeddingModel"]}' \
-      --gpu-memory-utilization 0.15 \
+      --gpu-memory-utilization 0.09 \
       --max-model-len 8192 \
       &
 
     log "starting rerank (BAAI/bge-reranker-v2-m3) on :8002"
     vllm serve BAAI/bge-reranker-v2-m3 \
       --host 0.0.0.0 --port 8002 \
-      --gpu-memory-utilization 0.10 \
+      --gpu-memory-utilization 0.06 \
       --max-model-len 512 \
       &
+
+    wait_for_health 8001 embed
+    wait_for_health 8002 rerank
 
     log "starting chat (Qwen2.5-7B-Instruct + LoRA) on :8000"
     vllm serve Qwen/Qwen2.5-7B-Instruct \
       --host 0.0.0.0 --port 8000 \
-      --gpu-memory-utilization 0.50 \
-      --max-model-len 3072 \
-      --max-num-seqs 4 \
+      --gpu-memory-utilization 0.82 \
+      --max-model-len 2048 \
+      --max-num-seqs 2 \
       --enable-lora \
       --max-lora-rank 64 \
       --max-loras 4 \

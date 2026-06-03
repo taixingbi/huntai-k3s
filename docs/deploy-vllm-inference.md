@@ -31,15 +31,15 @@ sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -f --tail=100
 
 `--gpu-memory-utilization` is a vLLM soft limit, not Kubernetes isolation. Initial values (tune up after stable `nvidia-smi`):
 
-| Process | util |
-|---------|------|
-| chat | 0.50 |
-| embed | 0.15 |
-| rerank | 0.10 |
+| Process | util | Notes |
+|---------|------|--------|
+| chat | 0.82 | `max-model-len` 2048, `max-num-seqs` 2; starts after embed/rerank `/health` |
+| embed | 0.09 | Started first |
+| rerank | 0.06 | Started first |
 
-Chat also uses `max-model-len` 3072 and `max-num-seqs` 4. Edit the ConfigMap script and roll out; any script change restarts the whole bundle on that node.
+Each vLLM process applies `gpu-memory-utilization` to **full** VRAM, not “what is left” after siblings. On a 24GB 3090, chat weights are ~15.5GiB; with embed+rerank already loaded, chat at 0.50 left no KV blocks (`Available KV cache memory: -8.31 GiB`). Edit the ConfigMap script and roll out; any script change restarts the whole bundle on that node.
 
-If OOM: lower chat util first, then `max-num-seqs`, then consider reducing `max-loras` or disabling LoRA temporarily.
+If chat still OOM: nudge chat util toward 0.85 (lower embed/rerank first), then reduce `max-loras` or disable LoRA temporarily.
 
 ## Migration from host / old chat Deployment
 
