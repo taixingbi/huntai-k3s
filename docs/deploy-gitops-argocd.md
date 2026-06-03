@@ -249,7 +249,11 @@ Argo CD sync waves order cold start roughly as:
 |------|------------------|---------------|
 | 0 | `vllm-inference` | `manifests/ai` |
 | 1 | `observability` | `manifests/observability` |
-| (default) | `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev`, `gateway-api-dev`, `orchestrator-dev`, `mcp-github-dev`, `rag-query-dev`, `web-dev` | respective `manifests/*/overlays/dev` |
+| 2 | `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev` | `manifests/gateway-*/overlays/dev` |
+| 3 | `rag-query-dev`, `mcp-github-dev` | `manifests/rag/overlays/dev`, `manifests/tool/overlays/dev` |
+| 4 | `orchestrator-dev` | `manifests/orchestrator/overlays/dev` |
+| 5 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev` |
+| 6 | `web-dev` | `manifests/web/overlays/dev` |
 | 9 | `cloudflared-dev` | `manifests/ingress` |
 
 Add a new app: create `argocd/applications/<name>.yaml`, list it in `argocd/applications/kustomization.yaml`, commit, push — `huntai-apps` picks it up automatically.
