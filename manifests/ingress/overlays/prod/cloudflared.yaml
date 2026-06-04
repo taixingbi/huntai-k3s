@@ -2,7 +2,7 @@
 #   taixingai.com / www.taixingai.com → layer-web:3000
 #
 # 1) Create a **separate** Cloudflare tunnel for prod (do not reuse dev tunnel).
-# 2) Replace REPLACE_PROD_TUNNEL_UUID below with the tunnel ID, commit, then sync.
+# 2) tunnel ID below must match credentials JSON and Cloudflare DNS (huntai-prod).
 # 3) Create credentials Secret (never commit JSON):
 #    sudo k3s kubectl create secret generic cloudflared-tunnel-credentials -n ai-prod \
 #      --from-file=credentials.json="$HOME/.cloudflared/<PROD_TUNNEL_UUID>.json" \
@@ -23,7 +23,7 @@ metadata:
     environment: prod
 data:
   config.yaml: |
-    tunnel: REPLACE_PROD_TUNNEL_UUID
+    tunnel: 7d666059-82f7-47a1-8482-1a9ef774021a
     credentials-file: /etc/cloudflared/creds/credentials.json
     metrics: 0.0.0.0:2000
     ingress:
