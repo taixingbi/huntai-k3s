@@ -16,6 +16,7 @@ metadata:
 spec:
   progressDeadlineSeconds: 7200
   replicas: 1
+  revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -138,6 +139,7 @@ metadata:
 spec:
   progressDeadlineSeconds: 7200
   replicas: 1
+  revisionHistoryLimit: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:
