@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: https://github.com/taixingbi/huntai-k3s.git
     targetRevision: main
-    path: manifests/ai
+    path: manifests/vllm
   destination:
     server: https://kubernetes.default.svc
-    namespace: ai
+    namespace: vllm
   syncPolicy:
     automated:
       prune: true

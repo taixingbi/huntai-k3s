@@ -1,6 +1,6 @@
 # Deploy vLLM (chat + embed + rerank bundle)
 
-GitOps: Argo CD Application `vllm-inference` (manifest path `manifests/ai`). Bootstrap via [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
+GitOps: Argo CD Application `vllm-inference` (manifest path `manifests/vllm`). Bootstrap via [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
 
 Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node-2`) with **one container** and **three vLLM processes** on a single GPU (scheme C1). **This doc covers the bundle and chat (`:8000`).** Embed and rerank are documented separately:
 
@@ -13,12 +13,12 @@ Each GPU node runs **one Pod** (`vllm-bundle-gpu-node-1` / `vllm-bundle-gpu-node
 | 8001 | embed | [deploy-vllm-embedding.md](deploy-vllm-embedding.md) |
 | 8002 | rerank | [deploy-vllm-reranker.md](deploy-vllm-reranker.md) |
 
-Startup script: ConfigMap `vllm-bundle-start` → [`manifests/ai/vllm-bundle-start-configmap.yaml`](../manifests/ai/vllm-bundle-start-configmap.yaml).
+Startup script: ConfigMap `vllm-bundle-start` → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
 
 ```bash
 sudo k3s kubectl get application vllm-inference -n argocd
-sudo k3s kubectl get pods,svc -n ai -l app=vllm-bundle -o wide
-sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -f --tail=100
+sudo k3s kubectl get pods,svc -n vllm -l app=vllm-bundle -o wide
+sudo k3s kubectl logs -n vllm -l vllm-node=gpu-node-1 -f --tail=100
 ```
 
 ## Services (chat)
@@ -44,7 +44,7 @@ The bundle mounts `hostPath: /data/hf-cache` → `/root/.cache/huggingface` and 
 **InitContainer `prefetch-hf-cache`** runs before the GPU container: `snapshot_download` for chat (and embed/rerank; optional router LoRAs when `PREFETCH_ROUTER_LORAS=true`) into the same hostPath. Skips re-download when blobs already exist; first cold node still needs network time but vLLM no longer pulls weights during GPU startup.
 
 ```bash
-sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -c prefetch-hf-cache
+sudo k3s kubectl logs -n vllm -l vllm-node=gpu-node-1 -c prefetch-hf-cache
 ```
 
 For gated Hub repos, add `HF_TOKEN` to the init and main container (Secret optional).
@@ -73,14 +73,32 @@ Before the first successful bundle rollout:
 3. Sync `vllm-inference`; wait for `startupProbe` (model pull can take 15–30+ minutes).
 4. Run [§ Smoke tests](#smoke-tests) below, then embed/rerank smokes in their docs.
 
+## Namespace rename (`ai` → `vllm`)
+
+Inference manifests live under `manifests/vllm/` and deploy into namespace **`vllm`**. Application tier (gateways, RAG, Qdrant, web) stays in **`ai-dev`**.
+
+After `main` updates and Argo syncs `vllm-inference`:
+
+```bash
+sudo k3s kubectl get application vllm-inference -n argocd
+sudo k3s kubectl get pods,svc -n vllm -l app=vllm-bundle -o wide
+# Gateways must reach *.vllm.svc.cluster.local — restart if they still point at .ai.svc
+sudo k3s kubectl rollout restart deploy/layer-gateway-embedding deploy/layer-gateway-reranker -n ai-dev
+# When vllm is healthy and ai is empty, remove the old namespace (optional)
+sudo k3s kubectl get all -n ai
+sudo k3s kubectl delete namespace ai   # only if nothing needed remains
+```
+
+HostPath model caches are unchanged (same node paths; Pod names unchanged).
+
 ### ConfigMap changes require a Pod restart
 
 Updating `vllm-bundle-start` **does not reload** running bundle Pods (scripts are mounted at Pod start). After Argo syncs a script change, roll both Deployments (or bump `huntai.ai/vllm-bundle-start-revision` on the Pod template):
 
 ```bash
-sudo k3s kubectl rollout restart deploy/vllm-bundle-gpu-node-1 deploy/vllm-bundle-gpu-node-2 -n ai
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45m
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
+sudo k3s kubectl rollout restart deploy/vllm-bundle-gpu-node-1 deploy/vllm-bundle-gpu-node-2 -n vllm
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n vllm --timeout=45m
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n vllm --timeout=45m
 ```
 
 **Rollback:** revert Git commit; optionally restart host vLLM on previous ports.
@@ -92,9 +110,9 @@ Run from a host with cluster access after both bundle Pods are **`1/1 Ready`**. 
 ### Prerequisites
 
 ```bash
-sudo k3s kubectl get pods -n ai -l app=vllm-bundle -o wide
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45m
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
+sudo k3s kubectl get pods -n vllm -l app=vllm-bundle -o wide
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n vllm --timeout=45m
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n vllm --timeout=45m
 ```
 
 **Pass:** both Pods **`READY 1/1`**, **`AGE`** stable (not restarting).
@@ -104,8 +122,8 @@ sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45
 All three processes (including embed API probe on `:8001`):
 
 ```bash
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-2 -- python3 /scripts/healthcheck.py
+sudo k3s kubectl exec -n vllm deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
+sudo k3s kubectl exec -n vllm deploy/vllm-bundle-gpu-node-2 -- python3 /scripts/healthcheck.py
 ```
 
 **Pass:** exit **0**. Embed failures → [deploy-vllm-embedding.md](deploy-vllm-embedding.md).

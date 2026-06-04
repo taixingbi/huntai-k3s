@@ -3,13 +3,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: ai
+  name: vllm
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vllm-bundle-gpu-node-1
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
     vllm-node: gpu-node-1
@@ -131,7 +131,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vllm-bundle-gpu-node-2
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
     vllm-node: gpu-node-2
@@ -250,7 +250,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vllm-inference
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
 spec:
@@ -266,7 +266,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: inference-qwen25-7b
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
 spec:
@@ -283,7 +283,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: embedding-bge-m3
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
 spec:
@@ -300,7 +300,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: rerank-bge-m3
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
 spec:
@@ -317,7 +317,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vllm-embed-gpu-node-1
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
     vllm-node: gpu-node-1
@@ -335,7 +335,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vllm-embed-gpu-node-2
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
     vllm-node: gpu-node-2
@@ -353,7 +353,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vllm-rerank-gpu-node-1
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
     vllm-node: gpu-node-1
@@ -371,7 +371,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vllm-rerank-gpu-node-2
-  namespace: ai
+  namespace: vllm
   labels:
     app: vllm-bundle
     vllm-node: gpu-node-2

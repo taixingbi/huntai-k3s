@@ -2,7 +2,7 @@
 
 Dense embedding inference runs **inside the per-GPU vLLM bundle** on port **8001**. It is **not** a separate Deployment — one `vllm serve` process per bundle Pod, alongside chat (`:8000`) and rerank (`:8002`). Bundle overview: [deploy-vllm-inference.md](deploy-vllm-inference.md). Client-facing routing: [deploy-gateway-embedding.md](deploy-gateway-embedding.md) (NodePort **30181**).
 
-GitOps: Argo CD Application **`vllm-inference`** (`manifests/ai`). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/ai/vllm-bundle-start-configmap.yaml`](../manifests/ai/vllm-bundle-start-configmap.yaml).
+GitOps: Argo CD Application **`vllm-inference`** (`manifests/vllm`). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
 
 ## Layout
 
@@ -16,7 +16,7 @@ GitOps: Argo CD Application **`vllm-inference`** (`manifests/ai`). Startup scrip
 | `max-model-len` | `8192` |
 | Start order | **First** (before rerank and chat) |
 
-Per-node ClusterIP Services (namespace **`ai`**, gateway backends):
+Per-node ClusterIP Services (namespace **`vllm`**, gateway backends):
 
 | Service | Backend |
 |---------|---------|
@@ -28,8 +28,8 @@ LAN smoke tests: NodePort **`30081`** on **`embedding-bge-m3`** (same pattern as
 Embedding gateway **`EMBED_BACKENDS`** (in `manifests/gateway-embedding/base/deployment.yaml`):
 
 ```text
-embed-node-1=http://vllm-embed-gpu-node-1.ai.svc.cluster.local:8001
-embed-node-2=http://vllm-embed-gpu-node-2.ai.svc.cluster.local:8001
+embed-node-1=http://vllm-embed-gpu-node-1.vllm.svc.cluster.local:8001
+embed-node-2=http://vllm-embed-gpu-node-2.vllm.svc.cluster.local:8001
 ```
 
 ## Required `vllm serve` flags
@@ -54,15 +54,15 @@ Edit the ConfigMap and push to `main`; bump **`huntai.ai/vllm-bundle-start-revis
 
 ```bash
 sudo k3s kubectl get application vllm-inference -n argocd
-sudo k3s kubectl get pods -n ai -l app=vllm-bundle -o wide
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45m
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
+sudo k3s kubectl get pods -n vllm -l app=vllm-bundle -o wide
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n vllm --timeout=45m
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n vllm --timeout=45m
 ```
 
 Bundle **`healthcheck.py`** probes all three `/health` endpoints and **`POST /v1/embeddings`** on `:8001`. A Pod stays **NotReady** until embed returns a non-empty `data` array (not **501**).
 
 ```bash
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
+sudo k3s kubectl exec -n vllm deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
 ```
 
 **Pass:** lines `ok embed http://127.0.0.1:8001/health` and `ok embed /v1/embeddings`.
@@ -70,7 +70,7 @@ sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/he
 Confirm live script:
 
 ```bash
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- \
+sudo k3s kubectl exec -n vllm deploy/vllm-bundle-gpu-node-1 -- \
   grep -A8 'starting embed' /scripts/start-vllm-bundle.sh
 ```
 
@@ -125,7 +125,7 @@ curl -sS http://192.168.86.179:30181/v1/embeddings \
 ### Port-forward (optional)
 
 ```bash
-sudo k3s kubectl port-forward -n ai svc/vllm-embed-gpu-node-1 8001:8001
+sudo k3s kubectl port-forward -n vllm svc/vllm-embed-gpu-node-1 8001:8001
 curl -sS -X POST http://127.0.0.1:8001/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{"model":"BAAI/bge-m3","input":"hello"}' | jq '{data_len: (.data|length)}'
@@ -144,8 +144,8 @@ curl -sS -X POST http://127.0.0.1:8001/v1/embeddings \
 Logs:
 
 ```bash
-sudo k3s kubectl logs -n ai deploy/vllm-bundle-gpu-node-1 -c vllm-bundle --tail=100
-sudo k3s kubectl logs -n ai -l vllm-node=gpu-node-1 -c prefetch-hf-cache
+sudo k3s kubectl logs -n vllm deploy/vllm-bundle-gpu-node-1 -c vllm-bundle --tail=100
+sudo k3s kubectl logs -n vllm -l vllm-node=gpu-node-1 -c prefetch-hf-cache
 ```
 
 ## Observability

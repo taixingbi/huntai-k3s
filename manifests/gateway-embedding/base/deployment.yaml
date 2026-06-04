@@ -40,7 +40,7 @@ spec:
             - name: GATEWAY_PORT
               value: "8000"
             - name: EMBED_BACKENDS
-              value: "embed-node-1=http://vllm-embed-gpu-node-1.ai.svc.cluster.local:8001,embed-node-2=http://vllm-embed-gpu-node-2.ai.svc.cluster.local:8001"
+              value: "embed-node-1=http://vllm-embed-gpu-node-1.vllm.svc.cluster.local:8001,embed-node-2=http://vllm-embed-gpu-node-2.vllm.svc.cluster.local:8001"
             - name: TIMEOUT_CONNECT_MS
               value: "1000"
             - name: TIMEOUT_READ_MS

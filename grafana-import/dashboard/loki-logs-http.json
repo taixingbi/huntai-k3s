@@ -225,7 +225,7 @@
   "templating": {
     "list": [
       {
-        "current": { "selected": true, "text": "ai", "value": "ai" },
+        "current": { "selected": true, "text": "vllm", "value": "vllm" },
         "datasource": { "type": "loki", "uid": "${DS_LOKI}" },
         "hide": 0,
         "includeAll": true,

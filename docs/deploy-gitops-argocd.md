@@ -190,7 +190,7 @@ If you later protect `argocd.taixingai.com` with Cloudflare Access, keep `/api/w
 ```
 argocd/app-of-apps.yaml              # one-time bootstrap → Application huntai-apps
 argocd/applications/                 # child Application CRs (kustomization.yaml lists all)
-manifests/ai/                          # vLLM bundle chat+embed+rerank (vllm-inference)
+manifests/vllm/                          # vLLM bundle chat+embed+rerank (vllm-inference)
 manifests/qdrant/overlays/dev/       # qdrant-dev
 manifests/observability/             # Prometheus + Alloy (observability)
 manifests/gateway-*/overlays/dev/    # inference, embedding, reranker, api gateways
@@ -211,7 +211,7 @@ Argo CD sync waves order cold start roughly as:
 
 | Wave | Argo Application | Manifest path |
 |------|------------------|---------------|
-| 0 | `vllm-inference` | `manifests/ai` |
+| 0 | `vllm-inference` | `manifests/vllm` |
 | 1 | `observability` | `manifests/observability` |
 | 2 | `qdrant-dev`, `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev` | `manifests/qdrant/overlays/dev`, `manifests/gateway-*/overlays/dev` |
 | 3 | `rag-query-dev`, `mcp-github-dev` | `manifests/rag/overlays/dev`, `manifests/tool/overlays/dev` |

@@ -40,7 +40,7 @@ spec:
             - name: GATEWAY_PORT
               value: "8000"
             - name: RERANK_BACKENDS
-              value: "reranker-node-1=http://vllm-rerank-gpu-node-1.ai.svc.cluster.local:8002,reranker-node-2=http://vllm-rerank-gpu-node-2.ai.svc.cluster.local:8002"
+              value: "reranker-node-1=http://vllm-rerank-gpu-node-1.vllm.svc.cluster.local:8002,reranker-node-2=http://vllm-rerank-gpu-node-2.vllm.svc.cluster.local:8002"
             - name: TIMEOUT_CONNECT_MS
               value: "1000"
             - name: TIMEOUT_READ_MS

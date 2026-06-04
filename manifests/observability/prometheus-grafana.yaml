@@ -12,7 +12,7 @@
 # Stack aligns with: https://github.com/taixingbi/layer-observability-grafana
 # Pod logs → Grafana Cloud Loki: companion manifest `alloy-loki-cloud.yaml` (Alloy DaemonSet, loki.write).
 #
-# Apply after vLLM + `vllm-inference` exist in `ai`, and GPU Operator exposes
+# Apply after vLLM + `vllm-inference` exist in `vllm`, and GPU Operator exposes
 # DCGM Service in `gpu-operator` (port 9400, /metrics); name usually ends with `dcgm-exporter`.
 # Prometheus TSDB uses PVC `prometheus-data` (storageClassName: local-path for k3s).
 # Change storageClassName if your cluster uses a different default provisioner.
@@ -88,7 +88,7 @@ data:
           - role: endpoints
             namespaces:
               names:
-                - ai
+                - vllm
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
@@ -224,7 +224,7 @@ data:
           - role: endpoints
             namespaces:
               names:
-                - ai
+                - vllm
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
@@ -255,7 +255,7 @@ data:
           - role: endpoints
             namespaces:
               names:
-                - ai
+                - vllm
         relabel_configs:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep

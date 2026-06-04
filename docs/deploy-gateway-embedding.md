@@ -6,7 +6,7 @@ Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `
 
 ## 1) Configure backends (no `secretRef`)
 
-The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-embedding/base/deployment.yaml` (same names as upstream [.env.example](https://github.com/taixingbi/layer-gateway-embed-v1/blob/main/.env.example)). The important variable is **`EMBED_BACKENDS`** (`name=url,name=url`). Defaults use in-cluster DNS for vLLM embed in the per-node bundle (`vllm-embed-gpu-node-*.ai.svc.cluster.local:8001`; see `manifests/ai/vllm-bundle.yaml`). Edit the GitOps manifest and push to `main`.
+The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-embedding/base/deployment.yaml` (same names as upstream [.env.example](https://github.com/taixingbi/layer-gateway-embed-v1/blob/main/.env.example)). The important variable is **`EMBED_BACKENDS`** (`name=url,name=url`). Defaults use in-cluster DNS for vLLM embed in the per-node bundle (`vllm-embed-gpu-node-*.vllm.svc.cluster.local:8001`; see `manifests/vllm/vllm-bundle.yaml`). Edit the GitOps manifest and push to `main`.
 
 ```bash
 # optional: confirm EMBED_BACKENDS on the live Deployment

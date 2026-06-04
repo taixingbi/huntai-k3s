@@ -2,7 +2,7 @@
 
 Cross-encoder reranking runs **inside the per-GPU vLLM bundle** on port **8002**. It is **not** a separate Deployment — one `vllm serve` process per bundle Pod, after embed (`:8001`) and before chat (`:8000`). Bundle overview: [deploy-vllm-inference.md](deploy-vllm-inference.md). Client-facing routing: [deploy-gateway-reranker.md](deploy-gateway-reranker.md) (NodePort **30182**).
 
-GitOps: Argo CD Application **`vllm-inference`** (`manifests/ai`). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/ai/vllm-bundle-start-configmap.yaml`](../manifests/ai/vllm-bundle-start-configmap.yaml).
+GitOps: Argo CD Application **`vllm-inference`** (`manifests/vllm`). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
 
 ## Layout
 
@@ -15,7 +15,7 @@ GitOps: Argo CD Application **`vllm-inference`** (`manifests/ai`). Startup scrip
 | `max-model-len` | `512` |
 | Start order | **Second** (after embed `/health`, before chat) |
 
-Per-node ClusterIP Services (namespace **`ai`**, gateway backends):
+Per-node ClusterIP Services (namespace **`vllm`**, gateway backends):
 
 | Service | Backend |
 |---------|---------|
@@ -27,8 +27,8 @@ LAN smoke tests: NodePort **`30082`** on **`rerank-bge-m3`** (same pattern as ch
 Reranker gateway **`RERANK_BACKENDS`** (in `manifests/gateway-reranker/base/deployment.yaml`):
 
 ```text
-reranker-node-1=http://vllm-rerank-gpu-node-1.ai.svc.cluster.local:8002
-reranker-node-2=http://vllm-rerank-gpu-node-2.ai.svc.cluster.local:8002
+reranker-node-1=http://vllm-rerank-gpu-node-1.vllm.svc.cluster.local:8002
+reranker-node-2=http://vllm-rerank-gpu-node-2.vllm.svc.cluster.local:8002
 ```
 
 ## `vllm serve` flags
@@ -49,10 +49,10 @@ Edit the ConfigMap and push to `main`; bump **`huntai.ai/vllm-bundle-start-revis
 Embed must pass `/health` before rerank starts; chat starts only after rerank passes `/health`. Full bundle rollout can take **10–45 minutes** per GPU node on cold cache.
 
 ```bash
-sudo k3s kubectl get pods -n ai -l app=vllm-bundle -o wide
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n ai --timeout=45m
-sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n ai --timeout=45m
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
+sudo k3s kubectl get pods -n vllm -l app=vllm-bundle -o wide
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-1 -n vllm --timeout=45m
+sudo k3s kubectl rollout status deploy/vllm-bundle-gpu-node-2 -n vllm --timeout=45m
+sudo k3s kubectl exec -n vllm deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/healthcheck.py
 ```
 
 **Pass:** `ok rerank http://127.0.0.1:8002/health` (and embed/chat lines; embed also requires `ok embed /v1/embeddings`).
@@ -60,7 +60,7 @@ sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- python3 /scripts/he
 Confirm live script:
 
 ```bash
-sudo k3s kubectl exec -n ai deploy/vllm-bundle-gpu-node-1 -- \
+sudo k3s kubectl exec -n vllm deploy/vllm-bundle-gpu-node-1 -- \
   grep -A5 'starting rerank' /scripts/start-vllm-bundle.sh
 ```
 
@@ -122,7 +122,7 @@ echo
 Logs:
 
 ```bash
-sudo k3s kubectl logs -n ai deploy/vllm-bundle-gpu-node-1 -c vllm-bundle --tail=100
+sudo k3s kubectl logs -n vllm deploy/vllm-bundle-gpu-node-1 -c vllm-bundle --tail=100
 ```
 
 Gateway readiness (proxies to vLLM **`/health`** only):
