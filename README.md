@@ -95,6 +95,8 @@ sudo k3s kubectl logs cuda-vectoradd
 sudo k3s kubectl delete pod cuda-vectoradd
 ```
 
+GPU telemetry (DCGM) runs in-cluster via GPU Operator — **not** Docker on GPU nodes. Migrate legacy Docker `dcgm-exporter`: [`docs/deploy-prometheus.md`](docs/deploy-prometheus.md) (GPU telemetry section) and `scripts/migrate-docker-dcgm-to-k3s.sh`.
+
 ## 4) GitOps (Argo CD)
 
 Install Argo CD and bootstrap all Applications via app-of-apps:

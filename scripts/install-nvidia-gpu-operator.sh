@@ -90,6 +90,7 @@ HELM_OP_ARGS=(
   --version "${GPU_OPERATOR_VERSION}"
   --set driver.enabled=false
   --set toolkit.enabled=true
+  --set dcgmExporter.enabled=true
   --set "toolkit.env[0].name=CONTAINERD_SOCKET"
   --set "toolkit.env[0].value=${K3S_CONTAINERD_SOCKET}"
   --set "toolkit.env[1].name=CONTAINERD_CONFIG"
@@ -143,5 +144,15 @@ echo "Operator status (best-effort):"
 k3s kubectl get pods -n "${GPU_OPERATOR_NAMESPACE}" -o wide 2>/dev/null || true
 
 echo ""
+echo "DCGM exporter (Prometheus scrapes gpu-operator namespace, port 9400):"
+k3s kubectl get daemonset -n "${GPU_OPERATOR_NAMESPACE}" 2>/dev/null | grep -i dcgm || true
+k3s kubectl get svc -n "${GPU_OPERATOR_NAMESPACE}" 2>/dev/null | grep -i dcgm || true
+k3s kubectl get pods -n "${GPU_OPERATOR_NAMESPACE}" -l app=nvidia-dcgm-exporter -o wide 2>/dev/null \
+  || k3s kubectl get pods -n "${GPU_OPERATOR_NAMESPACE}" 2>/dev/null | grep -i dcgm || true
+
+echo ""
 echo "Next: apply the provided sample manifest to validate GPU scheduling:"
 echo "  sudo k3s kubectl apply -f manifests/gpu/gpu-vectoradd-sample.yaml"
+echo ""
+echo "After Docker dcgm-exporter is removed from GPU nodes, verify Prometheus targets:"
+echo "  ./scripts/migrate-docker-dcgm-to-k3s.sh verify"
