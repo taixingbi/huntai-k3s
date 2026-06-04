@@ -23,4 +23,5 @@ Deployment steps are split by component:
 11. Prometheus remote_write: `docs/deploy-prometheus.md`
 12. Alloy + Loki: `docs/deploy-alloy-loki.md`
 13. Grafana import: `grafana-import/README.md`
+14. Prod user stack (`ai-prod`): `docs/deploy-prod.md`
 

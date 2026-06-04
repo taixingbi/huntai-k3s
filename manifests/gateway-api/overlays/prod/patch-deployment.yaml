@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-api
+  labels:
+    environment: prod
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+    spec:
+      containers:
+        - name: gateway
+          envFrom:
+            - secretRef:
+                name: layer-ai-prod-secrets
+          env:
+            - name: ENV
+              value: "prod"
+            - name: FRONTEND_URL
+              value: "https://taixingai.com"
+            - name: ORCHESTRATOR_TIMEOUT_MS
+              value: "120000"

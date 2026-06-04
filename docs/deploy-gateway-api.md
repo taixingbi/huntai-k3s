@@ -40,7 +40,7 @@ The dev manifest uses `envFrom.secretRef.name=layer-gateway-api-secrets`. Non-se
 | `ORCHESTRATOR_CHAT_PATH` | `/v1/orchestrator/answer` |
 | `ORCHESTRATOR_CONTRACT` | `flat_headers` |
 | `CHAT_ASSISTANT_MODEL` | `qwen2.5-7b` |
-| `ORCHESTRATOR_TIMEOUT_MS` | `15000` |
+| `ORCHESTRATOR_TIMEOUT_MS` | `120000` (aligns with orchestrator `INVOKE_TIMEOUT_S=120`) |
 | `ORCHESTRATOR_RETRY_MAX_ATTEMPTS` | `2` |
 | `ORCHESTRATOR_READINESS_PROBE_ENABLED` | `true` |
 | `FRONTEND_URL` | `https://dev.taixingai.com` |

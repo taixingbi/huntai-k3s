@@ -1,12 +1,13 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: ai-dev
+namespace: ai-prod
 resources:
   - ../../base
   - namespace.yaml
 patches:
-  - path: patch-orchestrator-timeout.yaml
-# Pinned by layer-gateway-api-v1 CI (GHCR push → update-gitops). Argo CD rolls out on tag change.
+  - path: patch-deployment.yaml
+  - path: patch-service.yaml
+# Pin prod image after promotion from dev (copy tag/digest from dev overlay or CI).
 images:
   - name: ghcr.io/taixingbi/layer-gateway-api-v1
     newName: ghcr.io/taixingbi/layer-gateway-api-v1

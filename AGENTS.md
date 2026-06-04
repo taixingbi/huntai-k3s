@@ -30,6 +30,10 @@ Repo: GitOps manifests for HuntAI on **k3s** (control plane + 2× GPU). App code
 ./scripts/sync-grafana-dashboards.sh --print-versions
 ```
 
+## Prod (`ai-prod`)
+
+User-facing prod: gateway-api, orchestrator, web, rag — [docs/deploy-prod.md](docs/deploy-prod.md). GPU gateways + Qdrant stay in `ai-dev`. Secret: `layer-ai-prod-secrets` (not dev secrets).
+
 ## Deploy order (cold start)
 
 1. Cluster secrets → `docs/cluster-secrets.md` + `secrets/README.md`

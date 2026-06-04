@@ -16,7 +16,7 @@
 
 Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`); below are **NodePort** values on the control plane unless noted. **layer-web** (Next.js) uses Service port **3000** (NodePort `30186` dev).
 
-**Dev** rows are deployed via Argo CD. **qa** / **prod** rows are **reserved** (no overlays yet).
+**Dev** rows are deployed via Argo CD. **Prod** user stack (`ai-prod`): gateway-api, orchestrator, rag, web — see [deploy-prod.md](deploy-prod.md). **qa** ports remain reserved.
 
 | Port | Service | URL hint (dev) |
 |------|---------|----------------|
@@ -33,7 +33,14 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 | 30191 | layer-mcp-github-v1 | `http://192.168.86.179:30191` |
 | 30633 | qdrant | `http://192.168.86.179:30633` (in-cluster `qdrant:6333`) |
 
-Reserved qa/prod ports (30280–30391, etc.): same pattern as previous layout — not deployed yet.
+| Port | Service (prod `ai-prod`) |
+|------|--------------------------|
+| 30383 | rag-query |
+| 30384 | orchestrator |
+| 30385 | gateway-api |
+| 30386 | layer-web |
+
+Reserved **qa** ports (30280–30291, etc.) — not deployed.
 
 ## In-cluster DNS (gateways → vLLM)
 

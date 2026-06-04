@@ -1,0 +1,13 @@
+# Align with orchestrator INVOKE_TIMEOUT_S (120s); 15s caused premature client abort on RAG/MCP.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: gateway
+          env:
+            - name: ORCHESTRATOR_TIMEOUT_MS
+              value: "120000"

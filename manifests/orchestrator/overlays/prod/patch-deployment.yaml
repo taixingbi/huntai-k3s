@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-orchestrator
+  labels:
+    environment: prod
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+    spec:
+      containers:
+        - name: orchestrator
+          envFrom:
+            - secretRef:
+                name: layer-ai-prod-secrets
+          env:
+            - name: ENV
+              value: "prod"
+            - name: APP_VERSION
+              value: "prod"
+            - name: LLM_GATEWAY_BASE_URL
+              value: "http://layer-gateway-inference.ai-dev.svc.cluster.local:8000"
+            - name: RAG_HTTP_BASE_URL
+              value: "http://layer-rag-query:8000"
+            - name: RAG_COLLECTION_BASE
+              value: "taixing_knowledge_prod"
+            - name: MCP_GITHUB_BASE_URL
+              value: "http://layer-mcp-github-v1.ai-dev.svc.cluster.local:8000"

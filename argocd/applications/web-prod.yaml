@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: web-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "11"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/taixingbi/huntai-k3s.git
+    targetRevision: main
+    path: manifests/web/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-prod
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

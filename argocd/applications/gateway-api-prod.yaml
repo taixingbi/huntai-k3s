@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gateway-api-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/taixingbi/huntai-k3s.git
+    targetRevision: main
+    path: manifests/gateway-api/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ai-prod
+  # Manual sync until layer-ai-prod-secrets exists (see docs/deploy-prod.md).
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true

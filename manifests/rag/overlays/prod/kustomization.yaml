@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ai-prod
+resources:
+  - ../../base
+  - namespace.yaml
+patches:
+  - path: patch-deployment.yaml
+  - path: patch-service.yaml
+images:
+  - name: ghcr.io/taixingbi/layer-rag-query-v1
+    newName: ghcr.io/taixingbi/layer-rag-query-v1
+    newTag: "25297f9e35a4"
+    digest: "sha256:a90000e81f572354a8e48e60349bd4844049d2eef9b66111475b165d51022f4c"

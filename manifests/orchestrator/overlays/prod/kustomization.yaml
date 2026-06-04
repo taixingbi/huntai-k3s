@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ai-prod
+resources:
+  - ../../base
+  - namespace.yaml
+patches:
+  - path: patch-deployment.yaml
+  - path: patch-service.yaml
+images:
+  - name: ghcr.io/taixingbi/layer-orchestrator-v1
+    newName: ghcr.io/taixingbi/layer-orchestrator-v1
+    newTag: "6f3ca014c45d"
+    digest: "sha256:b9b3da9a04b8685bbcc2373adf8f5255db501c7b377058fd47a7060b7a9777f6"

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-web
+  labels:
+    environment: prod
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+    spec:
+      containers:
+        - name: web
+          env:
+            - name: APP_URL
+              value: "https://taixingai.com"
+            - name: GATEWAY_BASE_URL
+              value: "http://layer-gateway-api:8000"

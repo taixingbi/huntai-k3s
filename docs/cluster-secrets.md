@@ -16,6 +16,16 @@ Grafana Cloud: [secrets/README.md](../secrets/README.md) (bootstrap commands, ro
 
 RAG and embedding/reranker gateways do not use `secretRef` in dev manifests by default.
 
+## ai-prod (prod user stack)
+
+| Secret | Used by | Create |
+|--------|---------|--------|
+| `layer-ai-prod-secrets` | gateway-api-prod, orchestrator-prod | [deploy-prod.md](deploy-prod.md) |
+
+Use a **prod Supabase project** and **prod Tavily** key — do not copy `ai-dev` secret bytes. Example template: `secrets/examples/layer-ai-prod-secrets.secret.example.yaml`.
+
+Shared backends (inference/embed/rerank gateways, Qdrant) stay in **`ai-dev`** — no prod secrets for those apps.
+
 ## monitoring
 
 | Secret | Used by | Create |

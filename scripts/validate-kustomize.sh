@@ -23,6 +23,10 @@ PATHS=(
   manifests/web/overlays/dev
   manifests/tool/overlays/dev
   manifests/ingress
+  manifests/gateway-api/overlays/prod
+  manifests/orchestrator/overlays/prod
+  manifests/rag/overlays/prod
+  manifests/web/overlays/prod
 )
 
 for p in "${PATHS[@]}"; do

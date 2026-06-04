@@ -13,3 +13,7 @@ resources:
   - rag-query-dev.yaml
   - web-dev.yaml
   - cloudflared-dev.yaml
+  - gateway-api-prod.yaml
+  - orchestrator-prod.yaml
+  - rag-query-prod.yaml
+  - web-prod.yaml

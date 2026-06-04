@@ -66,6 +66,10 @@ sudo k3s kubectl get secret -n monitoring \
 
 If a secret was deleted, recreate with the commands above.
 
+## Prod (`ai-prod`)
+
+Bundle secret for gateway-api + orchestrator: [docs/deploy-prod.md](../docs/deploy-prod.md), template `secrets/examples/layer-ai-prod-secrets.secret.example.yaml`.
+
 ## Rotation
 
 Always use `kubectl create secret ... --dry-run=client -o yaml | kubectl apply -f -` and rollout restart Prometheus or Alloy. Do not re-add Secrets to `manifests/observability/`.

@@ -52,7 +52,8 @@ flowchart TB
 | Plane | Namespace | What runs there |
 |-------|-----------|-----------------|
 | **GPU / vLLM** | `vllm` | One bundle pod per GPU node: chat `:8000`, embed `:8001`, rerank `:8002` |
-| **Routing / apps** | `ai-dev` | Gateways, orchestrator, RAG, Qdrant, web, Cloudflare tunnel |
+| **Routing / apps (dev)** | `ai-dev` | GPU gateways, Qdrant, MCP, dev user stack, Cloudflare tunnel |
+| **User stack (prod)** | `ai-prod` | gateway-api, orchestrator, RAG, web (backends in `ai-dev` / `vllm`) |
 | **Observability** | `monitoring` | Prometheus (scrape + remote_write), Alloy (pod logs → Loki) |
 | **GPU telemetry** | `gpu-operator` | DCGM exporter (scraped as `workload=gpu-telemetry`) |
 
@@ -74,15 +75,16 @@ Configured in:
 - `manifests/gateway-reranker/base/deployment.yaml` — `RERANK_BACKENDS`
 - `manifests/gateway-inference/base/configmap.yaml` — `backends[].url`
 
-### Why not only NodePort `30080`?
+### Chat backends (current)
 
-Older config used **LAN IPs** (`192.168.86.173:30080`, `192.168.86.176:30080`) because chat had no per-node ClusterIP Service—only shared Services (`vllm-inference`, `inference-qwen25-7b`) selecting all bundle pods. That worked but:
+Inference gateway uses per-node ClusterIP DNS (same pattern as embed/rerank):
 
-- Hard-codes node IPs in Git
-- Differs from embed/rerank (in-cluster DNS)
-- NodePort hairpin from `server-node-1` to its own LAN IP can hang (see [deploy-gateway-reranker.md](deploy-gateway-reranker.md))
+- `http://vllm-chat-gpu-node-1.vllm.svc.cluster.local:8000`
+- `http://vllm-chat-gpu-node-2.vllm.svc.cluster.local:8000`
 
-**Current approach:** per-node Services `vllm-chat-gpu-node-1` / `vllm-chat-gpu-node-2` (same pattern as embed/rerank). NodePort `30080` on `inference-qwen25-7b` remains for **direct** smoke tests from outside the cluster.
+NodePort `30080` on `inference-qwen25-7b` is for **direct** vLLM smokes from GPU node LAN IPs only — not for gateway `config.yaml` backends.
+
+**Prod orchestrator/RAG** in `ai-prod` call shared **dev** GPU stack via FQDN (`*.ai-dev.svc.cluster.local`) — see [deploy-prod.md](deploy-prod.md).
 
 ### Aggregate Services (avoid for gateway backends)
 

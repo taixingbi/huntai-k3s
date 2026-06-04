@@ -224,5 +224,9 @@ Argo CD sync waves order cold start roughly as:
 | 5 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev` |
 | 6 | `web-dev` | `manifests/web/overlays/dev` |
 | 9 | `cloudflared-dev` | `manifests/ingress` |
+| 10 | `rag-query-prod`, `orchestrator-prod`, `gateway-api-prod` | `manifests/*/overlays/prod` (manual sync) |
+| 11 | `web-prod` | `manifests/web/overlays/prod` |
+
+**Argo OutOfSync (dev):** Review **Diff** before **Sync** on `gateway-*-dev` so Git does not revert hand-tuned `EMBED_BACKENDS` / `RERANK_BACKENDS`. Prod apps only touch `ai-prod` overlays — they cannot change `ai-dev` gateway Deployments.
 
 Add a new app: create `argocd/applications/<name>.yaml`, list it in `argocd/applications/kustomization.yaml`, commit, push — `huntai-apps` picks it up automatically.
