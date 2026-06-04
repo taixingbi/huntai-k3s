@@ -53,15 +53,24 @@ After pushing this repo to `main`:
 
 ```bash
 cd ~/shared/huntai-k3s
+git pull
 
-# Secrets must exist before pods start — see cluster-secrets.md
-# Monitoring Grafana Cloud tokens: secrets/README.md (not in manifests/observability)
-sudo k3s kubectl apply -f argocd/app-of-apps.yaml
+# Recommended: applies projects + all Application CRs + huntai-apps (no argocd CLI)
+./scripts/bootstrap-argocd.sh
 ```
 
-This creates Application `huntai-apps`, which syncs `argocd/` (AppProjects + child Applications). New apps: add YAML under `argocd/applications/`, list it in `argocd/applications/kustomization.yaml`, set `spec.project`, commit, push.
+Or minimal (only if `argocd` CLI is available to sync afterward):
 
-**Upgrading** from `path: argocd/applications`: re-apply `argocd/app-of-apps.yaml` so `huntai-apps` points at `argocd`, then sync `huntai-apps` once (creates AppProjects `platform`, `ai-dev`, `ai-prod`).
+```bash
+sudo k3s kubectl apply -f argocd/app-of-apps.yaml
+argocd app sync huntai-apps --grpc-web
+```
+
+**Do not** apply only `app-of-apps.yaml` before `git pull` — if `huntai-apps` syncs an empty/wrong `argocd/` path with **prune** enabled, child Applications can be **deleted** from the UI.
+
+This creates Application `huntai-apps`, which syncs `argocd/` (AppProjects + child Applications). New apps: add YAML under `argocd/applications/`, list it in `argocd/applications/kustomization.yaml`, set `spec.project`, commit, push, run `./scripts/bootstrap-argocd.sh` or sync `huntai-apps` in the UI.
+
+**Recovery** (all apps show `default` project, or most apps missing): `git pull` then `./scripts/bootstrap-argocd.sh`.
 
 ## 5) Verify sync
 
