@@ -78,7 +78,7 @@ Before the first successful bundle rollout:
 3. Sync `vllm-inference` (enable **Prune**). If sync errors with *“synchronization tasks are not valid”*, update AppProjects (`argocd/projects/*.yaml` must allow `Namespace`) and re-run `./scripts/bootstrap-argocd.sh`, then sync again.
 
 4. Wait for `startupProbe` (model pull can take 15–30+ minutes).
-4. Run [§ Smoke tests](#smoke-tests) below, then embed/rerank smokes in their docs.
+5. Run [§ Smoke tests](#smoke-tests) below, then embed/rerank smokes in their docs.
 
 ## Namespace rename (`ai` → `vllm`)
 
