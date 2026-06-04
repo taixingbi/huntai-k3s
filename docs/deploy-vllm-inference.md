@@ -75,6 +75,8 @@ Before the first successful bundle rollout:
 
 ## Namespace rename (`ai` → `vllm`)
 
+Full step-by-step (gateways, Prometheus, Grafana): **[fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md)**.
+
 Inference manifests live under `manifests/vllm/` and deploy into namespace **`vllm`**. Application tier (gateways, RAG, Qdrant, web) stays in **`ai-dev`**.
 
 After `main` updates and Argo syncs `vllm-inference`:

@@ -58,3 +58,57 @@ echo
 NodePorts:
 
 - dev: `30182`
+
+## Troubleshooting
+
+Broken together with embed, Argo `manifests/ai`, or missing Grafana series? See **[fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md)**.
+
+### `OutOfSync` + `/ready` shows backends `unhealthy`
+
+`rollout restart` does **not** change `RERANK_BACKENDS`; it only recreates Pods with the **current** Deployment spec. After the `ai` → `vllm` move, sync GitOps first so backends use `*.vllm.svc.cluster.local`.
+
+**Sync without `argocd` CLI** (from this repo on server-node-1):
+
+```bash
+cd ~/shared/huntai-platform/huntai-k3s
+sudo k3s kubectl apply -k manifests/gateway-reranker/overlays/dev
+sudo k3s kubectl -n ai-dev get deploy layer-gateway-reranker -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="RERANK_BACKENDS")].value}{"\n"}'
+# expect: vllm-rerank-gpu-node-*.vllm.svc.cluster.local:8002
+sudo k3s kubectl rollout restart deploy/layer-gateway-reranker -n ai-dev
+curl -sS http://192.168.86.179:30182/ready | jq .
+```
+
+Or trigger Argo from the UI (Application `gateway-reranker-dev` → **Sync**). Argo should return **Synced** after apply.
+
+### Gateway image has no `curl`
+
+Use a one-off debug pod or Python inside the gateway container:
+
+```bash
+sudo k3s kubectl run -n ai-dev rerank-curl --rm -it --restart=Never \
+  --image=curlimages/curl:8.5.0 -- \
+  curl -sS http://vllm-rerank-gpu-node-1.vllm.svc.cluster.local:8002/health
+
+sudo k3s kubectl -n ai-dev exec deploy/layer-gateway-reranker -- \
+  python3 -c "import urllib.request; print(urllib.request.urlopen('http://vllm-rerank-gpu-node-1.vllm.svc.cluster.local:8002/health', timeout=2).read())"
+```
+
+### `curl: (7) Failed to connect` to NodePort `30182`
+
+**On server-node-1**, curling the node’s own LAN IP (`192.168.86.179:30182`) can hang ~60s+ (NodePort hairpin / kube-proxy). That does **not** mean the gateway is down. Prefer ClusterIP or pod IP from the control plane:
+
+```bash
+IP=$(sudo k3s kubectl -n ai-dev get svc layer-gateway-reranker -o jsonpath='{.spec.clusterIP}')
+curl -sS --max-time 5 "http://${IP}:8000/ready" | jq .
+curl -sS --max-time 5 "http://${IP}:8000/health"
+```
+
+LAN smokes from another machine (laptop) to `192.168.86.179:30182` are fine. After rollout, wait until the new Pod is **`Running`** and endpoints list one IP before NodePort tests.
+
+If ClusterIP also fails, check Pod and rollout:
+
+```bash
+sudo k3s kubectl -n ai-dev get pods,svc,endpoints -l app=layer-gateway-reranker
+sudo k3s kubectl -n ai-dev logs deploy/layer-gateway-reranker --tail=50
+sudo ss -tlnp | grep 30182
+```

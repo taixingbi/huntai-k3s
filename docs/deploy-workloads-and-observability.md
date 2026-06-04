@@ -2,6 +2,8 @@
 
 GitOps (Argo CD) for the gateway API and future apps: [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
 
+If embed, rerank, inference gateways, or vLLM Grafana metrics broke after the `ai` → `vllm` move, use **`docs/fix-vllm-plane-cutover.md`** first.
+
 Deployment steps are split by component:
 
 1. vLLM inference (bundle): `docs/deploy-vllm-inference.md`

@@ -32,7 +32,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(vllm:request_success_total{workload=\"embedding\"}[1m])",
+          "expr": "sum by (node) (rate(vllm:request_success_total{workload=\"embedding\", node=~\".+\"}[1m]))",
           "legendFormat": "{{node}}",
           "refId": "A"
         }
@@ -55,7 +55,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(vllm:prompt_tokens_total{workload=\"embedding\"}[1m])",
+          "expr": "sum by (node) (rate(vllm:prompt_tokens_total{workload=\"embedding\", node=~\".+\"}[1m]))",
           "legendFormat": "{{node}} input tok/s",
           "refId": "A"
         }
@@ -78,7 +78,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "histogram_quantile(0.99, sum(rate(vllm:e2e_request_latency_seconds_bucket{workload=\"embedding\"}[5m])) by (le, node))",
+          "expr": "histogram_quantile(0.99, sum(rate(vllm:e2e_request_latency_seconds_bucket{workload=\"embedding\", node=~\".+\"}[5m])) by (le, node))",
           "legendFormat": "{{node}} p99",
           "refId": "A"
         }
@@ -100,7 +100,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "vllm:num_requests_running{workload=\"embedding\"}",
+          "expr": "max by (node) (vllm:num_requests_running{workload=\"embedding\", node=~\".+\"})",
           "legendFormat": "{{node}}",
           "refId": "A"
         }
@@ -122,7 +122,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "vllm:num_requests_waiting{workload=\"embedding\"}",
+          "expr": "max by (node) (vllm:num_requests_waiting{workload=\"embedding\", node=~\".+\"})",
           "legendFormat": "{{node}}",
           "refId": "A"
         }

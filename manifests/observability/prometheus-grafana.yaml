@@ -1,14 +1,14 @@
 # Prometheus in cluster (no local Grafana). Filename prometheus-grafana.yaml is historical;
 # only Prometheus + remote_write live here. Use Grafana Cloud for dashboards.
 # Scrapes (filter in Grafana with label workload=inference|gateway-inference|gateway-embedding|gateway-api|rag-query|embedding|reranker|gpu-telemetry):
-#   - workload=inference: vLLM chat/completions via Service vllm-inference (ai)
+#   - workload=inference: vLLM chat/completions via Service vllm-inference (vllm)
 #   - workload=gateway-inference: chat routing gateway /metrics (Service layer-gateway-inference, ai-dev)
 #   - workload=gateway-embedding: embed routing gateway /metrics (Service layer-gateway-embedding, ai-dev)
 #   - workload=gateway-api: FastAPI edge gateway /metrics (Service layer-gateway-api, ai-dev)
 #   - workload=rag-query: RAG query FastMCP HTTP /metrics (Service layer-rag-query, ai-dev) when exposed by the image
 #   - workload=gpu-telemetry: DCGM per-GPU metrics (gpu-operator)
-#   - workload=embedding: vLLM embed per-node Services vllm-embed-gpu-node-* (ai)
-#   - workload=reranker: vLLM rerank per-node Services vllm-rerank-gpu-node-* (ai)
+#   - workload=embedding: vLLM embed per-node Services vllm-embed-gpu-node-* (vllm)
+#   - workload=reranker: vLLM rerank per-node Services vllm-rerank-gpu-node-* (vllm)
 # Stack aligns with: https://github.com/taixingbi/layer-observability-grafana
 # Pod logs → Grafana Cloud Loki: companion manifest `alloy-loki-cloud.yaml` (Alloy DaemonSet, loki.write).
 #
@@ -93,6 +93,10 @@ data:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
             regex: vllm-inference
+          # Avoid 3× scrape per pod (node IP + pod IP + hostname); keep one target per pod.
+          - source_labels: [__meta_kubernetes_endpoint_address_target_kind]
+            action: keep
+            regex: Pod
           - action: labelmap
             regex: __meta_kubernetes_service_label_(.+)
           - source_labels: [__meta_kubernetes_namespace]
@@ -101,6 +105,8 @@ data:
             target_label: kubernetes_pod_name
           - source_labels: [__meta_kubernetes_pod_node_name]
             target_label: kubernetes_node
+          - source_labels: [__meta_kubernetes_pod_label_vllm_node]
+            target_label: node
           - target_label: workload
             replacement: inference
 
@@ -229,6 +235,9 @@ data:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
             regex: vllm-embed-gpu-node-.*
+          - source_labels: [__meta_kubernetes_endpoint_address_target_kind]
+            action: keep
+            regex: Pod
           - action: labelmap
             regex: __meta_kubernetes_service_label_(.+)
           - source_labels: [__meta_kubernetes_namespace]
@@ -260,6 +269,9 @@ data:
           - source_labels: [__meta_kubernetes_service_name]
             action: keep
             regex: vllm-rerank-gpu-node-.*
+          - source_labels: [__meta_kubernetes_endpoint_address_target_kind]
+            action: keep
+            regex: Pod
           - action: labelmap
             regex: __meta_kubernetes_service_label_(.+)
           - source_labels: [__meta_kubernetes_namespace]

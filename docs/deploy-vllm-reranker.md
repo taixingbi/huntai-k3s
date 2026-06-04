@@ -2,7 +2,7 @@
 
 Cross-encoder reranking runs **inside the per-GPU vLLM bundle** on port **8002**. It is **not** a separate Deployment — one `vllm serve` process per bundle Pod, after embed (`:8001`) and before chat (`:8000`). Bundle overview: [deploy-vllm-inference.md](deploy-vllm-inference.md). Client-facing routing: [deploy-gateway-reranker.md](deploy-gateway-reranker.md) (NodePort **30182**).
 
-GitOps: Argo CD Application **`vllm-inference`** (`manifests/vllm`). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
+GitOps: Argo CD Application **`vllm-inference`** (`manifests/vllm`). Cutover runbook: [fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
 
 ## Layout
 

@@ -4,6 +4,8 @@ Gateway image: [ghcr.io/taixingbi/layer-gateway-embed-v1](https://github.com/tai
 
 Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `GET /metrics`. In-cluster: `http://layer-gateway-embedding:8000`; LAN: NodePort `30181` (`docs/port.md`). Required headers on embed calls: `X-Request-Id`, `X-Trace-Id`, `X-Session-Id` (see upstream [README](https://github.com/taixingbi/layer-gateway-embed-v1#example)). vLLM backends (`:8001`): [deploy-vllm-embedding.md](deploy-vllm-embedding.md). Smoke tests: `docs/test-calls.md`. Prometheus scrapes Service `layer-gateway-embedding` as `workload=gateway-embedding` after `manifests/observability/prometheus-grafana.yaml`.
 
+Broken together with rerank, Argo `manifests/ai`, or missing Grafana series? See **[fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md)**.
+
 ## 1) Configure backends (no `secretRef`)
 
 The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-embedding/base/deployment.yaml` (same names as upstream [.env.example](https://github.com/taixingbi/layer-gateway-embed-v1/blob/main/.env.example)). The important variable is **`EMBED_BACKENDS`** (`name=url,name=url`). Defaults use in-cluster DNS for vLLM embed in the per-node bundle (`vllm-embed-gpu-node-*.vllm.svc.cluster.local:8001`; see `manifests/vllm/vllm-bundle.yaml`). Edit the GitOps manifest and push to `main`.

@@ -2,7 +2,7 @@
 
 Dense embedding inference runs **inside the per-GPU vLLM bundle** on port **8001**. It is **not** a separate Deployment — one `vllm serve` process per bundle Pod, alongside chat (`:8000`) and rerank (`:8002`). Bundle overview: [deploy-vllm-inference.md](deploy-vllm-inference.md). Client-facing routing: [deploy-gateway-embedding.md](deploy-gateway-embedding.md) (NodePort **30181**).
 
-GitOps: Argo CD Application **`vllm-inference`** (`manifests/vllm`). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
+GitOps: Argo CD Application **`vllm-inference`** (`manifests/vllm`). Cutover runbook: [fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md). Startup script: ConfigMap **`vllm-bundle-start`** → [`manifests/vllm/vllm-bundle-start-configmap.yaml`](../manifests/vllm/vllm-bundle-start-configmap.yaml).
 
 ## Layout
 
