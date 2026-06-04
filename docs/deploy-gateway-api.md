@@ -25,10 +25,10 @@ Key endpoints:
 
 ## Prerequisites
 
-- **Orchestrator** in `ai-dev` — [deploy-orchestrator.md](deploy-orchestrator.md) (`layer-orchestrator:8000` or NodePort `30184`). Gateway calls **`POST /v1/orchestrator/answer`** (`ORCHESTRATOR_CHAT_PATH` in manifest). The orchestrator GitHub route uses MCP tool name **`github_search`** on [layer-mcp-github-v1](deploy-layer-mcp-github.md).
+- **Orchestrator** in `ai-dev` — [deploy-orchestrator.md](deploy-orchestrator.md) (`layer-orchestrator:8000` or NodePort `30184`). Gateway calls **`POST /v1/orchestrator/answer`** (`ORCHESTRATOR_CHAT_PATH` in manifest). The orchestrator GitHub route uses MCP tool name **`github_search`** on [layer-mcp-github-v1](deploy-mcp-github.md).
 - **Auth secret** `layer-gateway-api-secrets` in `ai-dev` (§1). Pods stay `CreateContainerConfigError` until it exists.
 - Port map: [port.md](port.md) (`30185` dev).
-- Optional UI: [deploy-layer-web.md](deploy-layer-web.md) — public [https://dev.taixingai.com](https://dev.taixingai.com) ([deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md)) or LAN NodePort `30186`.
+- Optional UI: [deploy-web.md](deploy-web.md) — public [https://dev.taixingai.com](https://dev.taixingai.com) ([deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md)) or LAN NodePort `30186`.
 
 ## 1) Create auth secrets and review env
 
@@ -260,7 +260,7 @@ echo
 
 ### 3.6 Full stack (layer-web BFF)
 
-[deploy-layer-web.md](deploy-layer-web.md) — browser → web `POST /api/v1/chat` → gateway `POST /v1/chat`; web translates SSE (`status`, `result_chunk`, `stream_end`, …). Sign in at `/login` first.
+[deploy-web.md](deploy-web.md) — browser → web `POST /api/v1/chat` → gateway `POST /v1/chat`; web translates SSE (`status`, `result_chunk`, `stream_end`, …). Sign in at `/login` first.
 
 ### 3.7 Checklist
 
@@ -291,7 +291,7 @@ After changing scrape rules:
 sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 ```
 
-Job `layer-gateway-api` scrapes Service `layer-gateway-api` in `ai-dev` (see [manifests/observability/prometheus-grafana.yaml](../manifests/observability/prometheus-grafana.yaml)).
+Job `layer-gateway-api` scrapes Service `layer-gateway-api` in `ai-dev` (see [manifests/observability/prometheus-configmap.yaml](../manifests/observability/prometheus-configmap.yaml)).
 
 ## Troubleshooting
 
@@ -300,7 +300,7 @@ Job `layer-gateway-api` scrapes Service `layer-gateway-api` in `ai-dev` (see [ma
 | `GET /ready` **503** | [deploy-orchestrator.md](deploy-orchestrator.md); `ORCHESTRATOR_READINESS_PROBE_ENABLED` |
 | Empty / error answer | Pod logs; orchestrator `POST /v1/orchestrator/answer` from gateway pod |
 | **401** on `/v1/chat` | `POST /v1/auth/login`; token expiry (`JWT_EXPIRY_SECONDS`) |
-| **400** on `/v1/feedback` | `message_id` + `conversation_id` from prior chat; redeploy [layer-web-v1](deploy-layer-web.md) if UI sends legacy `trace_id`-only body |
+| **400** on `/v1/feedback` | `message_id` + `conversation_id` from prior chat; redeploy [layer-web](deploy-web.md) if UI sends legacy `trace_id`-only body |
 | **503** on `/v1/feedback` | `SUPABASE_*` in secret §1 |
 | **503** under load | `MAX_INFLIGHT_REQUESTS` (default `100`) |
 | Stale image | Pull `latest` after [CI Push to GHCR](https://github.com/taixingbi/layer-gateway-api-v1/actions) |

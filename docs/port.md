@@ -1,45 +1,46 @@
-Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`); below are **NodePort** values on the node. **layer-web** (Next.js) uses Service port **3000** (NodePort `30186` dev).
+# Ports and cluster endpoints
+
+## Hosts (LAN)
+
+| Host | Role | IP |
+|------|------|-----|
+| `server-node-1` | k3s control plane | `192.168.86.179` |
+| `gpu-node-1` | GPU worker | `192.168.86.173` |
+| `gpu-node-2` | GPU worker | `192.168.86.176` |
+
+**Smoke tests from `server-node-1`:** prefer **ClusterIP** or in-cluster DNS for gateways (NodePort to this node's own LAN IP can hang — hairpin). From a laptop, use `192.168.86.179:<NodePort>` below.
+
+**Prometheus UI (local TSDB):** port-forward `monitoring/prometheus:9090` or NodePort if exposed — see [deploy-prometheus.md](deploy-prometheus.md).
+
+## NodePorts (dev)
+
+Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`); below are **NodePort** values on the control plane unless noted. **layer-web** (Next.js) uses Service port **3000** (NodePort `30186` dev).
 
 **Dev** rows are deployed via Argo CD. **qa** / **prod** rows are **reserved** (no overlays yet).
 
-30080 → inference / chat (vLLM bundle NodePort)
-30081 → embedding (vLLM bundle NodePort)
-30082 → reranker (vLLM bundle NodePort)
+| Port | Service | URL hint (dev) |
+|------|---------|----------------|
+| 30080 | vLLM chat (per-node NodePort on GPU hosts) | `http://192.168.86.173:30080`, `http://192.168.86.176:30080` |
+| 30081 | vLLM embed (GPU hosts) | `:30081` on GPU node IPs |
+| 30082 | vLLM rerank (GPU hosts) | `:30082` on GPU node IPs |
+| 30180 | gateway-inference | `http://192.168.86.179:30180` |
+| 30181 | gateway-embedding | `http://192.168.86.179:30181` |
+| 30182 | gateway-reranker | `http://192.168.86.179:30182` |
+| 30183 | rag-query | `http://192.168.86.179:30183` |
+| 30184 | orchestrator | `http://192.168.86.179:30184` |
+| 30185 | gateway-api | `http://192.168.86.179:30185` |
+| 30186 | layer-web | `http://192.168.86.179:30186` |
+| 30191 | layer-mcp-github-v1 | `http://192.168.86.179:30191` |
+| 30633 | qdrant | `http://192.168.86.179:30633` (in-cluster `qdrant:6333`) |
 
-30180 → gateway-inference (dev) 
-30280 → gateway-inference (qa) — reserved
-30380 → gateway-inference (prod) — reserved, not deployed
+Reserved qa/prod ports (30280–30391, etc.): same pattern as previous layout — not deployed yet.
 
-30181 → gateway-embedding (dev) 
-30281 → gateway-embedding (qa) — reserved
-30381 → gateway-embedding (prod) — reserved
+## In-cluster DNS (gateways → vLLM)
 
-30182 → gateway-reranker (dev) 
-30282 → gateway-reranker (qa) — reserved
-30382 → gateway-reranker (prod) — reserved
+See [architecture.md](architecture.md).
 
-30183 → rag-query (dev) 
-30283 → rag-query (qa) — reserved
-30383 → rag-query (prod) — reserved
-
-30184 → orchestrator (dev)
-30284 → orchestrator (qa) — reserved
-30384 → orchestrator (prod) — reserved
-
-30185 → layer-gateway-api-v1 (dev)
-30285 → gateway-api (qa) — reserved
-30385 → gateway-api (prod) — reserved
-
-30186 → layer-web (dev)
-30286 → layer-web (qa) — reserved
-30386 → layer-web (prod) — reserved
-
-30633 → qdrant (dev NodePort; in-cluster `qdrant:6333`)
-
-# Tools / MCP (pod :8000 unless noted)
-30187-30190 → reserved (future tools, dev)
-30191 → layer-mcp-github-v1 (dev)
-30287-30290 → reserved (future tools, qa)
-30291 → layer-mcp-github-v1 (qa) — reserved
-30387-30390 → reserved (future tools, prod)
-30391 → layer-mcp-github-v1 (prod) — reserved
+| Backend | URL |
+|---------|-----|
+| Chat | `http://vllm-chat-gpu-node-{1,2}.vllm.svc.cluster.local:8000` |
+| Embed | `http://vllm-embed-gpu-node-{1,2}.vllm.svc.cluster.local:8001` |
+| Rerank | `http://vllm-rerank-gpu-node-{1,2}.vllm.svc.cluster.local:8002` |

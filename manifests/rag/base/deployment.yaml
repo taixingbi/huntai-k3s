@@ -29,7 +29,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: rag-query
-          image: ghcr.io/taixingbi/layer-rag-query-v1:latest
+          image: ghcr.io/taixingbi/layer-rag-query-v1
           imagePullPolicy: Always
           ports:
             - name: http

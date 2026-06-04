@@ -150,7 +150,7 @@ sudo k3s kubectl logs -n vllm -l vllm-node=gpu-node-1 -c prefetch-hf-cache
 
 ## Observability
 
-Prometheus discovers **`vllm-embed-gpu-node-*`** Services with label **`workload=embedding`** (`manifests/observability/prometheus-grafana.yaml`). Grafana dashboard: `grafana-import/dashboard/embedding.json`.
+Prometheus discovers **`vllm-embed-gpu-node-*`** Services with label **`workload=embedding`** (`manifests/observability/prometheus-configmap.yaml`). Grafana dashboard: `grafana-import/dashboard/embedding.json`.
 
 ## Related
 

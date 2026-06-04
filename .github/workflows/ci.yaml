@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Kustomize build (all overlays)
+        run: |
+          chmod +x scripts/validate-kustomize.sh
+          ./scripts/validate-kustomize.sh
+
+      - name: Grafana dashboard JSON parse
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq jq >/dev/null
+          for f in grafana-import/dashboard/*.json; do
+            jq -e '.title and .version' "$f" >/dev/null
+          done
+          ./scripts/sync-grafana-dashboards.sh --print-versions

@@ -18,7 +18,7 @@ unset GRAFANA_CLOUD_API_KEY
 sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 ```
 
-Remote write uses **basic auth**: `username` = Grafana Cloud Prometheus **instance ID** (`3067716` in [`prometheus-grafana.yaml`](../manifests/observability/prometheus-grafana.yaml)), `password` = a **`metrics:write`** access policy token (not Loki `logs:write`, not a stale placeholder).
+Remote write uses **basic auth**: `username` = Grafana Cloud Prometheus **instance ID** (`3067716` in [prometheus-configmap.yaml](../manifests/observability/prometheus-configmap.yaml)), `password` = a **`metrics:write`** access policy token (not Loki `logs:write`, not a stale placeholder).
 
 ### Grafana Cloud empty but local `9091` works (`401 invalid token`)
 
@@ -67,7 +67,7 @@ histogram_quantile(0.99, sum(rate(vllm:e2e_request_latency_seconds_bucket{cluste
 
 GPU hardware metrics come from **NVIDIA GPU Operator DCGM exporter** in namespace **`gpu-operator`** (port **9400**), **not** from a standalone Docker `dcgm-exporter` on GPU nodes.
 
-Prometheus job **`dcgm-exporter`** in [`manifests/observability/prometheus-grafana.yaml`](../manifests/observability/prometheus-grafana.yaml) discovers Services matching `.*dcgm-exporter` and labels targets `workload=gpu-telemetry`. Grafana dashboard **`layer-gpu-dcgm`** (`grafana-import/dashboard/gpu.json`) and alert rules depend on these series.
+Prometheus job **`dcgm-exporter`** in [`manifests/observability/ (prometheus-configmap.yaml + prometheus-stack.yaml)`](../manifests/observability/ (prometheus-configmap.yaml + prometheus-stack.yaml)) discovers Services matching `.*dcgm-exporter` and labels targets `workload=gpu-telemetry`. Grafana dashboard **`layer-gpu-dcgm`** (`grafana-import/dashboard/gpu.json`) and alert rules depend on these series.
 
 **Install / enable DCGM** (uses host NVIDIA driver; `driver.enabled=false`):
 
@@ -152,7 +152,7 @@ Expected model names (approx.): `Qwen/Qwen2.5-7B-Instruct`, `router-qwen2.5-7b-s
 **Router breakdown “6 lines”** with clear names: re-import `grafana-import/dashboard/inference.json` (v3) — legends use `{{node}} {{variant}}` with `base` / `sft` / `dpo` from `model_name`.
 
 **B) Still 3× the same `model_name`**  
-Duplicate **scrape targets** (pod + node + hostname addresses). **Fix:** apply `prometheus-grafana.yaml` (Pod-only targets); targets should show **2/2 UP** per `vllm-*` job. Re-import `embedding.json` / `reranker.json` (single model per port — should be **2 lines** only).
+Duplicate **scrape targets** (pod + node + hostname addresses). **Fix:** apply `manifests/observability/` (Pod-only targets in prometheus-configmap.yaml); targets should show **2/2 UP** per `vllm-*` job. Re-import `embedding.json` / `reranker.json` (single model per port — should be **2 lines** only).
 
 ### PromQL: discover labels (before histogram)
 

@@ -5,6 +5,8 @@ Manifests and scripts for:
 - `server-node-1` (`192.168.86.179`) as k3s control plane
 - `gpu-node-1` (`192.168.86.173`) and `gpu-node-2` (`192.168.86.176`) as GPU workers
 
+Operator quick reference: [AGENTS.md](AGENTS.md). Architecture: [docs/architecture.md](docs/architecture.md). Ports/IPs: [docs/port.md](docs/port.md).
+
 ## Repository layout
 
 | Path | Purpose |
@@ -26,8 +28,9 @@ Manifests and scripts for:
 | `manifests/gateway-api/overlays/dev` | Gateway API (FastAPI edge) in `ai-dev` via Argo CD (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
 | `manifests/web/overlays/dev` | Next.js web UI in `ai-dev` via Argo CD (`web-dev`; ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
 | `manifests/ingress/` | Cloudflare Tunnel in `ai-dev` via Argo CD (`cloudflared-dev`; `dev.taixingai.com`, `argocd.taixingai.com`) |
-| `manifests/tool/` | GitHub MCP tool in `ai-dev` (Argo CD `mcp-github-dev`; NodePort `30191`; [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)) |
-| `manifests/observability/` | Prometheus + Alloy via Argo CD (`observability`; Grafana Cloud remote_write + Loki) |
+| `manifests/tool/` | GitHub MCP in `ai-dev` (Argo `mcp-github-dev`; NodePort `30191`; [deploy-mcp-github.md](docs/deploy-mcp-github.md)) |
+| `manifests/observability/` | Prometheus + Alloy (`prometheus-configmap.yaml`, `prometheus-stack.yaml`, `alloy-loki-cloud.yaml`) |
+| `AGENTS.md` | Operator / agent quick reference |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |
 | `grafana-import/alert/prometheus-alert-rules.yaml` | Prometheus-format alert rules |
 | `docs/architecture.md` | Planes (vllm / ai-dev / monitoring), gateway backend URLs |
@@ -46,7 +49,7 @@ Manifests and scripts for:
 On `server-node-1`:
 
 ```bash
-cd ~/shared/k3s
+cd ~/shared/huntai-platform/huntai-k3s
 sudo ./scripts/install-k3s-server.sh
 ```
 
@@ -61,7 +64,7 @@ sudo cat /var/lib/rancher/k3s/server/node-token
 On each GPU node:
 
 ```bash
-cd ~/shared/k3s
+cd ~/shared/huntai-platform/huntai-k3s
 export K3S_URL=https://192.168.86.179:6443
 export K3S_TOKEN=<server-node-token>
 sudo -E ./scripts/install-k3s-agent.sh
@@ -78,7 +81,7 @@ sudo k3s kubectl get nodes -o wide
 On `server-node-1`:
 
 ```bash
-cd ~/shared/k3s
+cd ~/shared/huntai-platform/huntai-k3s
 sudo -E ./scripts/install-nvidia-gpu-operator.sh
 ```
 

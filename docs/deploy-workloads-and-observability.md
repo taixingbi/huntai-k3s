@@ -19,7 +19,7 @@ Deployment steps are split by component:
 7. Orchestrator (dev): `docs/deploy-orchestrator.md`
 8. Gateway API + web (dev): `docs/deploy-gateway-api.md`, `docs/deploy-web.md`
 9. Dev public URL (Cloudflare Tunnel): `docs/deploy-dev-cloudflare-tunnel.md`
-10. layer-mcp-github-v1 (dev): `docs/deploy-layer-mcp-github.md`
+10. GitHub MCP (dev): `docs/deploy-mcp-github.md` (manifests `tool/`, Argo `mcp-github-dev`)
 11. Prometheus remote_write: `docs/deploy-prometheus.md`
 12. Alloy + Loki: `docs/deploy-alloy-loki.md`
 13. Grafana import: `grafana-import/README.md`

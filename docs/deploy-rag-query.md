@@ -273,7 +273,7 @@ After changing scrape rules, reload Prometheus:
 sudo k3s kubectl rollout restart deployment/prometheus -n monitoring
 ```
 
-Prometheus discovers Service `layer-rag-query` in `ai-dev` with label `workload=rag-query` (see [manifests/observability/prometheus-grafana.yaml](../manifests/observability/prometheus-grafana.yaml)). Scrapes `GET /metrics` on port `8000`.
+Prometheus discovers Service `layer-rag-query` in `ai-dev` with label `workload=rag-query` (see [manifests/observability/prometheus-configmap.yaml](../manifests/observability/prometheus-configmap.yaml)). Scrapes `GET /metrics` on port `8000`.
 
 ## 5) Cursor / MCP clients
 

@@ -45,7 +45,7 @@ Backend URLs inside the cluster:
 
 ## Prerequisites
 
-- [deploy-layer-web.md](deploy-layer-web.md) and [deploy-gateway-api.md](deploy-gateway-api.md) applied in `ai-dev`
+- [deploy-web.md](deploy-web.md) and [deploy-gateway-api.md](deploy-gateway-api.md) applied in `ai-dev`
 - Cloudflare tunnel already created; credentials JSON on the server (e.g. `~/.cloudflared/*.json`)
 - `APP_URL` / `FRONTEND_URL` = `https://dev.taixingai.com` in dev manifests
 - DNS routes for `dev.taixingai.com` and `argocd.taixingai.com` (one-time; see §3)

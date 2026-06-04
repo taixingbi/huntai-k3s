@@ -1,5 +1,7 @@
 # Prometheus-format alerting rules for Grafana Cloud.
 #
+# PromQL uses workload= (matches huntai-k3s scrape relabels). Alert label `service:` is metadata only.
+#
 # Import: Alerting → Alert rules → Import → "Prometheus YAML file" (not Grafana provisioning YAML).
 # Pick your hosted Prometheus/Mimir datasource as the target. Choose folder "Layer Observability" or as needed.
 #

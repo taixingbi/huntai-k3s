@@ -102,6 +102,14 @@ Grafana JSON: [grafana-import/README.md](../grafana-import/README.md), versions 
 - App secrets: `ai-dev` — [cluster-secrets.md](cluster-secrets.md)
 - Grafana Cloud: `monitoring` — [secrets/README.md](../secrets/README.md) (not in Argo manifests)
 
+## Repo naming map
+
+| You see | Meaning |
+|---------|---------|
+| Argo `mcp-github-dev` | `manifests/tool/overlays/dev` — GitHub MCP (`layer-mcp-github-v1`) |
+| `manifests/tool/` | Historical path name; not a separate runtime “tool plane” |
+| Service `layer-*` | Container / image name from upstream repos |
+
 ## Related runbooks
 
 - vLLM cutover `ai` → `vllm`: [fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md)

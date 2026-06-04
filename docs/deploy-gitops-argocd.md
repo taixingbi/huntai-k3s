@@ -208,6 +208,8 @@ Never commit secrets. Create cluster secrets manually before sync — see [clust
 
 Upgrading from older commits that embedded placeholder Secrets in `manifests/observability/`: orphan labels per [secrets/README.md](../secrets/README.md) **before** syncing, or recreate secrets after sync.
 
+**Stateful data:** PVCs `prometheus-data` and `qdrant-data` are annotated `argocd.argoproj.io/sync-options: Prune=false` so app-of-apps prune does not delete TSDB/Qdrant volumes. Other resources still prune when removed from Git.
+
 ## Rollout order (sync waves)
 
 Argo CD sync waves order cold start roughly as:

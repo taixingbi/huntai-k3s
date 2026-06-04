@@ -139,7 +139,7 @@ Prometheus only discovers vLLM targets in namespace **`vllm`**:
 | `vllm-reranker` | `reranker` | `vllm-rerank-gpu-node-*` (:8002) |
 
 ```bash
-sudo k3s kubectl apply -f manifests/observability/prometheus-grafana.yaml
+sudo k3s kubectl apply -k manifests/observability/
 sudo k3s kubectl -n monitoring rollout restart deploy/prometheus 2>/dev/null || \
   sudo k3s kubectl -n monitoring rollout restart statefulset/prometheus 2>/dev/null || true
 ```

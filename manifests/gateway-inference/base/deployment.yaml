@@ -29,7 +29,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: gateway
-          image: ghcr.io/taixingbi/layer-gateway-inference-v1:latest
+          image: ghcr.io/taixingbi/layer-gateway-inference-v1
           imagePullPolicy: Always
           ports:
             - name: http
