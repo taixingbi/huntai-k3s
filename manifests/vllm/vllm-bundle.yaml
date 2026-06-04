@@ -315,6 +315,43 @@ spec:
       targetPort: rerank-http
       nodePort: 30082
 ---
+# Per-node chat (:8000) for gateway-inference — same pattern as vllm-embed-gpu-node-* / vllm-rerank-gpu-node-*.
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-chat-gpu-node-1
+  namespace: vllm
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+    vllm-node: gpu-node-1
+  ports:
+    - name: http
+      port: 8000
+      targetPort: chat-http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm-chat-gpu-node-2
+  namespace: vllm
+  labels:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+spec:
+  type: ClusterIP
+  selector:
+    app: vllm-bundle
+    vllm-node: gpu-node-2
+  ports:
+    - name: http
+      port: 8000
+      targetPort: chat-http
+---
 apiVersion: v1
 kind: Service
 metadata:

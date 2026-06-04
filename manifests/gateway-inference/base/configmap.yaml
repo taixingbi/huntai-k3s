@@ -29,14 +29,14 @@ data:
       hot_target_share: 0.55
 
     backends:
-      # One URL per GPU node (chat NodePort 30080). Do not point both at the same Service.
+      # One URL per GPU node (per-node ClusterIP :8000). Do not use vllm-inference (LB across nodes).
       - name: gpu-node-1
-        url: http://192.168.86.173:30080
+        url: http://vllm-chat-gpu-node-1.vllm.svc.cluster.local:8000
         soft_limit: 20
         hard_limit: 28
         drained: false
       - name: gpu-node-2
-        url: http://192.168.86.176:30080
+        url: http://vllm-chat-gpu-node-2.vllm.svc.cluster.local:8000
         soft_limit: 20
         hard_limit: 28
         drained: false

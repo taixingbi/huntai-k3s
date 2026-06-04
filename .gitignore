@@ -1,6 +1,8 @@
 # Local-only secrets (never commit tokens)
 prometheus-grafana-cloud-secret.local.yaml
 *-secret.local.yaml
+# Upstream Grafana JSON snapshots (scripts/sync-grafana-dashboards.sh)
+grafana-import/dashboard/.upstream/
 # Local scratch (may contain pasted commands/tokens)
 tmp/
 tmp.md

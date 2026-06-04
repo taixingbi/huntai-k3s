@@ -133,12 +133,13 @@
   ],
   "refresh": "30s",
   "schemaVersion": 39,
-  "tags": ["vllm", "embedding", "bge-m3"],
+  "description": "huntai-k3s v2: sum/max by (node), workload=embedding. Upstream: layer-observability-grafana — scripts/sync-grafana-dashboards.sh --apply-safe may refresh.",
+  "tags": ["vllm", "embedding", "bge-m3", "huntai-k3s:2"],
   "templating": { "list": [] },
   "time": { "from": "now-6h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
   "title": "vLLM embedding (bge-m3)",
   "uid": "layer-vllm-embedding",
-  "version": 1
+  "version": 2
 }
