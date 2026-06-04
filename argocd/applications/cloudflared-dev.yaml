@@ -6,11 +6,11 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "9"
 spec:
-  project: default
+  project: platform
   source:
     repoURL: https://github.com/taixingbi/huntai-k3s.git
     targetRevision: main
-    path: manifests/ingress
+    path: manifests/ingress/overlays/dev
   destination:
     server: https://kubernetes.default.svc
     namespace: ai-dev

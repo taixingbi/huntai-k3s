@@ -1,0 +1,103 @@
+# Cloudflare Tunnel — prod (ai-prod).
+#   taixingai.com / www.taixingai.com → layer-web:3000
+#
+# 1) Create a **separate** Cloudflare tunnel for prod (do not reuse dev tunnel).
+# 2) Replace REPLACE_PROD_TUNNEL_UUID below with the tunnel ID, commit, then sync.
+# 3) Create credentials Secret (never commit JSON):
+#    sudo k3s kubectl create secret generic cloudflared-tunnel-credentials -n ai-prod \
+#      --from-file=credentials.json="$HOME/.cloudflared/<PROD_TUNNEL_UUID>.json" \
+#      --dry-run=client -o yaml | sudo k3s kubectl apply -f -
+# 4) DNS (once per hostname):
+#    cloudflared tunnel route dns <PROD_TUNNEL_UUID> taixingai.com
+#    cloudflared tunnel route dns <PROD_TUNNEL_UUID> www.taixingai.com
+#
+# See docs/deploy-prod-cloudflare-tunnel.md
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared-config
+  namespace: ai-prod
+  labels:
+    app: cloudflared
+    environment: prod
+data:
+  config.yaml: |
+    tunnel: REPLACE_PROD_TUNNEL_UUID
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    ingress:
+      - hostname: taixingai.com
+        service: http://layer-web.ai-prod.svc.cluster.local:3000
+      - hostname: www.taixingai.com
+        service: http://layer-web.ai-prod.svc.cluster.local:3000
+      - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: ai-prod
+  labels:
+    app: cloudflared
+    environment: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+        environment: prod
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - server-node-1
+      automountServiceAccountToken: false
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:2026.5.1
+          imagePullPolicy: IfNotPresent
+          args:
+            - tunnel
+            - --config
+            - /etc/cloudflared/config/config.yaml
+            - run
+          volumeMounts:
+            - name: config
+              mountPath: /etc/cloudflared/config
+              readOnly: true
+            - name: creds
+              mountPath: /etc/cloudflared/creds
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+      volumes:
+        - name: config
+          configMap:
+            name: cloudflared-config
+        - name: creds
+          secret:
+            secretName: cloudflared-tunnel-credentials

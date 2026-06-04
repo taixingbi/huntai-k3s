@@ -11,7 +11,8 @@ Operator quick reference: [AGENTS.md](AGENTS.md). Architecture: [docs/architectu
 
 | Path | Purpose |
 |---|---|
-| `argocd/app-of-apps.yaml` | Bootstrap all Argo CD Applications (one-time) |
+| `argocd/app-of-apps.yaml` | Bootstrap `huntai-apps` (one-time) |
+| `argocd/projects/` | AppProjects: `platform`, `ai-dev`, `ai-prod` |
 | `argocd/applications/` | Argo CD Application manifests (GitOps) |
 | `manifests/gateway-api/` | Gateway API Kustomize base + dev overlay (GitOps source for `gateway-api-dev`) |
 | `scripts/install-k3s-server.sh` | Install k3s server and print join token/url |
@@ -27,7 +28,8 @@ Operator quick reference: [AGENTS.md](AGENTS.md). Architecture: [docs/architectu
 | `manifests/orchestrator/` | Orchestrator in `ai-dev` (Argo CD `orchestrator-dev`; NodePort `30184`; [layer-orchestrator-v1](https://github.com/taixingbi/layer-orchestrator-v1)) |
 | `manifests/gateway-api/overlays/dev` | Gateway API (FastAPI edge) in `ai-dev` via Argo CD (ClusterIP `:8000`, NodePort `30185`; [layer-gateway-api-v1](https://github.com/taixingbi/layer-gateway-api-v1)) |
 | `manifests/web/overlays/dev` | Next.js web UI in `ai-dev` via Argo CD (`web-dev`; ClusterIP `:3000`, NodePort `30186`; public `https://dev.taixingai.com`) |
-| `manifests/ingress/` | Cloudflare Tunnel in `ai-dev` via Argo CD (`cloudflared-dev`; `dev.taixingai.com`, `argocd.taixingai.com`) |
+| `manifests/ingress/overlays/dev` | Cloudflare Tunnel in `ai-dev` (`cloudflared-dev`; `dev.taixingai.com`, `argocd.taixingai.com`) |
+| `manifests/ingress/overlays/prod` | Prod tunnel in `ai-prod` (`cloudflared-prod`; `taixingai.com`) — [deploy-prod-cloudflare-tunnel.md](docs/deploy-prod-cloudflare-tunnel.md) |
 | `manifests/tool/` | GitHub MCP in `ai-dev` (Argo `mcp-github-dev`; NodePort `30191`; [deploy-mcp-github.md](docs/deploy-mcp-github.md)) |
 | `manifests/observability/` | Prometheus + Alloy (`prometheus-configmap.yaml`, `prometheus-stack.yaml`, `alloy-loki-cloud.yaml`) |
 | `AGENTS.md` | Operator / agent quick reference |

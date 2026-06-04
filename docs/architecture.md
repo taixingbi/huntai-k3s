@@ -57,7 +57,7 @@ flowchart TB
 | **Observability** | `monitoring` | Prometheus (scrape + remote_write), Alloy (pod logs → Loki) |
 | **GPU telemetry** | `gpu-operator` | DCGM exporter (scraped as `workload=gpu-telemetry`) |
 
-Port map: [port.md](port.md). GitOps order: [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
+Port map: [port.md](port.md). GitOps: Argo CD projects **platform** / **ai-dev** / **ai-prod** — [deploy-gitops-argocd.md](deploy-gitops-argocd.md).
 
 ## Backend discovery (gateways → vLLM)
 

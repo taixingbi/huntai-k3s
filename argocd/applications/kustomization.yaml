@@ -17,3 +17,4 @@ resources:
   - orchestrator-prod.yaml
   - rag-query-prod.yaml
   - web-prod.yaml
+  - cloudflared-prod.yaml

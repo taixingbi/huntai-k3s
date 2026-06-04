@@ -32,7 +32,7 @@ flowchart TD
 
 | Layer | Kubernetes name | Notes |
 |-------|-----------------|--------|
-| Tunnel connector | **`cloudflared`** Deployment | [`manifests/ingress/cloudflared-dev.yaml`](../manifests/ingress/cloudflared-dev.yaml) |
+| Tunnel connector | **`cloudflared`** Deployment | [`manifests/ingress/overlays/dev/cloudflared.yaml`](../manifests/ingress/overlays/dev/cloudflared.yaml) |
 | Web UI + BFF | **`layer-web`** Service | Image `layer-web-v1`; port **3000** |
 | Argo CD UI | **`argocd-server`** Service (`argocd` ns) | HTTPS; `originRequest.noTLSVerify` on tunnel |
 | Gateway | **`layer-gateway-api`** | ClusterIP only |

@@ -12,7 +12,8 @@ Grafana Cloud: [secrets/README.md](../secrets/README.md) (bootstrap commands, ro
 | `layer-gateway-inference-secrets` | gateway-inference | [deploy-gateway-inference.md](deploy-gateway-inference.md) §1 |
 | `layer-orchestrator-secrets` | orchestrator | [deploy-orchestrator.md](deploy-orchestrator.md) §1 |
 | `layer-mcp-github-v1-secrets` | mcp-github (manifests/tool) | [deploy-mcp-github.md](deploy-mcp-github.md) §1 |
-| `cloudflared-tunnel-credentials` | cloudflared | [deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md) |
+| `cloudflared-tunnel-credentials` | cloudflared (`ai-dev`) | [deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md) |
+| `cloudflared-tunnel-credentials` | cloudflared (`ai-prod`) | [deploy-prod-cloudflare-tunnel.md](deploy-prod-cloudflare-tunnel.md) |
 
 RAG and embedding/reranker gateways do not use `secretRef` in dev manifests by default.
 

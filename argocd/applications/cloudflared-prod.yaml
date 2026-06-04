@@ -1,22 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: qdrant-dev
+  name: cloudflared-prod
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "12"
 spec:
-  project: ai-dev
+  project: platform
   source:
     repoURL: https://github.com/taixingbi/huntai-k3s.git
     targetRevision: main
-    path: manifests/qdrant/overlays/dev
+    path: manifests/ingress/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: ai-dev
+    namespace: ai-prod
+  # Manual sync: set prod tunnel UUID in ConfigMap and create credentials Secret first.
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
     syncOptions:
       - CreateNamespace=true

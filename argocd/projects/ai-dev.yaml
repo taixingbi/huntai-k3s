@@ -1,0 +1,18 @@
+# Dev application plane (ai-dev): GPU gateways, Qdrant, MCP, user stack.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ai-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Dev — ai-dev namespace workloads
+  sourceRepos:
+    - https://github.com/taixingbi/huntai-k3s.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: ai-dev
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

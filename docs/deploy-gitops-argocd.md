@@ -59,7 +59,9 @@ cd ~/shared/huntai-k3s
 sudo k3s kubectl apply -f argocd/app-of-apps.yaml
 ```
 
-This creates Application `huntai-apps`, which syncs every manifest under `argocd/applications/` (vLLM, observability, Qdrant, gateways, orchestrator, RAG, web, cloudflared). New apps: add YAML under `argocd/applications/`, list it in `argocd/applications/kustomization.yaml`, commit, push.
+This creates Application `huntai-apps`, which syncs `argocd/` (AppProjects + child Applications). New apps: add YAML under `argocd/applications/`, list it in `argocd/applications/kustomization.yaml`, set `spec.project`, commit, push.
+
+**Upgrading** from `path: argocd/applications`: re-apply `argocd/app-of-apps.yaml` so `huntai-apps` points at `argocd`, then sync `huntai-apps` once (creates AppProjects `platform`, `ai-dev`, `ai-prod`).
 
 ## 5) Verify sync
 
@@ -190,6 +192,8 @@ If you later protect `argocd.taixingai.com` with Cloudflare Access, keep `/api/w
 
 ```
 argocd/app-of-apps.yaml              # one-time bootstrap → Application huntai-apps
+argocd/kustomization.yaml            # projects + applications (huntai-apps sync root)
+argocd/projects/                     # AppProject: platform, ai-dev, ai-prod
 argocd/applications/                 # child Application CRs (kustomization.yaml lists all)
 manifests/vllm/                          # vLLM bundle chat+embed+rerank (vllm-inference)
 manifests/qdrant/overlays/dev/       # qdrant-dev
@@ -199,7 +203,8 @@ manifests/orchestrator/overlays/dev/
 manifests/tool/overlays/dev/         # mcp-github-dev
 manifests/rag/overlays/dev/
 manifests/web/overlays/dev/
-manifests/ingress/                   # cloudflared-dev
+manifests/ingress/overlays/dev       # cloudflared-dev
+manifests/ingress/overlays/prod      # cloudflared-prod (manual sync)
 ```
 
 ## Secrets
@@ -209,6 +214,20 @@ Never commit secrets. Create cluster secrets manually before sync — see [clust
 Upgrading from older commits that embedded placeholder Secrets in `manifests/observability/`: orphan labels per [secrets/README.md](../secrets/README.md) **before** syncing, or recreate secrets after sync.
 
 **Stateful data:** PVCs `prometheus-data` and `qdrant-data` are annotated `argocd.argoproj.io/sync-options: Prune=false` so app-of-apps prune does not delete TSDB/Qdrant volumes. Other resources still prune when removed from Git.
+
+## Argo CD projects
+
+Child apps are grouped by **AppProject** (RBAC and allowed destinations). `huntai-apps` stays on project `default`.
+
+| Project | Applications | Allowed namespaces |
+|---------|----------------|-------------------|
+| **platform** | `observability`, `vllm-inference`, `cloudflared-dev`, `cloudflared-prod` | `monitoring`, `vllm`, `ai-dev`, `ai-prod` (tunnels only) |
+| **ai-dev** | `qdrant-dev`, `gateway-*-dev`, `rag-query-dev`, `orchestrator-dev`, `mcp-github-dev`, `gateway-api-dev`, `web-dev` | `ai-dev` only |
+| **ai-prod** | `rag-query-prod`, `orchestrator-prod`, `gateway-api-prod`, `web-prod` | `ai-prod` only |
+
+Prod apps remain **manual sync** (no `automated` on those Application CRs). `ai-prod` project blocks deploying prod overlays into `ai-dev`.
+
+Definitions: `argocd/projects/*.yaml`.
 
 ## Rollout order (sync waves)
 
@@ -223,10 +242,11 @@ Argo CD sync waves order cold start roughly as:
 | 4 | `orchestrator-dev` | `manifests/orchestrator/overlays/dev` |
 | 5 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev` |
 | 6 | `web-dev` | `manifests/web/overlays/dev` |
-| 9 | `cloudflared-dev` | `manifests/ingress` |
+| 9 | `cloudflared-dev` | `manifests/ingress/overlays/dev` |
+| 12 | `cloudflared-prod` | `manifests/ingress/overlays/prod` (manual) |
 | 10 | `rag-query-prod`, `orchestrator-prod`, `gateway-api-prod` | `manifests/*/overlays/prod` (manual sync) |
 | 11 | `web-prod` | `manifests/web/overlays/prod` |
 
 **Argo OutOfSync (dev):** Review **Diff** before **Sync** on `gateway-*-dev` so Git does not revert hand-tuned `EMBED_BACKENDS` / `RERANK_BACKENDS`. Prod apps only touch `ai-prod` overlays — they cannot change `ai-dev` gateway Deployments.
 
-Add a new app: create `argocd/applications/<name>.yaml`, list it in `argocd/applications/kustomization.yaml`, commit, push — `huntai-apps` picks it up automatically.
+Add a new app: create `argocd/applications/<name>.yaml`, set `spec.project` (`platform` | `ai-dev` | `ai-prod`), list it in `argocd/applications/kustomization.yaml`, commit, push — `huntai-apps` picks it up automatically.

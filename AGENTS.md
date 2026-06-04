@@ -6,7 +6,8 @@ Repo: GitOps manifests for HuntAI on **k3s** (control plane + 2× GPU). App code
 
 | Path | Purpose |
 |------|---------|
-| `argocd/applications/` | Argo CD Application CRs (sync waves) |
+| `argocd/projects/` | AppProjects: platform, ai-dev, ai-prod |
+| `argocd/applications/` | Argo CD Application CRs (sync waves; `spec.project` set) |
 | `manifests/vllm/` | GPU bundle namespace `vllm` |
 | `manifests/gateway-*/`, `orchestrator/`, `rag/`, `web/`, `tool/` | Apps in `ai-dev` (`tool/` = GitHub MCP, Argo app `mcp-github-dev`) |
 | `manifests/observability/` | Prometheus + Alloy (`monitoring`) |
@@ -32,7 +33,7 @@ Repo: GitOps manifests for HuntAI on **k3s** (control plane + 2× GPU). App code
 
 ## Prod (`ai-prod`)
 
-User-facing prod: gateway-api, orchestrator, web, rag — [docs/deploy-prod.md](docs/deploy-prod.md). GPU gateways + Qdrant stay in `ai-dev`. Secret: `layer-ai-prod-secrets` (not dev secrets).
+User-facing prod: gateway-api, orchestrator, web, rag, cloudflared — [docs/deploy-prod.md](docs/deploy-prod.md), tunnel [docs/deploy-prod-cloudflare-tunnel.md](docs/deploy-prod-cloudflare-tunnel.md). Bootstrap: `./scripts/deploy-ai-prod.sh`. GPU gateways + Qdrant stay in `ai-dev`. Secret: `layer-ai-prod-secrets` (not dev secrets).
 
 ## Deploy order (cold start)
 

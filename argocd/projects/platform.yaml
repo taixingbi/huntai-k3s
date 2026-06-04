@@ -1,0 +1,29 @@
+# Shared cluster plane: observability, vLLM, Cloudflare tunnels (dev + prod connectors).
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Platform — monitoring, vllm, cloudflared
+  sourceRepos:
+    - https://github.com/taixingbi/huntai-k3s.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: vllm
+    - server: https://kubernetes.default.svc
+      namespace: ai-dev
+    - server: https://kubernetes.default.svc
+      namespace: ai-prod
+  clusterResourceWhitelist:
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

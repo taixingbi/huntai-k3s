@@ -1,0 +1,18 @@
+# Prod user stack (ai-prod only). Manual sync on child Applications — no auto-sync here.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ai-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Prod — ai-prod namespace (manual sync apps)
+  sourceRepos:
+    - https://github.com/taixingbi/huntai-k3s.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: ai-prod
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"

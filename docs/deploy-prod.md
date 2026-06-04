@@ -40,12 +40,13 @@ Adjust keys to match upstream `env.example` for gateway-api and orchestrator. Se
 | `orchestrator-prod` | `manifests/orchestrator/overlays/prod` | `ai-prod` |
 | `gateway-api-prod` | `manifests/gateway-api/overlays/prod` | `ai-prod` |
 | `web-prod` | `manifests/web/overlays/prod` | `ai-prod` |
+| `cloudflared-prod` | `manifests/ingress/overlays/prod` | `ai-prod` |
 
-Sync order: **rag → orchestrator → gateway-api → web** (wave 10–11). In UI: **Diff** each app — prod must **not** change `ai-dev` gateway Deployments.
+Sync order: **rag → orchestrator → gateway-api → web → cloudflared** (waves 10–12). In UI: **Diff** each app — prod must **not** change `ai-dev` gateway Deployments.
 
 ```bash
-sudo k3s kubectl apply -f argocd/applications/rag-query-prod.yaml
-# After secret exists, sync apps one by one in Argo UI or:
+./scripts/deploy-ai-prod.sh
+# After layer-ai-prod-secrets exists, sync apps one by one in Argo UI or:
 # argocd app sync rag-query-prod
 ```
 
@@ -68,7 +69,7 @@ sudo k3s kubectl apply -f argocd/applications/rag-query-prod.yaml
 
 ## Public URL
 
-Prod web expects a **separate** Cloudflare tunnel / DNS (not in repo yet). Point hostname at `layer-web.ai-prod.svc.cluster.local:3000` like dev tunnel does for `ai-dev`.
+Prod tunnel manifest and runbook: [deploy-prod-cloudflare-tunnel.md](deploy-prod-cloudflare-tunnel.md). Replace `REPLACE_PROD_TUNNEL_UUID` in `manifests/ingress/overlays/prod/cloudflared.yaml`, create `cloudflared-tunnel-credentials` in `ai-prod`, then sync **`cloudflared-prod`** after **`web-prod`**.
 
 ## Do not sync these to prod
 

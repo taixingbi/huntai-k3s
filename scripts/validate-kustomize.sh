@@ -11,6 +11,7 @@ if ! command -v kubectl >/dev/null 2>&1; then
 fi
 
 PATHS=(
+  argocd
   manifests/vllm
   manifests/observability
   manifests/qdrant/overlays/dev
@@ -22,7 +23,8 @@ PATHS=(
   manifests/rag/overlays/dev
   manifests/web/overlays/dev
   manifests/tool/overlays/dev
-  manifests/ingress
+  manifests/ingress/overlays/dev
+  manifests/ingress/overlays/prod
   manifests/gateway-api/overlays/prod
   manifests/orchestrator/overlays/prod
   manifests/rag/overlays/prod
