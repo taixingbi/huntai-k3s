@@ -69,14 +69,15 @@ If chat still fails: lower util (0.78–0.82), lower embed/rerank util ([embed](
 Before the first successful bundle rollout:
 
 1. **Stop** host vLLM on GPU nodes (any process using the GPU).
-2. Remove legacy Deployments/ReplicaSets (dashed `vllm` RS in Argo is not in Git):
+2. Remove legacy Deployments/ReplicaSets (pre-bundle `vllm` Deployment / RS — not in Git):
 
    ```bash
    ./scripts/cleanup-legacy-vllm.sh
-   # or: sudo k3s kubectl -n vllm delete deployment vllm --ignore-not-found
    ```
 
-3. Sync `vllm-inference`; wait for `startupProbe` (model pull can take 15–30+ minutes).
+3. Sync `vllm-inference` (enable **Prune**). If sync errors with *“synchronization tasks are not valid”*, update AppProjects (`argocd/projects/*.yaml` must allow `Namespace`) and re-run `./scripts/bootstrap-argocd.sh`, then sync again.
+
+4. Wait for `startupProbe` (model pull can take 15–30+ minutes).
 4. Run [§ Smoke tests](#smoke-tests) below, then embed/rerank smokes in their docs.
 
 ## Namespace rename (`ai` → `vllm`)

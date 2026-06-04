@@ -1,10 +1,6 @@
 # Per-GPU-node vLLM bundle (C1): one Pod, one container, three vLLM processes (chat/embed/rerank).
 # GPU nodes: gpu-node-1, gpu-node-2. See docs/deploy-vllm-inference.md for rollout and VRAM tuning.
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: vllm
----
+# Namespace vllm: created by Argo Application vllm-inference (CreateNamespace syncOption).
 apiVersion: apps/v1
 kind: Deployment
 metadata:

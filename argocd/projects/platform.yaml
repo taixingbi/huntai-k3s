@@ -20,6 +20,8 @@ spec:
     - server: https://kubernetes.default.svc
       namespace: ai-prod
   clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
     - group: rbac.authorization.k8s.io
       kind: ClusterRole
     - group: rbac.authorization.k8s.io

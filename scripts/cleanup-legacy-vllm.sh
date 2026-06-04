@@ -18,13 +18,18 @@ for ns in vllm ai; do
   done
 done
 
-# Orphan ReplicaSet named vllm-* (no Deployment) in vllm.
+# Legacy ReplicaSet(s) from Deployment "vllm" (pre-bundle); Argo shows as dashed until pruned.
+$KUBECTL delete rs -n vllm -l 'app!=vllm-bundle' --ignore-not-found --wait=false 2>/dev/null || true
 while read -r rs; do
   [[ -z "$rs" ]] && continue
-  echo "Deleting orphan rs vllm/$rs"
-  $KUBECTL delete rs -n vllm "$rs" --wait=false
-done < <($KUBECTL get rs -n vllm -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null \
-  | grep -E '^vllm-[0-9a-f]+$' || true)
+  case "$rs" in
+    vllm-bundle-gpu-node-*|vllm-bundle-gpu-node-*-*) continue ;;
+  esac
+  if [[ "$rs" =~ ^vllm-[0-9a-f]+$ ]]; then
+    echo "Deleting legacy rs vllm/$rs"
+    $KUBECTL delete rs -n vllm "$rs" --wait=false
+  fi
+done < <($KUBECTL get rs -n vllm -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' 2>/dev/null || true)
 
 echo ""
 echo "== after (expect only vllm-bundle-gpu-node-*) =="
