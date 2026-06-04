@@ -88,7 +88,7 @@ echo
 curl -sS http://192.168.86.173:30081/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{"model":"BAAI/bge-m3","input":"hello world"}' \
-  | jq '{data_len: (.data|length), error}'
+  | jq
 echo
 ```
 
@@ -100,7 +100,7 @@ echo
 curl -sS http://192.168.86.176:30081/v1/embeddings \
   -H "Content-Type: application/json" \
   -d '{"model":"BAAI/bge-m3","input":"hello world"}' \
-  | jq '{data_len: (.data|length), error}'
+  | jq
 echo
 ```
 
@@ -117,7 +117,7 @@ curl -sS http://192.168.86.179:30181/v1/embeddings \
   -H "X-Session-Id: ses-1" \
   -H "Content-Type: application/json" \
   -d '{"model":"BAAI/bge-m3","input":"hello world"}' \
-  | jq '{data_len: (.data|length), error}'
+  | jq
 ```
 
 **Pass:** `data_len: 1`, no `error`.

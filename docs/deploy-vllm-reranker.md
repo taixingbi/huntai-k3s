@@ -85,7 +85,7 @@ curl -sS -X POST http://192.168.86.173:30082/v1/rerank \
       "Unrelated sentence about weather."
     ],
     "top_n": 2
-  }' | jq '{results: (.results|length), model, usage}'
+  }' | jq
 echo
 ```
 
@@ -104,44 +104,11 @@ curl -sS -X POST http://192.168.86.176:30082/v1/rerank \
       "Unrelated sentence about weather."
     ],
     "top_n": 2
-  }' | jq '{results: (.results|length), model, usage}'
+  }' | jq
 echo
 ```
 
 **Pass:** `/health` ok; `/v1/models` lists `BAAI/bge-reranker-v2-m3`; rerank returns **`results: 2`**, `model` set, non-empty `usage`. Via gateway: [deploy-gateway-reranker.md](deploy-gateway-reranker.md) (`30182`).
-
-### 3) Via reranker gateway (production path)
-
-See [deploy-gateway-reranker.md §4](deploy-gateway-reranker.md#4-example-post-v1rerank).
-
-```bash
-curl -sS -X POST http://192.168.86.179:30182/v1/rerank \
-  -H "Content-Type: application/json" \
-  -H "X-Request-Id: req-abc123" \
-  -H "X-Session-Id: ses-xyz789" \
-  -H "X-Trace-Id: trc-001" \
-  -d '{
-    "model": "BAAI/bge-reranker-v2-m3",
-    "query": "what is taixing visa",
-    "documents": [
-      "Taixing holds an active US work visa.",
-      "Unrelated sentence about weather."
-    ],
-    "top_n": 2
-  }' | jq '{results: (.results|length), model, usage}'
-```
-
-**Pass:** **`results: 2`**, `model` set, non-empty `usage`.
-
-### Port-forward (optional)
-
-```bash
-sudo k3s kubectl port-forward -n ai svc/vllm-rerank-gpu-node-1 8002:8002
-curl -sS -X POST http://127.0.0.1:8002/v1/rerank \
-  -H "Content-Type: application/json" \
-  -d '{"model":"BAAI/bge-reranker-v2-m3","query":"visa","documents":["a","b"],"top_n":2}' \
-  | jq '{results: (.results|length)}'
-```
 
 ## Troubleshooting
 

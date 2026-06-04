@@ -100,7 +100,7 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
     "collection_base": "taixing_knowledge",
     "k": 5,
     "k_max": 50
-  }'
+  }' | jq
 echo
 ```
 
