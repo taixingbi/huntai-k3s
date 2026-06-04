@@ -44,10 +44,22 @@ Adjust keys to match upstream `env.example` for gateway-api and orchestrator. Se
 
 Sync order: **rag → orchestrator → gateway-api → web → cloudflared** (waves 10–12). In UI: **Diff** each app — prod must **not** change `ai-dev` gateway Deployments.
 
+### layer-rag-query-v1 → prod image pin
+
+Policy: merge **`dev` → `main`** in [layer-rag-query-v1](https://github.com/taixingbi/layer-rag-query-v1) (no direct push to `main`). CI on **`main`** commits to `manifests/rag/overlays/prod/kustomization.yaml` in huntai-k3s (`chore(rag-query-prod): pin image …`).
+
+```bash
+# On server after main merge + CI green:
+cd ~/shared/huntai-platform/huntai-k3s
+./scripts/sync-rag-query-prod.sh
+# Argo UI → Sync rag-query-prod
+```
+
+Verify: `sudo k3s kubectl -n ai-prod get pods -l app=layer-rag-query` → **Running**; image tag matches [prod kustomization](../manifests/rag/overlays/prod/kustomization.yaml).
+
 ```bash
 ./scripts/deploy-ai-prod.sh
-# After layer-ai-prod-secrets exists, sync apps one by one in Argo UI or:
-# argocd app sync rag-query-prod
+# After layer-ai-prod-secrets exists, sync remaining prod apps in Argo UI
 ```
 
 ## Prod-specific config (in overlays)

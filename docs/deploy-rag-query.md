@@ -302,3 +302,11 @@ Enable MCP server **layer-rag-query** per upstream [`.cursor/mcp.json`](https://
 NodePort:
 
 - dev: `30183`
+- prod (`ai-prod`): `30383` — see [deploy-prod.md](deploy-prod.md) and `./scripts/sync-rag-query-prod.sh`
+
+## Prod (`ai-prod`)
+
+- Argo CD: **`rag-query-prod`** (manual sync), path `manifests/rag/overlays/prod`
+- CI: **layer-rag-query-v1** `main` → pins prod image in huntai-k3s; **`dev`** → pins dev only
+- `ENV=prod` → Qdrant collections `*_prod` (orchestrator uses `RAG_COLLECTION_BASE=taixing_knowledge_prod`)
+- Backends: Qdrant + gateways in **`ai-dev`** (FQDN in prod patch)

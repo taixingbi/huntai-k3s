@@ -13,6 +13,7 @@ spec:
       containers:
         - name: rag-query
           env:
+            # ENV=prod → Qdrant collection {collection_base}_prod (e.g. taixing_knowledge_prod).
             - name: ENV
               value: "prod"
             - name: QDRANT_URL
