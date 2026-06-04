@@ -30,6 +30,7 @@ Manifests and scripts for:
 | `manifests/observability/` | Prometheus + Alloy via Argo CD (`observability`; Grafana Cloud remote_write + Loki) |
 | `grafana-import/dashboard/*.json` | Grafana dashboards (Prometheus + Loki) |
 | `grafana-import/alert/prometheus-alert-rules.yaml` | Prometheus-format alert rules |
+| `secrets/README.md` | Grafana Cloud Prometheus/Loki secrets (manual; not in GitOps) |
 | `docs/cluster-secrets.md` | One-time secret bootstrap checklist |
 | `docs/backup-restore.md` | Qdrant, Prometheus PVC, secrets, tunnel backup |
 

@@ -17,9 +17,9 @@
 # Prometheus TSDB uses PVC `prometheus-data` (storageClassName: local-path for k3s).
 # Change storageClassName if your cluster uses a different default provisioner.
 #
-# Grafana Cloud remote_write: Secret `prometheus-grafana-cloud-remote-write` holds
-# key `api-key` (metrics:write token). Replace placeholder after apply (see README).
-# Edit ConfigMap `prometheus-config` if your push URL or instance user id differs.
+# Grafana Cloud remote_write: create Secret `prometheus-grafana-cloud-remote-write` manually
+# (metrics:write token in key `api-key`). Not in Git — Argo must not manage or overwrite it.
+# See secrets/README.md and docs/deploy-prometheus.md. Edit ConfigMap `prometheus-config` if push URL or instance id differs.
 
 apiVersion: v1
 kind: Namespace
@@ -288,17 +288,6 @@ data:
             replacement: reranker
           - target_label: service
             replacement: reranker
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: prometheus-grafana-cloud-remote-write
-  namespace: monitoring
-type: Opaque
-stringData:
-  # Replace with a Grafana Cloud access policy token that has metrics:write (glc_...).
-  # Do not commit real tokens. If this was ever leaked, rotate the token in Grafana Cloud.
-  api-key: REPLACE_WITH_GRAFANA_CLOUD_METRICS_WRITE_TOKEN
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

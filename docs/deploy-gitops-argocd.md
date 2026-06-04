@@ -55,6 +55,7 @@ After pushing this repo to `main`:
 cd ~/shared/huntai-k3s
 
 # Secrets must exist before pods start — see cluster-secrets.md
+# Monitoring Grafana Cloud tokens: secrets/README.md (not in manifests/observability)
 sudo k3s kubectl apply -f argocd/app-of-apps.yaml
 ```
 
@@ -203,7 +204,9 @@ manifests/ingress/                   # cloudflared-dev
 
 ## Secrets
 
-Never commit secrets. Create cluster secrets manually before sync — see [cluster-secrets.md](cluster-secrets.md). State backup: [backup-restore.md](backup-restore.md).
+Never commit secrets. Create cluster secrets manually before sync — see [cluster-secrets.md](cluster-secrets.md). Grafana Cloud Prometheus/Loki tokens: [secrets/README.md](../secrets/README.md) (outside Argo-managed manifests). State backup: [backup-restore.md](backup-restore.md).
+
+Upgrading from older commits that embedded placeholder Secrets in `manifests/observability/`: orphan labels per [secrets/README.md](../secrets/README.md) **before** syncing, or recreate secrets after sync.
 
 ## Rollout order (sync waves)
 

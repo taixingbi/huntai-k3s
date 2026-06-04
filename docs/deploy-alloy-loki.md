@@ -7,7 +7,7 @@ sudo k3s kubectl get application observability -n argocd
 sudo k3s kubectl get pods -n monitoring -l app.kubernetes.io/name=alloy-logs -o wide
 ```
 
-Patch Loki secret (`logs:write`) after apply:
+Create Loki secret (`logs:write`) manually — not in Git ([secrets/README.md](../secrets/README.md)):
 
 ```bash
 sudo k3s kubectl create secret generic alloy-grafana-cloud-loki -n monitoring \

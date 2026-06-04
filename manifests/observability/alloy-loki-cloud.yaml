@@ -4,7 +4,8 @@
 #
 # Prerequisites: Grafana Cloud stack with Loki; create an access policy token with **logs:write**.
 # In Grafana Cloud: Your stack → **Loki** → **Details** for the push URL and **User** (numeric id).
-# After apply, replace the Secret placeholder (same pattern as `prometheus-grafana.yaml`).
+# Create Secret `alloy-grafana-cloud-loki` manually before/with Alloy rollout (not in Git).
+# See secrets/README.md and docs/deploy-alloy-loki.md.
 # Liveness uses `/-/ready`, not `/-/healthy`: when Loki credentials/URL are wrong, `loki.write`
 # is unhealthy but restarting the pod does not help (see Alloy HTTP docs).
 #
@@ -38,20 +39,6 @@ subjects:
   - kind: ServiceAccount
     name: alloy-logs
     namespace: monitoring
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: alloy-grafana-cloud-loki
-  namespace: monitoring
-type: Opaque
-stringData:
-  # Push URL from Grafana Cloud → Loki → Details (ends with /loki/api/v1/push).
-  loki-url: "https://REPLACE_LOKI_HOST.grafana.net/loki/api/v1/push"
-  # Same numeric “User” id shown for Loki basic auth (often matches Prometheus remote_write user).
-  loki-username: "REPLACE_LOKI_USERNAME"
-  # Access policy / API key with logs:write (glc_... or similar). Do not commit real tokens — patch after apply.
-  api-key: "REPLACE_WITH_GRAFANA_CLOUD_LOGS_WRITE_TOKEN"
 ---
 apiVersion: v1
 kind: ConfigMap

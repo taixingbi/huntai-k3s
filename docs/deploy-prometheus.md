@@ -7,7 +7,7 @@ sudo k3s kubectl get application observability -n argocd
 sudo k3s kubectl get pods,svc -n monitoring -o wide
 ```
 
-Set Grafana Cloud metrics token (`metrics:write`) safely:
+Create the remote_write Secret **before** Argo syncs `observability` (Secret is not in Git). Set Grafana Cloud metrics token (`metrics:write`) safely:
 
 ```bash
 read -s GRAFANA_CLOUD_API_KEY && echo
@@ -58,6 +58,8 @@ sudo k3s kubectl -n monitoring logs deploy/prometheus --tail=30 | grep -i remote
 up{cluster="k3s", job=~"vllm-.*"}
 histogram_quantile(0.99, sum(rate(vllm:e2e_request_latency_seconds_bucket{cluster="k3s", workload="inference"}[5m])) by (le, node))
 ```
+
+**Argo CD:** The metrics Secret is **not** in Git ([secrets/README.md](../secrets/README.md)). If you still see 401 after rotating, confirm Argo did not revert the Secret — `kubectl get secret prometheus-grafana-cloud-remote-write -n monitoring -o jsonpath='{.data.api-key}' | wc -c` should be non-zero and must not match a placeholder string.
 
 **Workaround until token is fixed:** point Grafana at in-cluster Prometheus (`9091`) as a separate datasource, or keep using the local Prometheus UI for queries.
 

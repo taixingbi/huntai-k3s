@@ -1,6 +1,8 @@
 # Cluster secrets (manual bootstrap)
 
-Secrets are **never** committed to Git. Create each once before the corresponding Argo CD Application syncs. Store values under `~/.secrets/` on the control plane (`chmod 700` dir, `600` files).
+Secrets are **never** committed to Git (Grafana Cloud tokens are **not** in `manifests/observability/` — Argo `selfHeal` must not reset them). Create each once before the corresponding Argo CD Application syncs. Store values under `~/.secrets/` on the control plane (`chmod 700` dir, `600` files).
+
+Grafana Cloud: [secrets/README.md](../secrets/README.md) (bootstrap commands, rotation, upgrade from old Git placeholders).
 
 ## ai-dev
 
@@ -36,6 +38,8 @@ sudo k3s kubectl get secret alloy-grafana-cloud-loki -n monitoring
 ## Rotation
 
 Update the Secret with `kubectl create secret ... --dry-run=client -o yaml | kubectl apply -f -`, then rollout restart the Deployment/DaemonSet that references it.
+
+**Do not** add these Secrets back into `manifests/observability/` — that recreates the 401 / token overwrite problem with Argo automated sync.
 
 ## Future
 
