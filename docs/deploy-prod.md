@@ -8,7 +8,7 @@ Architecture: [architecture.md](architecture.md). Ports: [port.md](port.md).
 
 1. Create **`layer-ai-prod-secrets`** in `ai-prod` (prod Supabase + Tavily/LangSmith — **not** dev keys). See [cluster-secrets.md](cluster-secrets.md).
 2. Confirm **`ai-dev`** GPU gateways and Qdrant are healthy.
-3. Argo prod apps use **manual sync** (no auto-sync) so prod cannot overwrite dev gateway manifests.
+3. Most prod apps use **manual sync**; **`rag-query-prod`** uses **auto-sync** so the first prod workload rolls out after huntai-k3s updates (gateways/orchestrator/web stay manual).
 
 ## Create prod secret (example keys)
 
@@ -52,7 +52,7 @@ Policy: merge **`dev` → `main`** in [layer-rag-query-v1](https://github.com/ta
 # On server after main merge + CI green:
 cd ~/shared/huntai-platform/huntai-k3s
 ./scripts/sync-rag-query-prod.sh
-# Argo UI → Sync rag-query-prod
+# Argo auto-syncs rag-query-prod; or run ./scripts/sync-rag-query-prod.sh
 ```
 
 Verify: `sudo k3s kubectl -n ai-prod get pods -l app=layer-rag-query` → **Running**; image tag matches [prod kustomization](../manifests/rag/overlays/prod/kustomization.yaml).
