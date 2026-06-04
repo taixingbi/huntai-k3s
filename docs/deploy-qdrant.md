@@ -29,11 +29,17 @@ sudo k3s kubectl get pods,svc,pvc -n ai-dev -l app=qdrant
 sudo k3s kubectl rollout status deploy/qdrant -n ai-dev --timeout=5m
 ```
 
-**Pass:** Application **Synced** / **Healthy**; pod **`Running`**; Service **`qdrant`** port **6333**; PVC **`qdrant-data`** **Bound**.
+**Pass:** Application **Synced** / **Healthy**; pod **`Running`**; Services **`qdrant`** (ClusterIP) and **`qdrant-lan`** (NodePort **30633**); PVC **`qdrant-data`** **Bound**.
 
-Pod prefers **`server-node-1`** (same node as legacy host Docker Qdrant).
+Pod prefers **`server-node-1`** (same node as legacy host Docker Qdrant). Stop host Docker Qdrant on **`6333`** if still running — ingest and LAN smokes use NodePort **`30633`**, not **`6333`**.
 
 ## 3) Smoke test
+
+**LAN (host ingest, no port-forward):**
+
+```bash
+curl -sS http://192.168.86.179:30633/collections | jq .
+```
 
 ClusterIP from the control plane:
 
@@ -139,6 +145,14 @@ sudo docker stop qdrant
 Do **not** run host and in-cluster Qdrant on the same node long term unless you use different ports and know which clients point where.
 
 Fresh dev cluster with no host data: skip §A–C; run [layer-rag-ingest-v1](https://github.com/taixingbi/layer-rag-ingest-v1) ingest after step 3.
+
+**Host ingest (`layer-rag-ingest-v1/.env.dev`):**
+
+```bash
+QDRANT_URL=http://192.168.86.179:30633
+```
+
+No `kubectl port-forward` required once **`qdrant-lan`** is synced.
 
 ## Troubleshooting
 

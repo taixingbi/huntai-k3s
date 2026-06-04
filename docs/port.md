@@ -34,7 +34,7 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 30286 → layer-web (qa) — reserved
 30386 → layer-web (prod) — reserved
 
-6333 → qdrant (dev, in-cluster ClusterIP; no NodePort)
+30633 → qdrant (dev NodePort; in-cluster `qdrant:6333`)
 
 # Tools / MCP (pod :8000 unless noted)
 30187-30190 → reserved (future tools, dev)
