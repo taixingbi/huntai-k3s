@@ -154,6 +154,7 @@ metadata:
   labels:
     app.kubernetes.io/name: alloy-logs
 spec:
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app.kubernetes.io/name: alloy-logs
