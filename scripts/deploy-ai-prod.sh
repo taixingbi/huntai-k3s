@@ -14,6 +14,7 @@ for p in \
   manifests/gateway-api/overlays/prod \
   manifests/orchestrator/overlays/prod \
   manifests/rag/overlays/prod \
+  manifests/tool/overlays/prod \
   manifests/web/overlays/prod \
   manifests/ingress/overlays/prod
 do
@@ -40,6 +41,7 @@ echo ""
 echo "== apply Argo CD Application CRs (prod) =="
 for f in \
   argocd/applications/rag-query-prod.yaml \
+  argocd/applications/mcp-github-prod.yaml \
   argocd/applications/orchestrator-prod.yaml \
   argocd/applications/gateway-api-prod.yaml \
   argocd/applications/web-prod.yaml \

@@ -87,7 +87,7 @@ sudo k3s kubectl get application orchestrator-dev -n argocd -o jsonpath='{.statu
 sudo k3s kubectl get application mcp-github-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application rag-query-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
 sudo k3s kubectl get application web-dev -n argocd -o jsonpath='{.status.sync.status}{"\n"}{.status.health.status}{"\n"}'
-sudo k3s kubectl get pods,svc -n ai-dev -l 'app in (layer-gateway-api,layer-gateway-inference,layer-gateway-embedding,layer-gateway-reranker,layer-orchestrator,layer-mcp-github-v1,layer-rag-query,layer-web)'
+sudo k3s kubectl get pods,svc -n ai-dev -l 'app in (layer-gateway-api,layer-gateway-inference,layer-gateway-embedding,layer-gateway-reranker,layer-orchestrator,layer-mcp-github,layer-rag-query,layer-web)'
 ```
 
 In the UI:
@@ -132,12 +132,12 @@ sudo k3s ctr images pull "ghcr.io/taixingbi/layer-orchestrator-v1:${TAG}"
 
 ### Gateway API, MCP GitHub, RAG, and web image pin (automatic)
 
-Same pattern on push to **`layer-gateway-api-v1`** / **`layer-mcp-github-v1`** / **`layer-rag-query-v1`** / **`layer-web-v1`** `main`:
+Same pattern on push to app repos — **`dev`** pins dev overlays, **`main`** pins prod overlays (gateway-api, orchestrator, rag-query, web, mcp-github):
 
 | App | Kustomize overlay | CI secret |
 |-----|-------------------|-----------|
 | `gateway-api-dev` | `manifests/gateway-api/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in gateway-api repo |
-| `mcp-github-dev` | `manifests/tool/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in mcp-github repo |
+| `mcp-github-dev` / `mcp-github-prod` | `manifests/tool/overlays/dev` / `prod` | `HUNTAI_K3S_PAT` in mcp-github repo |
 | `rag-query-dev` | `manifests/rag/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in rag-query repo |
 | `web-dev` | `manifests/web/overlays/dev/kustomization.yaml` | `HUNTAI_K3S_PAT` in web repo |
 
@@ -232,7 +232,7 @@ Child apps are grouped by **AppProject** (RBAC and allowed destinations). `hunta
 |---------|----------------|-------------------|
 | **platform** | `observability`, `vllm-inference`, `cloudflared-dev`, `cloudflared-prod` | `monitoring`, `vllm`, `ai-dev`, `ai-prod` (tunnels only) |
 | **ai-dev** | `qdrant-dev`, `gateway-*-dev`, `rag-query-dev`, `orchestrator-dev`, `mcp-github-dev`, `gateway-api-dev`, `web-dev` | `ai-dev` only |
-| **ai-prod** | `rag-query-prod`, `orchestrator-prod`, `gateway-api-prod`, `web-prod` | `ai-prod` only |
+| **ai-prod** | `rag-query-prod`, `mcp-github-prod`, `orchestrator-prod`, `gateway-api-prod`, `web-prod` | `ai-prod` only |
 
 Prod apps remain **manual sync** (no `automated` on those Application CRs). `ai-prod` project blocks deploying prod overlays into `ai-dev`.
 

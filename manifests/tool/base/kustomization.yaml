@@ -5,5 +5,5 @@ resources:
   - service.yaml
 labels:
   - pairs:
-      app: layer-mcp-github-v1
+      app: layer-mcp-github
     includeSelectors: true

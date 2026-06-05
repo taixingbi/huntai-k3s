@@ -1,6 +1,6 @@
 # Deploy prod user stack (`ai-prod`)
 
-Prod runs **gateway-api**, **orchestrator**, **web**, and **rag-query** in namespace **`ai-prod`**. Shared GPU plane stays in **`vllm`** + **`ai-dev`** (inference/embed/rerank gateways, Qdrant, MCP).
+Prod runs **gateway-api**, **orchestrator**, **web**, **rag-query**, and **mcp-github** in namespace **`ai-prod`**. Shared GPU plane stays in **`vllm`** + **`ai-dev`** (inference/embed/rerank gateways, Qdrant).
 
 Architecture: [architecture.md](architecture.md). Ports: [port.md](port.md).
 
@@ -37,12 +37,15 @@ Adjust keys to match upstream `env.example` for gateway-api and orchestrator. Se
 | Application | Path | Namespace |
 |-------------|------|-----------|
 | `rag-query-prod` | `manifests/rag/overlays/prod` | `ai-prod` |
+| `mcp-github-prod` | `manifests/tool/overlays/prod` | `ai-prod` |
 | `orchestrator-prod` | `manifests/orchestrator/overlays/prod` | `ai-prod` |
 | `gateway-api-prod` | `manifests/gateway-api/overlays/prod` | `ai-prod` |
 | `web-prod` | `manifests/web/overlays/prod` | `ai-prod` |
 | `cloudflared-prod` | `manifests/ingress/overlays/prod` | `ai-prod` |
 
-Sync order: **rag → orchestrator → gateway-api → web → cloudflared** (waves 10–12). In UI: **Diff** each app — prod must **not** change `ai-dev` gateway Deployments.
+Sync order: **rag → mcp-github → orchestrator → gateway-api → web → cloudflared** (waves 10–12). In UI: **Diff** each app — prod must **not** change `ai-dev` gateway Deployments.
+
+Create **`layer-mcp-github-v1-secrets`** in `ai-prod` before `mcp-github-prod` (see [deploy-mcp-github.md](deploy-mcp-github.md)).
 
 ### layer-rag-query-v1 → prod image pin
 
@@ -86,4 +89,4 @@ Prod tunnel manifest and runbook: [deploy-prod-cloudflare-tunnel.md](deploy-prod
 ## Do not sync these to prod
 
 - `gateway-inference-dev`, `gateway-embedding-dev`, `gateway-reranker-dev`
-- `qdrant-dev`, `vllm-inference`, `mcp-github-dev` (optional: prod orchestrator calls MCP in `ai-dev`)
+- `qdrant-dev`, `vllm-inference`, `mcp-github-dev` (prod uses `mcp-github-prod` in `ai-prod`)

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: layer-mcp-github-v1
+  name: layer-mcp-github
   labels:
     environment: prod
 spec:

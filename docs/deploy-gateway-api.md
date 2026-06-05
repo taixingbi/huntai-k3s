@@ -25,7 +25,7 @@ Key endpoints:
 
 ## Prerequisites
 
-- **Orchestrator** in `ai-dev` — [deploy-orchestrator.md](deploy-orchestrator.md) (`layer-orchestrator:8000` or NodePort `30184`). Gateway calls **`POST /v1/orchestrator/answer`** (`ORCHESTRATOR_CHAT_PATH` in manifest). The orchestrator GitHub route uses MCP tool name **`github_search`** on [layer-mcp-github-v1](deploy-mcp-github.md).
+- **Orchestrator** in `ai-dev` — [deploy-orchestrator.md](deploy-orchestrator.md) (`layer-orchestrator:8000` or NodePort `30184`). Gateway calls **`POST /v1/orchestrator/answer`** (`ORCHESTRATOR_CHAT_PATH` in manifest). The orchestrator GitHub route uses MCP tool name **`github_search`** on [layer-mcp-github](deploy-mcp-github.md).
 - **Auth secret** `layer-gateway-api-secrets` in `ai-dev` (§1). Pods stay `CreateContainerConfigError` until it exists.
 - Port map: [port.md](port.md) (`30185` dev).
 - Optional UI: [deploy-web.md](deploy-web.md) — public [https://dev.taixingai.com](https://dev.taixingai.com) ([deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md)) or LAN NodePort `30186`.

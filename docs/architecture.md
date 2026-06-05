@@ -108,7 +108,7 @@ Grafana JSON: [grafana-import/README.md](../grafana-import/README.md), versions 
 
 | You see | Meaning |
 |---------|---------|
-| Argo `mcp-github-dev` | `manifests/tool/overlays/dev` — GitHub MCP (`layer-mcp-github-v1`) |
+| Argo `mcp-github-dev` | `manifests/tool/overlays/dev` — GitHub MCP (`layer-mcp-github`) |
 | `manifests/tool/` | Historical path name; not a separate runtime “tool plane” |
 | Service `layer-*` | Container / image name from upstream repos |
 

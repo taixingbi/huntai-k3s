@@ -21,13 +21,13 @@ Upstream: [schema-request-response.md](https://github.com/taixingbi/layer-orches
 
 **`latency_ms` (orchestrator vs tool):** On **`POST /orchestrator/answer`**, timings are **nested by phase**. Top-level **`latency_ms.total`** is end-to-end wall time; **`latency_ms.intent_router`** is the router LLM; when the router picks **`github_repo_search`**, MCP **`github_search`** timings (`github_readme`, `github_search`, `chat`, `follow_up_chat`, …) are merged under **`latency_ms.github`** together with **`latency_ms.github.orchestrator`** (orchestrator wall time for that tool call). Same pattern for RAG under **`latency_ms.rag`**. Do **not** expect flat `github_*` keys at the top level of an orchestrator response.
 
-Direct **`POST /v1/mcp`** on [layer-mcp-github-v1](deploy-mcp-github.md) returns **tool-native** flat `latency_ms` (`github_readme`, `github_search`, `chat`, `total`, …) — that shape is correct for the MCP service only. Merging MCP SSE `done` JSON is not an orchestrator response; compare orchestrator with §4.5 below.
+Direct **`POST /v1/mcp`** on [layer-mcp-github](deploy-mcp-github.md) returns **tool-native** flat `latency_ms` (`github_readme`, `github_search`, `chat`, `total`, …) — that shape is correct for the MCP service only. Merging MCP SSE `done` JSON is not an orchestrator response; compare orchestrator with §4.5 below.
 
 ## Prerequisites
 
 - Inference gateway in `ai-dev` — [deploy-gateway-inference.md](deploy-gateway-inference.md) (`layer-gateway-inference:8000` or NodePort `30180`)
 - RAG query in `ai-dev` — [deploy-rag-query.md](deploy-rag-query.md) (`layer-rag-query:8000` or NodePort `30183`)
-- GitHub MCP in `ai-dev` — [deploy-mcp-github.md](deploy-mcp-github.md) (`layer-mcp-github-v1:8000` or NodePort `30191`) when using **`github_repo_search`**
+- GitHub MCP in `ai-dev` — [deploy-mcp-github.md](deploy-mcp-github.md) (`layer-mcp-github:8000` or NodePort `30191`) when using **`github_repo_search`**
 - Port map: [port.md](port.md) (`30184` dev)
 
 ## 1) Create secrets (Tavily web search)
@@ -62,9 +62,9 @@ Edit [manifests/orchestrator/base/deployment.yaml](../manifests/orchestrator/bas
 | `RAG_K` / `RAG_K_MAX` | `5` / `40` |
 | `ROUTER_PROMPT_VERSION` | `router-v2.0.0` |
 | `USE_MCP_TOOLS` | `true` |
-| `MCP_GITHUB_BASE_URL` | `http://layer-mcp-github-v1:8000` |
+| `MCP_GITHUB_BASE_URL` | `http://layer-mcp-github:8000` |
 
-Requires [layer-mcp-github-v1](deploy-mcp-github.md) when the router selects **`github_repo_search`** (`USE_MCP_TOOLS=true`).
+Requires [layer-mcp-github](deploy-mcp-github.md) when the router selects **`github_repo_search`** (`USE_MCP_TOOLS=true`).
 
 Optional Tavily tuning (non-secret) in the manifest: `TAVILY_SEARCH_DEPTH` (default upstream: `advanced`), `TAVILY_MAX_RESULTS` (default `5`).
 
@@ -201,7 +201,7 @@ curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/eval/router \
 
 ### 4.5 `POST /orchestrator/answer` — GitHub MCP route (optional)
 
-When the router selects **`github_repo_search`**, orchestrator calls **`github_search`** on **layer-mcp-github-v1** (`MCP_GITHUB_BASE_URL`). Validate nested latency (not flat tool keys at top level):
+When the router selects **`github_repo_search`**, orchestrator calls **`github_search`** on **layer-mcp-github** (`MCP_GITHUB_BASE_URL`). Validate nested latency (not flat tool keys at top level):
 
 ```bash
 curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \

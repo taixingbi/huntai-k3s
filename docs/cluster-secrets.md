@@ -11,7 +11,7 @@ Grafana Cloud: [secrets/README.md](../secrets/README.md) (bootstrap commands, ro
 | `layer-gateway-api-secrets` | gateway-api | [deploy-gateway-api.md](deploy-gateway-api.md) §1 |
 | `layer-gateway-inference-secrets` | gateway-inference | [deploy-gateway-inference.md](deploy-gateway-inference.md) §1 |
 | `layer-orchestrator-secrets` | orchestrator | [deploy-orchestrator.md](deploy-orchestrator.md) §1 |
-| `layer-mcp-github-v1-secrets` | mcp-github (manifests/tool) | [deploy-mcp-github.md](deploy-mcp-github.md) §1 |
+| `layer-mcp-github-v1-secrets` | mcp-github-dev (`ai-dev`), mcp-github-prod (`ai-prod`) | [deploy-mcp-github.md](deploy-mcp-github.md) |
 | `cloudflared-tunnel-credentials` | cloudflared (`ai-dev`) | [deploy-dev-cloudflare-tunnel.md](deploy-dev-cloudflare-tunnel.md) |
 | `cloudflared-tunnel-credentials` | cloudflared (`ai-prod`) | [deploy-prod-cloudflare-tunnel.md](deploy-prod-cloudflare-tunnel.md) |
 

@@ -28,4 +28,4 @@ spec:
             - name: RAG_COLLECTION_BASE
               value: "taixing_knowledge"
             - name: MCP_GITHUB_BASE_URL
-              value: "http://layer-mcp-github-v1:8000"
+              value: "http://layer-mcp-github:8000"

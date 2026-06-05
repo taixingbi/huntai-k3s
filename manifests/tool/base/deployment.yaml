@@ -1,10 +1,11 @@
 # layer-mcp-github-v1 — MCP streamable-http: POST /v1/mcp (ask_repo).
 # Source: https://github.com/taixingbi/layer-mcp-github-v1
 # Requires: layer-gateway-inference in ai-dev; GITHUB_TOKEN in layer-mcp-github-v1-secrets.
+# K8s name + app label: layer-mcp-github (same as layer-rag-query, layer-orchestrator). Image/repo/secret keep -v1.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: layer-mcp-github-v1
+  name: layer-mcp-github
   labels:
     environment: dev
 spec:
@@ -12,7 +13,7 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: layer-mcp-github-v1
+      app: layer-mcp-github
   template:
     metadata:
       labels:

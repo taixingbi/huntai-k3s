@@ -1,8 +1,10 @@
-# Deploy layer-mcp-github-v1 (dev)
+# Deploy layer-mcp-github (dev)
 
-Service image: [ghcr.io/taixingbi/layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1/pkgs/container/layer-mcp-github-v1) — source: [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1)
+Service image: [ghcr.io/taixingbi/layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1/pkgs/container/layer-mcp-github-v1) — source: [layer-mcp-github-v1](https://github.com/taixingbi/layer-mcp-github-v1). CI **Push to GHCR**: branch **`dev`** pins `manifests/tool/overlays/dev`, branch **`main`** pins `manifests/tool/overlays/prod` (`HUNTAI_K3S_PAT`). Prod rollout: [deploy-prod.md](deploy-prod.md) → `./scripts/sync-mcp-github-prod.sh`.
 
-MCP over HTTP: `POST /v1/mcp` on port **8000** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30191`** on the dev control plane; in-cluster: `http://layer-mcp-github-v1:8000/v1/mcp`. Tool `github_search` queries allowlisted GitHub repos and synthesizes answers via the inference gateway (`POST /v1/chat/completions` on **layer-gateway-inference**).
+MCP over HTTP: `POST /v1/mcp` on port **8000** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30191`** on the dev control plane; in-cluster: `http://layer-mcp-github:8000/v1/mcp`. Tool `github_search` queries allowlisted GitHub repos and synthesizes answers via the inference gateway (`POST /v1/chat/completions` on **layer-gateway-inference**).
+
+**Naming:** Service, Deployment, and `app` label: **`layer-mcp-github`** (same as `layer-orchestrator`, `layer-rag-query`, …). Image/repo/secret keep **`layer-mcp-github-v1`**.
 
 Omit `repo` → all repos in upstream [`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py). Streaming is default for `github_search`; set `stream:false` when you need buffered JSON.
 
@@ -65,15 +67,15 @@ sudo k3s kubectl get application mcp-github-dev -n argocd
 TAG=$(grep newTag manifests/tool/overlays/dev/kustomization.yaml | sed 's/.*"\(.*\)".*/\1/')
 sudo k3s ctr images pull "ghcr.io/taixingbi/layer-mcp-github-v1:${TAG}"
 
-sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-mcp-github-v1 -o wide
+sudo k3s kubectl get pods,svc -n ai-dev -l app=layer-mcp-github -o wide
 sudo k3s kubectl get svc -A -o wide | grep 30191
 ```
 
 If the pod does not start:
 
 ```bash
-sudo k3s kubectl describe pod -n ai-dev -l app=layer-mcp-github-v1
-sudo k3s kubectl logs -n ai-dev deploy/layer-mcp-github-v1 --tail=50
+sudo k3s kubectl describe pod -n ai-dev -l app=layer-mcp-github
+sudo k3s kubectl logs -n ai-dev deploy/layer-mcp-github --tail=50
 ```
 
 Pod logs on startup should mention MCP URL, LLM gateway, and default repo list (same as local `python -m app.main --http`).
@@ -229,7 +231,7 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
 During §3.2–3.3, pod logs should show GitHub readme/search and `POST .../v1/chat/completions` → `200 OK`. §3.3 SSE uses `/v1/mcp` (not a JSON-RPC envelope on the wire).
 
 ```bash
-sudo k3s kubectl logs -n ai-dev deploy/layer-mcp-github-v1 -f --tail=30
+sudo k3s kubectl logs -n ai-dev deploy/layer-mcp-github -f --tail=30
 ```
 
 ## 4) Cursor / MCP clients
@@ -237,7 +239,7 @@ sudo k3s kubectl logs -n ai-dev deploy/layer-mcp-github-v1 -f --tail=30
 The container runs **HTTP MCP** (`python -m app.main --http`), not stdio. Point clients at:
 
 - LAN: `http://192.168.86.179:30191/v1/mcp`
-- Port-forward: `sudo k3s kubectl port-forward -n ai-dev svc/layer-mcp-github-v1 8000:8000` → `http://127.0.0.1:8000/v1/mcp`
+- Port-forward: `sudo k3s kubectl port-forward -n ai-dev svc/layer-mcp-github 8000:8000` → `http://127.0.0.1:8000/v1/mcp`
 
 Enable MCP server **layer-mcp-github-v1** per upstream [`.cursor/mcp.json`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/.cursor/mcp.json).
 
@@ -253,8 +255,48 @@ Enable MCP server **layer-mcp-github-v1** per upstream [`.cursor/mcp.json`](http
 | `GET /ready` **503** | Secret `GITHUB_TOKEN`; inference gateway §3.5; `kubectl logs` |
 | No `answer` / LLM errors | [deploy-gateway-inference.md](deploy-gateway-inference.md); §3.5 |
 | `Not Acceptable` on `/v1/mcp` stream | Pull latest image; `Accept: text/event-stream` + `"stream": true`; startup log should mention SSE |
-| Stale MCP behavior | `rollout restart deployment/layer-mcp-github-v1 -n ai-dev` |
+| Stale MCP behavior | `rollout restart deployment/layer-mcp-github -n ai-dev` |
+| `spec.selector: field is immutable` | Delete old Deployment/Service, re-apply overlay — see below |
+
+**One-time rename** (`layer-mcp-github-v1` → `layer-mcp-github`): Deployment `spec.selector` and Service names cannot be patched in place. Sync orchestrator after MCP is up. Expect ~30s downtime per namespace.
+
+```bash
+cd huntai-k3s
+for NS in ai-dev ai-prod; do
+  sudo k3s kubectl delete deployment,service layer-mcp-github-v1 -n "$NS" --ignore-not-found --wait=true
+  sudo k3s kubectl delete deployment layer-mcp-github -n "$NS" --ignore-not-found --wait=true
+done
+sudo k3s kubectl apply -k manifests/tool/overlays/dev
+sudo k3s kubectl apply -k manifests/tool/overlays/prod
+sudo k3s kubectl apply -k manifests/orchestrator/overlays/dev
+sudo k3s kubectl apply -k manifests/orchestrator/overlays/prod
+sudo k3s kubectl -n ai-dev rollout status deployment/layer-mcp-github --timeout=120s
+sudo k3s kubectl -n ai-prod rollout status deployment/layer-mcp-github --timeout=120s
+```
 
 NodePort:
 
 - dev: `30191`
+- prod (`ai-prod`): `30391`
+
+## Prod (`ai-prod`)
+
+Argo CD app **`mcp-github-prod`** → `manifests/tool/overlays/prod`. Prod orchestrator uses in-cluster `http://layer-mcp-github:8000` (same namespace). Inference still uses **`ai-dev`** gateway: `http://layer-gateway-inference.ai-dev.svc.cluster.local:8000`.
+
+### Prod secret
+
+```bash
+sudo k3s kubectl create secret generic layer-mcp-github-v1-secrets -n ai-prod \
+  --from-file=GITHUB_TOKEN="$HOME/.secrets/github-token" \
+  --dry-run=client -o yaml | sudo k3s kubectl apply -f -
+```
+
+Use a prod-appropriate PAT or the same org token as dev if policy allows.
+
+### Rollout
+
+```bash
+cd ~/shared/huntai-platform/huntai-k3s
+./scripts/sync-mcp-github-prod.sh
+# then re-sync orchestrator-prod if MCP URL patch changed
+```

@@ -71,7 +71,7 @@ spec:
             - name: USE_MCP_TOOLS
               value: "true"
             - name: MCP_GITHUB_BASE_URL
-              value: "http://layer-mcp-github-v1:8000"
+              value: "http://layer-mcp-github:8000"
             - name: TOOLS_TIMEOUT_S
               value: "60"
             - name: INVOKE_TIMEOUT_S

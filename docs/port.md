@@ -30,7 +30,7 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 | 30184 | orchestrator | `http://192.168.86.179:30184` |
 | 30185 | gateway-api | `http://192.168.86.179:30185` |
 | 30186 | layer-web | `http://192.168.86.179:30186` |
-| 30191 | layer-mcp-github-v1 | `http://192.168.86.179:30191` |
+| 30191 | layer-mcp-github | `http://192.168.86.179:30191` |
 | 30633 | qdrant | `http://192.168.86.179:30633` (in-cluster `qdrant:6333`) |
 
 | Port | Service (prod `ai-prod`) |
@@ -39,6 +39,7 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 | 30384 | orchestrator |
 | 30385 | gateway-api |
 | 30386 | layer-web |
+| 30391 | layer-mcp-github |
 
 Reserved **qa** ports (30280–30291, etc.) — not deployed.
 
