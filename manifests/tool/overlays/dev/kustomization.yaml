@@ -8,5 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-mcp-github-v1
     newName: ghcr.io/taixingbi/layer-mcp-github-v1
-    newTag: "240f4c18f35b"
-    digest: "sha256:9531bf3c55824bf3e77786b22adadaea10aab88f36471ebb4fafc7428b1ed0c3"
+    newTag: "528c75a6c47b"
+    digest: "sha256:2e6c9bcdeaf05123715821d12ffeff18eae64d468a9506663e1df32edf24d113"
