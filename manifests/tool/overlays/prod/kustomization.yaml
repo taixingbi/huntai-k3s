@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ai-prod
+resources:
+  - ../../base
+# Namespace ai-prod: Argo Application syncOption CreateNamespace=true (not a Namespace manifest).
+patches:
+  - path: patch-deployment.yaml
+  - path: patch-service.yaml
+# Pinned by layer-mcp-github-v1 CI (dev → dev overlay, main → prod overlay).
+images:
+  - name: ghcr.io/taixingbi/layer-mcp-github-v1
+    newName: ghcr.io/taixingbi/layer-mcp-github-v1
+    newTag: "31c7f57679e1"
+    digest: "sha256:c5efe07244e4ca6d0b8cff26a4d5bbae784a2374b877d383a4239b455cd7a73f"

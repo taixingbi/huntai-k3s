@@ -10,6 +10,7 @@ resources:
   - gateway-api-dev.yaml
   - orchestrator-dev.yaml
   - mcp-github-dev.yaml
+  - mcp-github-prod.yaml
   - rag-query-dev.yaml
   - web-dev.yaml
   - cloudflared-dev.yaml

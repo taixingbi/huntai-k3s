@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-mcp-github-v1
+  labels:
+    environment: prod
+spec:
+  template:
+    metadata:
+      labels:
+        environment: prod
+    spec:
+      containers:
+        - name: mcp-github
+          env:
+            - name: ENV
+              value: "prod"
+            - name: LLM_GATEWAY_BASE_URL
+              value: "http://layer-gateway-inference.ai-dev.svc.cluster.local:8000"
