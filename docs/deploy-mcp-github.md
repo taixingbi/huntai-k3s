@@ -20,9 +20,25 @@ Upstream: [schema.md](https://github.com/taixingbi/layer-mcp-github-v1/blob/main
 
 **`latency_ms` (tool-native):** `github_search` / SSE `done` use **flat** keys — `github_readme`, `github_search`, `chat`, `follow_up_chat`, `total`. That is correct for this MCP service. When the same tool is invoked via [orchestrator](deploy-orchestrator.md) **`github_repo_search`**, those timings appear under **`latency_ms.github`** on the orchestrator response, with **`latency_ms.total`** and **`latency_ms.intent_router`** at the orchestrator level (see [schema-request-response.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/schema-request-response.md)).
 
+## Synthesis engine (`SYNTH_ENGINE`)
+
+Default **`legacy`**: answers via **layer-gateway-inference** (`LLM_GATEWAY_BASE_URL` in the Deployment). Optional **`cursor_sdk`**: GitHub retrieval unchanged; synthesis via Cursor SDK (Ask-style read-only prompt). Requires **`CURSOR_API_KEY`** in the secret; `/ready` skips LLM gateway probe.
+
+```bash
+# Dev spike only — add to secret, then patch deployment env:
+# SYNTH_ENGINE=cursor_sdk
+# CURSOR_API_KEY from ~/.secrets/cursor-api-key
+sudo k3s kubectl create secret generic layer-mcp-github-v1-secrets -n ai-dev \
+  --from-file=GITHUB_TOKEN="$HOME/.secrets/github-token" \
+  --from-file=CURSOR_API_KEY="$HOME/.secrets/cursor-api-key" \
+  --dry-run=client -o yaml | sudo k3s kubectl apply -f -
+```
+
+MCP contract (`github_search`, orchestrator URL) is unchanged for either engine.
+
 ## Prerequisites
 
-- **layer-gateway-inference** in `ai-dev` (`http://layer-gateway-inference:8000` or NodePort `30180`); see [deploy-gateway-inference.md](deploy-gateway-inference.md).
+- **layer-gateway-inference** in `ai-dev` when `SYNTH_ENGINE=legacy` (`http://layer-gateway-inference:8000` or NodePort `30180`); see [deploy-gateway-inference.md](deploy-gateway-inference.md).
 - Port map: [port.md](port.md) (`30191` dev; `30187`–`30190` reserved for future tools).
 - GitHub PAT with **`repo`** scope (and access to repos in upstream allowlist under `taixingbi`).
 
