@@ -91,7 +91,7 @@ data:
       --runner pooling \
       --pooler-config '{"task":"embed"}' \
       --enforce-eager \
-      --gpu-memory-utilization 0.08 \
+      --gpu-memory-utilization 0.06 \
       --max-model-len 8192 \
       &
 
@@ -107,14 +107,13 @@ data:
     log "waiting for rerank /health on :8002 (up to 30m)"
     wait_for_health 8002 rerank 360
 
-    # Chat: embed+rerank leave ~3–4GiB used; vLLM checks util * total_VRAM <= free at startup.
-    # 0.80 leaves headroom for KV with max-num-seqs 4; enforce-eager avoids CUDA-graph reservation.
+    # Chat: embed+rerank leave headroom; 0.82 + max-num-seqs 8 for gateway concurrency; enforce-eager avoids CUDA-graph reservation.
     log "starting chat (Qwen2.5-7B-Instruct + LoRA) on :8000"
     vllm serve Qwen/Qwen2.5-7B-Instruct \
       --host 0.0.0.0 --port 8000 \
-      --gpu-memory-utilization 0.80 \
+      --gpu-memory-utilization 0.82 \
       --max-model-len 2048 \
-      --max-num-seqs 4 \
+      --max-num-seqs 8 \
       --enforce-eager \
       --enable-lora \
       --max-lora-rank 64 \
