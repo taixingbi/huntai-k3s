@@ -69,7 +69,7 @@ Non-secret env is in [manifests/tool/base/deployment.yaml](../manifests/tool/bas
 | `LLM_GATEWAY_BASE_URL` | `http://layer-gateway-inference:8000` |
 | `LLM_MODEL` | `Qwen/Qwen2.5-7B-Instruct` |
 | `GITHUB_SEARCH_FOLLOW_UPS` | unset / `false` (default — skips second LLM pass; `latency_ms.follow_up_chat` omitted) |
-| `GITHUB_FETCH_WORKERS` | `8` — parallel README / code-search threads |
+| `GITHUB_FETCH_WORKERS` | `8` — parallel README / code-search / path-file threads |
 | `GITHUB_README_CACHE_TTL_SEC` | `3600` — in-process README cache (`0` disables) |
 | `GITHUB_REPO_ROUTING` | `true` — omit `repo` → rank ≤`GITHUB_ROUTE_MAX_REPOS` repos from question (not full allowlist) |
 | `GITHUB_ROUTE_MAX_REPOS` | `5` |
