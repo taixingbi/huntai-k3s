@@ -31,6 +31,8 @@ Gateway and RAG workloads listen on **8000** inside the cluster (Service `port`)
 | 30185 | gateway-api | `http://192.168.86.179:30185` |
 | 30186 | layer-web | `http://192.168.86.179:30186` |
 | 30191 | layer-mcp-github | `http://192.168.86.179:30191` |
+
+SSE event names differ by service — see [sse-streaming-events.md](sse-streaming-events.md).
 | 30633 | qdrant | `http://192.168.86.179:30633` (in-cluster `qdrant:6333`) |
 
 | Port | Service (prod `ai-prod`) |

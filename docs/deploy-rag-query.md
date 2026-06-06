@@ -4,6 +4,8 @@ Service image: [ghcr.io/taixingbi/layer-rag-query-v1](https://github.com/taixing
 
 Hybrid retrieval (dense + BM25 + RRF) with optional rerank and chat completion. **`POST /v1/rag/query`** on port **8000** (JSON or SSE). MCP over HTTP: **`POST /v1/mcp`** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30183`**; in-cluster: `http://layer-rag-query:8000/v1/rag/query`.
 
+**SSE tokens:** direct RAG uses `event: answer_delta` with `data.text`. Do not parse `delta` or `token` on this port — see [sse-streaming-events.md](sse-streaming-events.md).
+
 Key endpoints:
 
 - `GET /health` — liveness (`{"status":"ok"}`); build metadata on `GET /version`
@@ -100,11 +102,10 @@ curl -N -sS -X POST http://192.168.86.179:30183/v1/rag/query \
     "collection_base": "taixing_knowledge",
     "k": 5,
     "k_max": 50
-  }' | jq
-echo
+  }'
 ```
 
-**Pass:** SSE lines with `event: meta`, `event: answer_delta`, `event: done`.
+**Pass:** SSE lines with `event: meta`, `event: answer_delta` (token chunks in `data.text`), optional `latency` / `citations` / `follow_up_questions` / `usage`, then `event: done`. Full event table: upstream [streaming.md](https://github.com/taixingbi/layer-rag-query-v1/blob/main/docs/streaming.md); cross-service summary: [sse-streaming-events.md](sse-streaming-events.md).
 
 ### 3.2 `POST /v1/rag/query` (JSON, non-stream)
 
@@ -289,6 +290,7 @@ Enable MCP server **layer-rag-query** per upstream [`.cursor/mcp.json`](https://
 
 | Symptom | Check |
 |---------|--------|
+| SSE `ConnectError: All connection attempts failed` | Upstream from RAG pod: `GET /ready` on `:30183`; gateway embed/rerank/inference `/ready` on `30181`/`30182`/`30180`; see [sse-streaming-events.md](sse-streaming-events.md) |
 | `GET /ready` **503** | `QDRANT_URL`; Qdrant reachable from pod |
 | **400** on `/v1/rag/query` | No `request_id` / `session_id` / `trace_id` / `user_*` in JSON body |
 | Empty answer / **502** | `INFERENCE_URL` (`30180`), `EMBEDDING_URL` (`30181`), `RERANK_URL` (`30182`) |

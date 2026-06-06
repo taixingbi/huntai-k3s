@@ -21,7 +21,7 @@ Key endpoints:
 
 **`latency_ms`:** Non-stream JSON and SSE `event: done` include gateway phases (`total`, `auth`, `validation`, `storage`, `orchestrator`) plus optional nested orchestrator **`usage`**.
 
-**SSE (`POST /v1/chat`):** `event: meta` → optional `event: rewrite` → `event: token` (…) → `event: done` (or `event: error`). With `flat_headers`, citations / follow-ups on upstream SSE may be aggregated into `done`; if the stream lacks them, the gateway may issue one supplemental non-stream orchestrator call to fill `done` metadata.
+**SSE (`POST /v1/chat`):** `event: meta` → optional `event: rewrite` → `event: token` (…) → `event: done` (or `event: error`). Tokens are `data.text` — not RAG `answer_delta` or MCP `delta`. Citations / follow-ups / usage on `event: done` (gateway may supplement if the stream omitted them). Cross-service summary: [sse-streaming-events.md](sse-streaming-events.md).
 
 ## Prerequisites
 
