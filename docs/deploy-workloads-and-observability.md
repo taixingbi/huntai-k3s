@@ -4,7 +4,7 @@ GitOps (Argo CD) for the gateway API and future apps: [deploy-gitops-argocd.md](
 
 **Architecture** (namespaces, gateway → vLLM URLs, metrics): [architecture.md](architecture.md).
 
-**SSE event names** (RAG `answer_delta` vs MCP `delta` vs gateway `token`): [sse-streaming-events.md](sse-streaming-events.md).
+**SSE event names** (shared `answer_delta` + `data.text`): [sse-streaming-events.md](sse-streaming-events.md).
 
 If embed, rerank, inference gateways, or vLLM Grafana metrics broke after the `ai` → `vllm` move, use **`docs/fix-vllm-plane-cutover.md`** first.
 

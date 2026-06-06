@@ -4,7 +4,7 @@ Service image: [ghcr.io/taixingbi/layer-mcp-github-v1](https://github.com/taixin
 
 MCP over HTTP: `POST /v1/mcp` on port **8000** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30191`** on the dev control plane; in-cluster: `http://layer-mcp-github:8000/v1/mcp`. Tool `github_search` queries allowlisted GitHub repos and synthesizes answers via the inference gateway (`POST /v1/chat/completions` on **layer-gateway-inference**).
 
-**SSE tokens:** direct MCP stream uses `event: delta` with `data.answer.text` (not RAG's `answer_delta`). See [sse-streaming-events.md](sse-streaming-events.md).
+**SSE tokens:** `event: answer_delta` with `data.text`. See [sse-streaming-events.md](sse-streaming-events.md).
 
 **Naming:** Service, Deployment, and `app` label: **`layer-mcp-github`** (same as `layer-orchestrator`, `layer-rag-query`, …). Image/repo/secret keep **`layer-mcp-github-v1`**.
 
@@ -148,7 +148,7 @@ curl -sS --max-time 120 -X POST \
 
 ### 3.3 MCP — SSE stream (default stream + `Accept: text/event-stream`)
 
-Requires `Accept: text/event-stream` and `github_search` (stream defaults to true). Wire events: **`meta`**, **`delta`**, **`done`** (not RAG's `answer_delta`). Token text is in `data.answer.text`. Cross-service summary: [sse-streaming-events.md](sse-streaming-events.md).
+Requires `Accept: text/event-stream` and `github_search` (stream defaults to true). Wire events: **`meta`**, **`answer_delta`**, **`done`**. Token text is in `data.text`. See [sse-streaming-events.md](sse-streaming-events.md).
 
 ```bash
 curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
@@ -172,7 +172,7 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
   }' | tee /tmp/mcp-stream.txt
 ```
 
-**Pass:** SSE lines with `event: meta`, `event: delta` (`data.answer.text` chunks), `event: done`; first `meta` data has `.meta.request_id` `req-mcp-stream-1`.
+**Pass:** SSE lines with `event: meta`, `event: answer_delta` (`data.text` chunks), `event: done`; first `meta` data has `.meta.request_id` `req-mcp-stream-1`.
 
 **Final JSON from `done`:**
 

@@ -104,7 +104,7 @@ curl -N -sS -X POST "${WEB_URL}/api/v1/chat" \
   -d '{"message":"what is Taixing US visa status?"}'
 ```
 
-**Pass:** BFF SSE lines with `event: status`, optional `event: rewrite`, `event: result_chunk` (…), `event: stream_end` (not raw gateway `event: token`).
+**Pass:** BFF SSE lines with `event: status`, optional `event: rewrite`, `event: result_chunk` (…), `event: stream_end` (maps from gateway `event: answer_delta`).
 
 Compare with gateway-direct smoke: [deploy-gateway-api.md §3.3](deploy-gateway-api.md) (`POST /v1/chat` on port **30185**).
 

@@ -4,7 +4,7 @@ Service image: [ghcr.io/taixingbi/layer-rag-query-v1](https://github.com/taixing
 
 Hybrid retrieval (dense + BM25 + RRF) with optional rerank and chat completion. **`POST /v1/rag/query`** on port **8000** (JSON or SSE). MCP over HTTP: **`POST /v1/mcp`** (use `/v1/mcp` not `/v1/mcp/`). NodePort **`30183`**; in-cluster: `http://layer-rag-query:8000/v1/rag/query`.
 
-**SSE tokens:** direct RAG uses `event: answer_delta` with `data.text`. Do not parse `delta` or `token` on this port — see [sse-streaming-events.md](sse-streaming-events.md).
+**SSE tokens:** all services use `event: answer_delta` with `data.text`. See [sse-streaming-events.md](sse-streaming-events.md).
 
 Key endpoints:
 

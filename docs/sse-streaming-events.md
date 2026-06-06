@@ -1,20 +1,27 @@
 # SSE streaming events (cross-service)
 
-How token and metadata events differ by hop. Use this when writing curl smoke tests, SSE parsers, or UI clients.
+Shared token contract for all HuntAI streaming APIs:
+
+```
+event: answer_delta
+data: {"text":"..."}
+```
+
+Parse token text from **`data.text`** on every hop. Citations, usage, and phase timings are on terminal **`done`** (or separate RAG-only events on direct `:30183`).
 
 **Ports (dev):** [port.md](port.md) — RAG `30183`, orchestrator `30184`, gateway-api `30185`, MCP GitHub `30191`.
 
-## Token event names by layer
+## Token contract by layer
 
-| Layer | NodePort | Wire format | Token event | Token payload |
-|-------|----------|-------------|-------------|---------------|
+| Layer | NodePort | Wire format | Token event | Payload |
+|-------|----------|-------------|-------------|---------|
 | **RAG direct** | `30183` | `event:` + `data:` | `answer_delta` | `{"text":"..."}` |
-| **MCP GitHub direct** | `30191` | `event:` + `data:` | `delta` | `{"answer":{"text":"..."}}` |
-| **Orchestrator** | `30184` | `data:` only (`type` in JSON) | `answer_delta` | `{"type":"answer_delta","text":"..."}` |
-| **Gateway API** | `30185` | `event:` + `data:` | `token` | `{"text":"..."}` |
-| **Web BFF** | `30186` | `event:` + `data:` | `result_chunk` | (maps from gateway `token`) |
+| **MCP GitHub direct** | `30191` | `event:` + `data:` | `answer_delta` | `{"text":"..."}` |
+| **Orchestrator** | `30184` | `event:` + `data:` for tokens; other frames `data:` + `type` | `answer_delta` | `{"text":"..."}` |
+| **Gateway API** | `30185` | `event:` + `data:` | `answer_delta` | `{"text":"..."}` |
+| **Web BFF** | `30186` | `event:` + `data:` | `result_chunk` | `{delta}` (UI layer; upstream is gateway `answer_delta`) |
 
-Orchestrator normalizes MCP GitHub `delta` → `answer_delta` before emitting to clients. Gateway API maps orchestrator `answer_delta` → `token`.
+Legacy **`event: token`** (gateway) and **`event: delta`** (old MCP) may still be accepted by parsers during rollout; new clients should use **`answer_delta`** only.
 
 ## Client rules
 
@@ -22,12 +29,10 @@ Orchestrator normalizes MCP GitHub `delta` → `answer_delta` before emitting to
 
 Follow upstream [streaming.md](https://github.com/taixingbi/layer-rag-query-v1/blob/main/docs/streaming.md).
 
-- **Tokens:** `event: answer_delta` → parse `data.text`.
-- **Also expect:** `meta`, `latency`, optional `retrieval_widen`, `answer_start` / `answer_end`, `citations`, `follow_up_questions`, `usage`, `done` (and `error` → `done` on failure).
-- Citations and usage are **separate events**, not only on `done`.
+- **Tokens:** `event: answer_delta` → `data.text`.
+- **Also on direct RAG only:** `meta`, `latency`, optional `retrieval_widen`, `answer_start` / `answer_end`, mid-stream `citations`, `follow_up_questions`, `usage`, `done`.
 
 ```bash
-# extract streamed answer text
 awk '/^event: answer_delta$/{p=1;next} /^event:/{p=0} p&&/^data: /{sub(/^data: /,""); print}' \
   /tmp/rag-stream.txt | jq -r '.text' | tr -d '\n'; echo
 ```
@@ -36,41 +41,26 @@ Deploy smoke: [deploy-rag-query.md §3.1](deploy-rag-query.md#31-post-v1ragquery
 
 ### Direct MCP GitHub (`POST /v1/mcp`, `github_search`, `:30191`)
 
-- **Tokens:** `event: delta` → parse `data.answer.text` (not top-level `text`).
-- **Also expect:** `meta` (body is `{"meta":{...}}`), then `done` with full envelope (`answer`, `citations`, `follow_up_questions`, `usage`, `latency_ms`).
-- **No** RAG-style `latency`, `citations`, or `usage` as separate mid-stream events.
-- Requires `Accept: text/event-stream` for SSE (buffered JSON when `stream: false`).
+- **Tokens:** `event: answer_delta` → `data.text`.
+- **Also expect:** `meta`, then `done` with full envelope.
 
 ```bash
-# extract streamed answer text
-awk '/^event: delta$/{p=1;next} /^event:/{p=0} p&&/^data: /{sub(/^data: /,""); print}' \
-  /tmp/mcp-stream.txt | jq -r '.answer.text' | tr -d '\n'; echo
+awk '/^event: answer_delta$/{p=1;next} /^event:/{p=0} p&&/^data: /{sub(/^data: /,""); print}' \
+  /tmp/mcp-stream.txt | jq -r '.text' | tr -d '\n'; echo
 ```
 
 Deploy smoke: [deploy-mcp-github.md §3.3](deploy-mcp-github.md#33-mcp--sse-stream-default-stream--accept-textevent-stream).
 
-### Orchestrator / Gateway (aggregated client path)
+### Orchestrator / Gateway (aggregated path)
 
-**Do not** assume RAG-direct mid-stream events (`latency`, `citations`, `follow_up_questions`, `usage` as separate SSE frames).
+**Do not** expect RAG-direct mid-stream events (`latency`, separate `citations` frames) on `:30184` or `:30185`.
 
-- **Orchestrator (`30184`):** read `data:` JSON; tokens are `type: "answer_delta"` with `text`. Terminal `type: "done"` carries citations, usage, `latency_ms`.
-- **Gateway API (`30185`):** tokens are `event: token` with `data.text`; citations / follow-ups / usage on `event: done` (gateway may supplement `done` if the stream omitted them).
+- **Orchestrator (`30184`):** token frames are `event: answer_delta` with `data.text`; routing frames use `data: {"type":"rewrite"|"route"|"done", ...}`.
+- **Gateway API (`30185`):** same token contract; citations / usage on `event: done`.
 
-Orchestrator stream types: `correlation`, `rewrite`, `route`, `answer_delta`, `done`, `error` — see [schema-request-response.md](https://github.com/taixingbi/layer-orchestrator-v1/blob/main/docs/schema/schema-request-response.md).
+### RAG upstream failures (`ConnectError`)
 
-Gateway stream events: `meta`, `rewrite`, `route`, `token`, `done`, `error` — see [gateway-api schema.md](https://github.com/taixingbi/layer-gateway-api-v1/blob/main/docs/schema.md).
-
-## RAG upstream failures (`ConnectError`)
-
-If direct RAG SSE returns `event: error` with `ConnectError: All connection attempts failed`, an upstream dependency is unreachable from the RAG pod (not an SSE naming issue).
-
-Check in order:
-
-1. `curl -sS :30183/ready` — Qdrant reachable?
-2. Gateway pods ready: embedding (`30181`), reranker (`30182`), inference (`30180`) — each `/ready`.
-3. `kubectl -n ai-dev logs deploy/layer-rag-query --tail=50` for the failing URL.
-
-See [deploy-rag-query.md §1–2](deploy-rag-query.md) and gateway deploy docs.
+If direct RAG SSE returns `event: error` with `ConnectError: All connection attempts failed`, check upstream gateways and Qdrant — see [deploy-rag-query.md §Troubleshooting](deploy-rag-query.md#troubleshooting).
 
 ## Related deploy docs
 
@@ -78,4 +68,4 @@ See [deploy-rag-query.md §1–2](deploy-rag-query.md) and gateway deploy docs.
 - [deploy-mcp-github.md](deploy-mcp-github.md)
 - [deploy-orchestrator.md](deploy-orchestrator.md)
 - [deploy-gateway-api.md](deploy-gateway-api.md)
-- [deploy-web.md](deploy-web.md) — BFF renames gateway events for the chat UI
+- [deploy-web.md](deploy-web.md)

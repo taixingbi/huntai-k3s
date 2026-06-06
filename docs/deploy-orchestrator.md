@@ -4,7 +4,7 @@ Service image: [ghcr.io/taixingbi/layer-orchestrator-v1](https://github.com/taix
 
 FastAPI orchestrator: intent router + optional RAG via **`POST /orchestrator/answer`** (aggregated JSON by default; SSE when `"stream": true`). NodePort **`30184`**; in-cluster: `http://layer-orchestrator:8000/orchestrator/answer`. Calls inference gateway (`POST …/v1/chat/completions`) and RAG (`POST …/v1/rag/query` on **layer-rag-query**).
 
-**SSE tokens:** orchestrator emits `data:` JSON with `"type":"answer_delta"` and `text` — not RAG wire events (`event: answer_delta`) or MCP `delta`. Citations / usage on terminal `"type":"done"`. See [sse-streaming-events.md](sse-streaming-events.md).
+**SSE tokens:** `event: answer_delta` with `data.text`; routing frames use `data.type`. See [sse-streaming-events.md](sse-streaming-events.md).
 
 Key endpoints:
 
@@ -156,7 +156,7 @@ curl -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
 
 ### 4.3 `POST /orchestrator/answer` (SSE, `stream: true`)
 
-Use `-N` for line-by-line SSE. Each line is `data: {json}` with a `type` field — no `event:` prefix. Expect `correlation`, `rewrite`, `route`, **`answer_delta`** (token chunks), then **`done`** with citations, `latency_ms`, and `usage`. Do **not** expect RAG-direct mid-stream events (`latency`, separate `citations` frames).
+Use `-N` for line-by-line SSE. Token frames: `event: answer_delta` with `data.text`. Routing uses `data: {"type":"rewrite"|"route"|"done", ...}`. Citations / usage on terminal `done`.
 
 ```bash
 curl -N -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
@@ -175,7 +175,7 @@ curl -N -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
   }'
 ```
 
-**Pass:** SSE JSON lines with `"type":"answer_delta"` (token text in `text`) and terminal `"type":"done"`.
+**Pass:** SSE with `event: answer_delta` (token text in `data.text`) and terminal `event: done` (or `data` with `"type":"done"`).
 
 ### 4.4 `POST /orchestrator/eval/router` (optional)
 
