@@ -1,0 +1,50 @@
+# Gateway embedding config for dev routing behavior.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: layer-gateway-embedding-config
+data:
+  config.yaml: |
+    server:
+      host: 0.0.0.0
+      port: 8000
+
+    timeouts:
+      connect_ms: 1000
+      read_ms: 15000
+
+    retry:
+      max_attempts: 2
+      retryable_statuses: [502, 503, 504]
+
+    circuit_breaker:
+      failure_threshold: 5
+      reset_timeout_sec: 30
+      half_open_max_probes: 1
+      half_open_success_threshold: 1
+
+    routing:
+      inflight_weight: 8.0
+      latency_weight: 0.5
+      error_weight: 100.0
+      hot_penalty_weight: 20.0
+      overload_penalty_weight: 15.0
+      hot_window_sec: 2.0
+      hot_target_share: 0.55
+
+    admission:
+      max_concurrent: 128
+      wait_timeout_ms: 500
+
+    backends:
+      # One URL per GPU node (per-node ClusterIP :8001). Do not use a cross-node LB Service.
+      - name: embed-node-1
+        url: http://vllm-embed-gpu-node-1.vllm.svc.cluster.local:8001
+        soft_limit: 32
+        hard_limit: 64
+        drained: false
+      - name: embed-node-2
+        url: http://vllm-embed-gpu-node-2.vllm.svc.cluster.local:8001
+        soft_limit: 32
+        hard_limit: 64
+        drained: false

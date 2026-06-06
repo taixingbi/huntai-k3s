@@ -77,9 +77,38 @@ Expected when both GPU nodes are up:
 }
 ```
 
-## 5) Example: `POST /v1/chat/completions`
+## 5) Example: `POST /v1/chat/completions` (stream, default)
 
-From a host that can reach dev NodePort `30180`. Optional `conversation_id` in the JSON is for client-side correlation; omit it if your OpenAI-compatible backend rejects unknown fields.
+Omitting `"stream"` defaults to **SSE** (`text/event-stream`). Use `curl -N` so chunks print as they arrive. The gateway emits a synthetic `gateway.conversation` event first, then vLLM token chunks as `data: {"choices":[{"delta":...}]}` lines (not one JSON `chat.completion` blob).
+
+Expected shape (abbreviated):
+
+```
+data: {"object":"gateway.conversation","conversation_id":"conv_456","is_new_conversation":false}
+
+data: {"choices":[{"delta":{"content":"Jersey"}}],...}
+
+data: [DONE]
+```
+
+```bash
+curl -N http://192.168.86.179:30180/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "X-Request-Id: request-id-1" \
+  -H "X-Trace-Id: trace-id-1" \
+  -H "X-Session-Id: session-id-1" \
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "conversation_id": "conv_456",
+    "messages": [
+      {"role": "user", "content": "where is jersey city"}
+    ],
+    "max_tokens": 50,
+    "temperature": 0.7
+  }'
+```
+
+For a single JSON object (e.g. `jq`), set `"stream": false`:
 
 ```bash
 curl http://192.168.86.179:30180/v1/chat/completions \
@@ -94,14 +123,15 @@ curl http://192.168.86.179:30180/v1/chat/completions \
       {"role": "user", "content": "where is jersey city"}
     ],
     "max_tokens": 50,
-    "temperature": 0.7
+    "temperature": 0.7,
+    "stream": false
   }' | jq .
 echo
 ```
 
-## 6) Example: `POST /v1/chat/completions` (stream)
+## 6) Example: `POST /v1/chat/completions` (stream, explicit)
 
-Use `curl -N` so chunks print as they arrive. `stream: true` in the JSON body enables token streaming (same NodePort `30180`).
+Same as §5 when `"stream"` is omitted. Explicit flag for clarity:
 
 ```bash
 curl -N http://192.168.86.179:30180/v1/chat/completions \

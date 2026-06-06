@@ -6,13 +6,13 @@ Endpoints: `POST /v1/embeddings`, `GET /health`, `GET /ready`, `GET /version`, `
 
 Broken together with rerank, Argo `manifests/ai`, or missing Grafana series? See **[fix-vllm-plane-cutover.md](fix-vllm-plane-cutover.md)**.
 
-## 1) Configure backends (no `secretRef`)
+## 1) Configure backends and routing (ConfigMap)
 
-The dev manifest does **not** use `envFrom.secretRef`. Backends and tuning are **environment variables** in `manifests/gateway-embedding/base/deployment.yaml` (same names as upstream [.env.example](https://github.com/taixingbi/layer-gateway-embed-v1/blob/main/.env.example)). The important variable is **`EMBED_BACKENDS`** (`name=url,name=url`). Defaults use in-cluster DNS for vLLM embed in the per-node bundle (`vllm-embed-gpu-node-*.vllm.svc.cluster.local:8001`; see `manifests/vllm/vllm-bundle.yaml`). Edit the GitOps manifest and push to `main`.
+The dev manifest uses a **ConfigMap** mounted at `/app/config.yaml` (same pattern as [gateway-inference](deploy-gateway-inference.md)). Backends, per-node `soft_limit`/`hard_limit`, routing weights, and admission limits live in `manifests/gateway-embedding/base/configmap.yaml`. Defaults use in-cluster DNS for vLLM embed in the per-node bundle (`vllm-embed-gpu-node-*.vllm.svc.cluster.local:8001`; see `manifests/vllm/vllm-bundle.yaml`). Edit the GitOps manifest and push to `main`.
 
 ```bash
-# optional: confirm EMBED_BACKENDS on the live Deployment
-sudo k3s kubectl -n ai-dev get deploy layer-gateway-embedding -o yaml | grep -A1 EMBED_BACKENDS
+# confirm mounted config on the live pod
+sudo k3s kubectl -n ai-dev exec deploy/layer-gateway-embedding -- cat /app/config.yaml
 ```
 
 ## 2) Deploy (Argo CD / GitOps)
@@ -28,7 +28,7 @@ sudo k3s kubectl get pods -n ai-dev -l app=layer-gateway-embedding -o wide
 
 ## 3) Readiness (`GET /ready`)
 
-Probes each vLLM embedding backend in `EMBED_BACKENDS` (`GET {url}/health`). Kubernetes readiness uses `/ready`; liveness stays on `/health`.
+Probes each vLLM embedding backend in the ConfigMap (`GET {url}/health`). Kubernetes readiness uses `/ready`; liveness stays on `/health`.
 
 ```bash
 curl -sS http://192.168.86.179:30181/ready | jq .

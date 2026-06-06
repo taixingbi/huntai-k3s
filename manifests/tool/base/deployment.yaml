@@ -52,7 +52,7 @@ spec:
             - name: LLM_MODEL
               value: "Qwen/Qwen2.5-7B-Instruct"
             - name: LLM_MAX_TOKENS
-              value: "384"
+              value: "512"
             - name: LLM_TEMPERATURE
               value: "0.7"
           readinessProbe:

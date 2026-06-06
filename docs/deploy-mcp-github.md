@@ -66,6 +66,11 @@ Non-secret env is in [manifests/tool/base/deployment.yaml](../manifests/tool/bas
 | `GITHUB_OWNER` | `taixingbi` |
 | `LLM_GATEWAY_BASE_URL` | `http://layer-gateway-inference:8000` |
 | `LLM_MODEL` | `Qwen/Qwen2.5-7B-Instruct` |
+| `GITHUB_SEARCH_FOLLOW_UPS` | unset / `false` (default — skips second LLM pass; `latency_ms.follow_up_chat` omitted) |
+| `GITHUB_FETCH_WORKERS` | `8` — parallel README / code-search threads |
+| `GITHUB_README_CACHE_TTL_SEC` | `3600` — in-process README cache (`0` disables) |
+| `GITHUB_REPO_ROUTING` | `true` — omit `repo` → rank ≤`GITHUB_ROUTE_MAX_REPOS` repos from question (not full allowlist) |
+| `GITHUB_ROUTE_MAX_REPOS` | `5` |
 
 Allowlisted repo short names are baked into the image ([`app/allowlist/repos.py`](https://github.com/taixingbi/layer-mcp-github-v1/blob/main/app/allowlist/repos.py)); expect **11** repos including `layer-orchestrator-v1`, `layer-mcp-github-v1`, and `k3s`.
 
@@ -157,7 +162,7 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
     "params":{
       "name":"github_search",
       "arguments":{
-        "repo":"layer-orchestrator-v1",
+        "repo":"https://github.com/taixingbi/layer-web-v1/tree/main/app/blog",
         "question":"introduce this huntAi project",
         "conversation_id":"conv_smoke_1s"
       }
@@ -220,7 +225,7 @@ curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \
     "params":{
       "name":"github_search",
       "arguments":{
-        "question":"introduce this huntAi project",
+        "question":"in huntai, what  gateway for vllm design?",
         "conversation_id":"conv_smoke_1s"
       }
     }
