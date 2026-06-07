@@ -8,5 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-gateway-reranker-v1
     newName: ghcr.io/taixingbi/layer-gateway-reranker-v1
-    newTag: "c1d32b9264ff"
-    digest: "sha256:8494c04ec1696cc373ab5eeb3274924e61bf2cec1730c8196f3093abd50bd30e"
+    newTag: "2f2cf5b12b3b"
+    digest: "sha256:0c4190b4dba492d5f6dc8bd39af95cbdce9e823ff81526b96f3490896134a9fa"
