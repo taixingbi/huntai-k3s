@@ -170,7 +170,6 @@ curl -N -sS -X POST http://192.168.86.179:30184/v1/orchestrator/answer \
   -H "X-User-Teams: rag-platform" \
   -d '{
     "question": "what is taixing visa status in us?",
-    "stream": true,
     "conversation_id": "conv-smoke-1"
   }'
 ```

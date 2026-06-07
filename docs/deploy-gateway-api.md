@@ -44,7 +44,11 @@ The dev manifest uses `envFrom.secretRef.name=layer-gateway-api-secrets`. Non-se
 | `ORCHESTRATOR_RETRY_MAX_ATTEMPTS` | `2` |
 | `ORCHESTRATOR_READINESS_PROBE_ENABLED` | `true` |
 | `FRONTEND_URL` | `https://dev.taixingai.com` |
-| `MAX_INFLIGHT_REQUESTS` | `100` |
+| `MAX_INFLIGHT_REQUESTS` | `16` |
+| `MAX_CONCURRENT_CHAT_STREAMS` | `8` |
+| `MAX_CONCURRENT_STREAMS_PER_USER` | `2` |
+| `RATE_LIMIT_CHAT_REQUESTS_PER_MIN` | `6` |
+| `RATE_LIMIT_CHAT_BURST` | `2` |
 | `JWT_EXPIRY_SECONDS` | `3600` |
 | `CHAT_MESSAGE_MAX_LENGTH` | `4000` |
 
@@ -283,6 +287,8 @@ Structured logs: `request_complete` JSON (`request_id`, `trace_id`, `session_id`
 - `gateway_ttfb_ms_bucket` (streaming)
 - `gateway_inflight_requests`
 - `gateway_rejected_requests_total{reason}` (e.g. `inflight_limit` → **503**)
+- `gateway_rate_limit_rejected_total{reason}` (e.g. `chat_rpm` → **429**, `chat_inflight_global` → **503**)
+- `gateway_chat_streams_inflight` (gauge)
 
 After changing scrape rules:
 
@@ -302,7 +308,8 @@ Job `layer-gateway-api` scrapes Service `layer-gateway-api` in `ai-dev` (see [ma
 | **401** on `/v1/chat` | `POST /v1/auth/login`; token expiry (`JWT_EXPIRY_SECONDS`) |
 | **400** on `/v1/feedback` | `message_id` + `conversation_id` from prior chat; redeploy [layer-web](deploy-web.md) if UI sends legacy `trace_id`-only body |
 | **503** on `/v1/feedback` | `SUPABASE_*` in secret §1 |
-| **503** under load | `MAX_INFLIGHT_REQUESTS` (default `100`) |
+| **503** under load | `MAX_INFLIGHT_REQUESTS` (default `16`), `MAX_CONCURRENT_CHAT_STREAMS` (default `8`) |
+| **429** on `/v1/chat` | `RATE_LIMIT_CHAT_REQUESTS_PER_MIN` / `MAX_CONCURRENT_STREAMS_PER_USER`; check `Retry-After` header |
 | Stale image | Pull `latest` after [CI Push to GHCR](https://github.com/taixingbi/layer-gateway-api-v1/actions) |
 | `CreateContainerConfigError` | `layer-gateway-api-secrets` missing §1 |
 | Supabase feedback CHECK errors | upstream `sql/message_feedback_feedback_reason_constraint.sql` |

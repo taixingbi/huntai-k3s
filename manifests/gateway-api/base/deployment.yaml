@@ -46,7 +46,15 @@ spec:
             - name: ENV
               value: "dev"
             - name: MAX_INFLIGHT_REQUESTS
-              value: "100"
+              value: "16"
+            - name: MAX_CONCURRENT_CHAT_STREAMS
+              value: "8"
+            - name: MAX_CONCURRENT_STREAMS_PER_USER
+              value: "2"
+            - name: RATE_LIMIT_CHAT_REQUESTS_PER_MIN
+              value: "6"
+            - name: RATE_LIMIT_CHAT_BURST
+              value: "2"
             - name: ORCHESTRATOR_BASE_URL
               value: "http://layer-orchestrator:8000"
             - name: ORCHESTRATOR_CHAT_PATH
@@ -58,7 +66,7 @@ spec:
             - name: ORCHESTRATOR_CONTRACT
               value: "flat_headers"
             - name: ORCHESTRATOR_TIMEOUT_MS
-              value: "15000"
+              value: "120000"
             - name: ORCHESTRATOR_RETRY_MAX_ATTEMPTS
               value: "2"
             - name: ORCHESTRATOR_READINESS_PATH
