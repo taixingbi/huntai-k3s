@@ -8,5 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-orchestrator-v1
     newName: ghcr.io/taixingbi/layer-orchestrator-v1
-    newTag: "a444153a0846"
-    digest: "sha256:c56ebaf2331dc1ea85d6efdb4a1a72f8e5ac117bbf772effb39117f9f51debbf"
+    newTag: "3f37ab880784"
+    digest: "sha256:42b9ac64de43cbecfd57f3c007ec6045122b6b78b2c4c9caccb06eebaa84aa2b"
