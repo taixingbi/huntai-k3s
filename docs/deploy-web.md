@@ -37,6 +37,25 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 | `AUTH_SESSION_MAX_AGE_SECONDS` | `3600` | httpOnly `layer_access_token` after `/login`; align with gateway `JWT_EXPIRY_SECONDS` |
 | `WEB_SERVICE_NAME` | `layer-web` | JSON log `service` field (upstream default: `huntai-web`) |
 
+**Admin dashboard (`/admin`)** — requires admin role on user profile. Non-secret env is in [manifests/web/base/deployment.yaml](../manifests/web/base/deployment.yaml); Supabase service role comes from the same Secret as gateway-api (`layer-gateway-api-secrets` in dev, `layer-ai-prod-secrets` in prod).
+
+| Variable | Dev manifest | Notes |
+|----------|----------------|--------|
+| `ORCHESTRATOR_BASE_URL` | `http://layer-orchestrator:8000` | Health probe |
+| `RAG_QUERY_BASE_URL` | `http://layer-rag-query:8000` | |
+| `INFERENCE_GATEWAY_BASE_URL` | `http://layer-gateway-inference:8000` | Prod overlay: `*.ai-dev.svc.cluster.local` |
+| `EMBED_GATEWAY_BASE_URL` | `http://layer-gateway-embedding:8000` | |
+| `RERANKER_GATEWAY_BASE_URL` | `http://layer-gateway-reranker:8000` | |
+| `QDRANT_BASE_URL` | `http://qdrant:6333` | Probe uses `/healthz` |
+| `PROMETHEUS_URL` | `http://prometheus.monitoring.svc.cluster.local:9090` | KPI + GPU metrics |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | from gateway Secret | Recent requests + feedback |
+| `ADMIN_INFERENCE_MODEL` | `qwen2.5-7b` | Display label |
+| `ADMIN_ROUTER_VERSION` | `router-v2` | Display label |
+
+Optional: `ADMIN_ROUTER_ACCURACY`, `ADMIN_ROUTER_EVALUATED_AT` (golden eval snapshot).
+
+After manifest change: sync **`web-dev`** in Argo CD (or `kubectl rollout restart deployment/layer-web -n ai-dev`). KPI cards stay empty until Prometheus has scrape data and chat traffic exists.
+
 Optional (not in manifest): `GATEWAY_BEARER_TOKEN` (service/stub fallback when browser sends no `Authorization`); `AUTH_SIGNUP_URL` (external IdP link on `/signup`).
 
 **Auth flow:** `/login` → BFF sets httpOnly **`layer_access_token`** → BFF forwards `Authorization: Bearer` to gateway. Per-user JWT in production; do not rely on a shared `GATEWAY_BEARER_TOKEN` for all users.

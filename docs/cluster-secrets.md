@@ -8,7 +8,7 @@ Grafana Cloud: [secrets/README.md](../secrets/README.md) (bootstrap commands, ro
 
 | Secret | Used by | Create |
 |--------|---------|--------|
-| `layer-gateway-api-secrets` | gateway-api | [deploy-gateway-api.md](deploy-gateway-api.md) §1 |
+| `layer-gateway-api-secrets` | gateway-api, **layer-web** (admin Supabase) | [deploy-gateway-api.md](deploy-gateway-api.md) §1 |
 | `layer-gateway-inference-secrets` | gateway-inference | [deploy-gateway-inference.md](deploy-gateway-inference.md) §1 |
 | `layer-orchestrator-secrets` | orchestrator | [deploy-orchestrator.md](deploy-orchestrator.md) §1 |
 | `layer-mcp-github-v1-secrets` | mcp-github-dev (`ai-dev`), mcp-github-prod (`ai-prod`) | [deploy-mcp-github.md](deploy-mcp-github.md) |
@@ -21,7 +21,7 @@ RAG and embedding/reranker gateways do not use `secretRef` in dev manifests by d
 
 | Secret | Used by | Create |
 |--------|---------|--------|
-| `layer-ai-prod-secrets` | gateway-api-prod, orchestrator-prod | [deploy-prod.md](deploy-prod.md) |
+| `layer-ai-prod-secrets` | gateway-api-prod, orchestrator-prod, **layer-web** (admin Supabase) | [deploy-prod.md](deploy-prod.md) |
 
 Use a **prod Supabase project** and **prod Tavily** key — do not copy `ai-dev` secret bytes. Example template: `secrets/examples/layer-ai-prod-secrets.secret.example.yaml`.
 

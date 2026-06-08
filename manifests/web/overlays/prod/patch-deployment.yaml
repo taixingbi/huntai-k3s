@@ -17,3 +17,24 @@ spec:
               value: "https://taixingai.com"
             - name: GATEWAY_BASE_URL
               value: "http://layer-gateway-api:8000"
+            # Shared GPU plane lives in ai-dev (see deploy-prod.md)
+            - name: INFERENCE_GATEWAY_BASE_URL
+              value: "http://layer-gateway-inference.ai-dev.svc.cluster.local:8000"
+            - name: EMBED_GATEWAY_BASE_URL
+              value: "http://layer-gateway-embedding.ai-dev.svc.cluster.local:8000"
+            - name: RERANKER_GATEWAY_BASE_URL
+              value: "http://layer-gateway-reranker.ai-dev.svc.cluster.local:8000"
+            - name: QDRANT_BASE_URL
+              value: "http://qdrant.ai-dev.svc.cluster.local:6333"
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: layer-ai-prod-secrets
+                  key: SUPABASE_URL
+                  optional: true
+            - name: SUPABASE_SERVICE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: layer-ai-prod-secrets
+                  key: SUPABASE_SERVICE_KEY
+                  optional: true

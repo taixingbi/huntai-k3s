@@ -49,6 +49,27 @@ spec:
               value: "3600"
             - name: COOKIE_SECURE
               value: "true"
+            # Admin dashboard (/admin) — service health, Prometheus KPIs, Supabase analytics
+            - name: ORCHESTRATOR_BASE_URL
+              value: "http://layer-orchestrator:8000"
+            - name: RAG_QUERY_BASE_URL
+              value: "http://layer-rag-query:8000"
+            - name: INFERENCE_GATEWAY_BASE_URL
+              value: "http://layer-gateway-inference:8000"
+            - name: EMBED_GATEWAY_BASE_URL
+              value: "http://layer-gateway-embedding:8000"
+            - name: RERANKER_GATEWAY_BASE_URL
+              value: "http://layer-gateway-reranker:8000"
+            - name: QDRANT_BASE_URL
+              value: "http://qdrant:6333"
+            - name: PROMETHEUS_URL
+              value: "http://prometheus.monitoring.svc.cluster.local:9090"
+            - name: ADMIN_INFERENCE_MODEL
+              value: "qwen2.5-7b"
+            - name: ADMIN_INFERENCE_RUNTIME
+              value: "vLLM"
+            - name: ADMIN_ROUTER_VERSION
+              value: "router-v2"
           readinessProbe:
             httpGet:
               path: /
