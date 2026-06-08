@@ -4,7 +4,8 @@ namespace: ai-dev
 resources:
   - ../../base
   - namespace.yaml
-  - patch-admin-supabase.yaml
+patches:
+  - path: patch-admin-supabase.yaml
 # Pinned by layer-web-v1 CI (GHCR push → update-gitops). Argo CD rolls out on tag change.
 images:
   - name: ghcr.io/taixingbi/layer-web-v1
