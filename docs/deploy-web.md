@@ -48,7 +48,9 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 | `RERANKER_GATEWAY_BASE_URL` | `http://layer-gateway-reranker:8000` | |
 | `QDRANT_BASE_URL` | `http://qdrant:6333` | Probe uses `/healthz` |
 | `PROMETHEUS_URL` | `http://prometheus.monitoring.svc.cluster.local:9090` | KPI + GPU metrics |
-| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | from gateway Secret | Recent requests + feedback |
+| `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | from gateway Secret | Recent requests + feedback + **Supabase health** |
+
+Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis and standalone Postgres are **not** in the HuntAI stack and are omitted from the health list.
 | `ADMIN_INFERENCE_MODEL` | `qwen2.5-7b` | Chat vLLM display label |
 | `ADMIN_EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding vLLM display label |
 | `ADMIN_RERANKER_MODEL` | `BAAI/bge-reranker-v2-m3` | Reranker vLLM display label |
