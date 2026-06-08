@@ -8,5 +8,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-web-v1
     newName: ghcr.io/taixingbi/layer-web-v1
-    newTag: "88008af21685"
-    digest: "sha256:9dea8cdc0597f740e44b94544d26327710b1113076b44a05a86c39f3227080cc"
+    newTag: "de46babdb7fa"
+    digest: "sha256:647d30521175a572b9c7af80c58d3922ed8cf10450a996962170ce668cada89e"
