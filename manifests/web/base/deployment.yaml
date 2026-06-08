@@ -66,6 +66,10 @@ spec:
               value: "http://prometheus.monitoring.svc.cluster.local:9090"
             - name: ADMIN_INFERENCE_MODEL
               value: "qwen2.5-7b"
+            - name: ADMIN_EMBEDDING_MODEL
+              value: "BAAI/bge-m3"
+            - name: ADMIN_RERANKER_MODEL
+              value: "BAAI/bge-reranker-v2-m3"
             - name: ADMIN_INFERENCE_RUNTIME
               value: "vLLM"
             - name: ADMIN_ROUTER_VERSION
