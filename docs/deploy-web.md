@@ -53,17 +53,11 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 
 Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis health uses a TCP `PING` against `REDIS_URL` (deployed with the RAG overlay in `ai-dev`). Orchestrator health uses an 8s probe timeout because `/ready` runs LLM + RAG dependency checks.
 
-**Admin Logs (`/admin/logs`)** — queries Grafana Cloud Loki via `LOKI_QUERY_URL` + `LOKI_READ_TOKEN` (token needs **logs:read**; separate from Alloy push). Create Secret `layer-web-admin-secrets` in `ai-dev`:
-
-```bash
-sudo k3s kubectl create secret generic layer-web-admin-secrets -n ai-dev \
-  --from-literal=LOKI_QUERY_URL='https://logs-prod-NNN.grafana.net' \
-  --from-literal=LOKI_USERNAME='YOUR_LOKI_USER_ID' \
-  --from-literal=LOKI_READ_TOKEN='glc_YOUR_READ_TOKEN' \
-  --dry-run=client -o yaml | sudo k3s kubectl apply -f -
-```
+**Admin Logs (`/admin/logs`)** — link hub only; opens [taixingbi.grafana.net](https://taixingbi.grafana.net) with pre-filtered Loki Explore links and HuntAI dashboards. No `LOKI_*` secrets on the web pod. Optional overrides: `NEXT_PUBLIC_GRAFANA_BASE_URL`, `NEXT_PUBLIC_GRAFANA_LOKI_DATASOURCE`.
 
 **Admin ArgoCD (`/admin/argocd`)** — link hub only; opens [argocd.taixingai.com](https://argocd.taixingai.com) and per-app deep links. No `ARGOCD_TOKEN` on the web pod. Optional override: `NEXT_PUBLIC_ARGOCD_UI_URL`.
+
+If `layer-web-admin-secrets` exists from an earlier deploy, it is unused — safe to delete: `sudo k3s kubectl delete secret layer-web-admin-secrets -n ai-dev`.
 
 | `ADMIN_INFERENCE_MODEL` | `qwen2.5-7b` | Chat vLLM display label |
 | `ADMIN_EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding vLLM display label |
