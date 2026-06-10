@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: ai-dev
 resources:
   - ../../base
+  - ../../../redis/base
   - namespace.yaml
 # Pinned by layer-rag-query-v1 CI (GHCR push → update-gitops). Argo CD rolls out on tag change.
 images:

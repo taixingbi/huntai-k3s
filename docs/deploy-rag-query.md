@@ -41,6 +41,10 @@ Edit [manifests/rag/base/deployment.yaml](../manifests/rag/base/deployment.yaml)
 | `RERANK_URL` | `http://layer-gateway-reranker:8000` |
 | `INFERENCE_URL` | `http://layer-gateway-inference:8000` |
 | `INFERENCE_MODEL` | `Qwen/Qwen2.5-7B-Instruct` |
+| `REDIS_URL` | `redis://redis:6379/0` |
+| `KB_CACHE_REVISION` | `v1` (bump after KB re-ingest) |
+
+The dev overlay includes a single-replica **Redis 7** Deployment (`manifests/redis/base`) for embedding-vector, follow-up, and structured NOT_FOUND caches. Metrics: `rag_cache_ops_total{layer,result}` on `GET /metrics`.
 
 ## 2) Deploy via Argo CD (GitOps)
 

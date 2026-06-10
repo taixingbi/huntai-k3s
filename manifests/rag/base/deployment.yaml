@@ -69,6 +69,12 @@ spec:
               value: "8"
             - name: FINAL_CONTEXT_TOP_K
               value: "12"
+            - name: REDIS_URL
+              value: "redis://redis:6379/0"
+            - name: CACHE_ENABLED
+              value: "true"
+            - name: KB_CACHE_REVISION
+              value: "v1"
           readinessProbe:
             tcpSocket:
               port: http

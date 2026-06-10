@@ -47,10 +47,11 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 | `EMBED_GATEWAY_BASE_URL` | `http://layer-gateway-embedding:8000` | |
 | `RERANKER_GATEWAY_BASE_URL` | `http://layer-gateway-reranker:8000` | |
 | `QDRANT_BASE_URL` | `http://qdrant:6333` | Probe uses `/healthz` |
+| `REDIS_URL` | `redis://redis:6379/0` | Admin **Redis** health (RESP PING); RAG query cache |
 | `PROMETHEUS_URL` | `http://prometheus.monitoring.svc.cluster.local:9090` | KPI + GPU metrics |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | from gateway Secret | Recent requests + feedback + **Supabase health** |
 
-Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis and standalone Postgres are **not** in the HuntAI stack and are omitted from the health list.
+Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis health uses a TCP `PING` against `REDIS_URL` (deployed with the RAG overlay in `ai-dev`). Orchestrator health uses an 8s probe timeout because `/ready` runs LLM + RAG dependency checks.
 | `ADMIN_INFERENCE_MODEL` | `qwen2.5-7b` | Chat vLLM display label |
 | `ADMIN_EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding vLLM display label |
 | `ADMIN_RERANKER_MODEL` | `BAAI/bge-reranker-v2-m3` | Reranker vLLM display label |
