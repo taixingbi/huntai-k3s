@@ -60,13 +60,11 @@ sudo k3s kubectl create secret generic layer-web-admin-secrets -n ai-dev \
   --from-literal=LOKI_QUERY_URL='https://logs-prod-NNN.grafana.net' \
   --from-literal=LOKI_USERNAME='YOUR_LOKI_USER_ID' \
   --from-literal=LOKI_READ_TOKEN='glc_YOUR_READ_TOKEN' \
-  --from-literal=ARGOCD_TOKEN='YOUR_ARGOCD_API_TOKEN' \
   --dry-run=client -o yaml | sudo k3s kubectl apply -f -
 ```
 
-Generate Argo CD token: `argocd account generate-token --account admin` (or dedicated read-only account).
+**Admin ArgoCD (`/admin/argocd`)** — link hub only; opens [argocd.taixingai.com](https://argocd.taixingai.com) and per-app deep links. No `ARGOCD_TOKEN` on the web pod. Optional override: `NEXT_PUBLIC_ARGOCD_UI_URL`.
 
-**Admin ArgoCD (`/admin/argocd`)** — uses in-cluster `ARGOCD_SERVER_URL=http://argocd-server.argocd.svc` and `ARGOCD_TOKEN` from the same secret. UI links use `ARGOCD_UI_URL=https://argocd.taixingai.com`.
 | `ADMIN_INFERENCE_MODEL` | `qwen2.5-7b` | Chat vLLM display label |
 | `ADMIN_EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding vLLM display label |
 | `ADMIN_RERANKER_MODEL` | `BAAI/bge-reranker-v2-m3` | Reranker vLLM display label |

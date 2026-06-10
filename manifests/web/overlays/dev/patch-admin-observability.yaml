@@ -1,4 +1,4 @@
-# Admin logs + ArgoCD pages (secrets not in Git — see docs/deploy-web.md).
+# Admin logs page — Grafana Cloud Loki query API (secrets not in Git).
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,6 +13,8 @@ spec:
               value: "ai-dev"
             - name: LOKI_CLUSTER
               value: "k3s"
+            - name: NEXT_PUBLIC_ARGOCD_UI_URL
+              value: "https://argocd.taixingai.com"
             - name: LOKI_QUERY_URL
               valueFrom:
                 secretKeyRef:
@@ -30,16 +32,4 @@ spec:
                 secretKeyRef:
                   name: layer-web-admin-secrets
                   key: LOKI_READ_TOKEN
-                  optional: true
-            - name: ARGOCD_SERVER_URL
-              value: "http://argocd-server.argocd.svc"
-            - name: ARGOCD_UI_URL
-              value: "https://argocd.taixingai.com"
-            - name: ARGOCD_INSECURE_TLS
-              value: "true"
-            - name: ARGOCD_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: layer-web-admin-secrets
-                  key: ARGOCD_TOKEN
                   optional: true
