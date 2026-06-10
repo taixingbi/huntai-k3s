@@ -52,6 +52,21 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 | `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | from gateway Secret | Recent requests + feedback + **Supabase health** |
 
 Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis health uses a TCP `PING` against `REDIS_URL` (deployed with the RAG overlay in `ai-dev`). Orchestrator health uses an 8s probe timeout because `/ready` runs LLM + RAG dependency checks.
+
+**Admin Logs (`/admin/logs`)** — queries Grafana Cloud Loki via `LOKI_QUERY_URL` + `LOKI_READ_TOKEN` (token needs **logs:read**; separate from Alloy push). Create Secret `layer-web-admin-secrets` in `ai-dev`:
+
+```bash
+sudo k3s kubectl create secret generic layer-web-admin-secrets -n ai-dev \
+  --from-literal=LOKI_QUERY_URL='https://logs-prod-NNN.grafana.net' \
+  --from-literal=LOKI_USERNAME='YOUR_LOKI_USER_ID' \
+  --from-literal=LOKI_READ_TOKEN='glc_YOUR_READ_TOKEN' \
+  --from-literal=ARGOCD_TOKEN='YOUR_ARGOCD_API_TOKEN' \
+  --dry-run=client -o yaml | sudo k3s kubectl apply -f -
+```
+
+Generate Argo CD token: `argocd account generate-token --account admin` (or dedicated read-only account).
+
+**Admin ArgoCD (`/admin/argocd`)** — uses in-cluster `ARGOCD_SERVER_URL=http://argocd-server.argocd.svc` and `ARGOCD_TOKEN` from the same secret. UI links use `ARGOCD_UI_URL=https://argocd.taixingai.com`.
 | `ADMIN_INFERENCE_MODEL` | `qwen2.5-7b` | Chat vLLM display label |
 | `ADMIN_EMBEDDING_MODEL` | `BAAI/bge-m3` | Embedding vLLM display label |
 | `ADMIN_RERANKER_MODEL` | `BAAI/bge-reranker-v2-m3` | Reranker vLLM display label |

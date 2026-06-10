@@ -1,0 +1,45 @@
+# Admin logs + ArgoCD pages (secrets not in Git — see docs/deploy-web.md).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-web
+spec:
+  template:
+    spec:
+      containers:
+        - name: web
+          env:
+            - name: ADMIN_DEFAULT_NAMESPACE
+              value: "ai-dev"
+            - name: LOKI_CLUSTER
+              value: "k3s"
+            - name: LOKI_QUERY_URL
+              valueFrom:
+                secretKeyRef:
+                  name: layer-web-admin-secrets
+                  key: LOKI_QUERY_URL
+                  optional: true
+            - name: LOKI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: layer-web-admin-secrets
+                  key: LOKI_USERNAME
+                  optional: true
+            - name: LOKI_READ_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: layer-web-admin-secrets
+                  key: LOKI_READ_TOKEN
+                  optional: true
+            - name: ARGOCD_SERVER_URL
+              value: "http://argocd-server.argocd.svc"
+            - name: ARGOCD_UI_URL
+              value: "https://argocd.taixingai.com"
+            - name: ARGOCD_INSECURE_TLS
+              value: "true"
+            - name: ARGOCD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: layer-web-admin-secrets
+                  key: ARGOCD_TOKEN
+                  optional: true
