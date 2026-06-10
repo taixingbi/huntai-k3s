@@ -53,7 +53,7 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 
 Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis health uses a TCP `PING` against `REDIS_URL` (deployed with the RAG overlay in `ai-dev`). Orchestrator health uses an 8s probe timeout because `/ready` runs LLM + RAG dependency checks.
 
-**Admin Logs (`/admin/logs`)** — link hub only; opens [taixingbi.grafana.net](https://taixingbi.grafana.net) with pre-filtered Loki Explore links and HuntAI dashboards. No `LOKI_*` secrets on the web pod. Optional overrides: `NEXT_PUBLIC_GRAFANA_BASE_URL`, `NEXT_PUBLIC_GRAFANA_LOKI_DATASOURCE`.
+**Admin Observability (`/admin/observability`)** — link hub only; opens vendored dashboards on [taixingbi.grafana.net](https://taixingbi.grafana.net) (Loki logs, GPU DCGM, vLLM embedding). No `LOKI_*` secrets on the web pod. Optional override: `NEXT_PUBLIC_GRAFANA_BASE_URL`.
 
 **Admin ArgoCD (`/admin/argocd`)** — link hub only; opens [argocd.taixingai.com](https://argocd.taixingai.com) and per-app deep links. No `ARGOCD_TOKEN` on the web pod. Optional override: `NEXT_PUBLIC_ARGOCD_UI_URL`.
 
