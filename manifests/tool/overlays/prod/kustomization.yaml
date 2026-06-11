@@ -11,5 +11,5 @@ patches:
 images:
   - name: ghcr.io/taixingbi/layer-mcp-github-v1
     newName: ghcr.io/taixingbi/layer-mcp-github-v1
-    newTag: "299f723a7e95"
-    digest: "sha256:37ed8f84fc1359371c90a0f292e78ab20569cb8e8d353a35a784ea2dd23f9817"
+    newTag: "31fabc3d683e"
+    digest: "sha256:6ef6d39c007b507a7c8545e1dd5d3f19e6ad75c685f0dba9c9146132883f333f"
