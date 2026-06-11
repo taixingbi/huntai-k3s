@@ -207,7 +207,7 @@ curl -sS http://192.168.86.179:30180/v1/chat/completions \
 
 ### 3.6 Optional — all repos (slow)
 
-Omits `repo` → all allowlisted repos under `GITHUB_OWNER`. Dev vLLM uses `--max-model-len 2048`; without `repo`, evidence for every allowlisted repo can exceed that window and the inference gateway returns **400** on `/v1/chat/completions`. Prefer **§3.3** (single `repo`) for smoke tests, or deploy an MCP image that scales/truncates the LLM user body (`LLM_USER_BODY_MAX_CHARS`, default `4000`).
+Omits `repo` → ranked subset (`GITHUB_ROUTE_MAX_REPOS`, default `5`) or full allowlist when routing is off. Dev vLLM uses `--max-model-len 2048`; without `repo`, a large evidence body can still exceed that window and the inference gateway returns **400** on `/v1/chat/completions` (client error: `LLM gateway error: 400`). Prefer **§3.3** (single `repo`) for smoke tests. Manifest sets `LLM_USER_BODY_MAX_CHARS=2400`, `MULTI_REPO_CODE_HITS_MAX=12`.
 
 ```bash
 curl -N -sS --max-time 120 -X POST http://192.168.86.179:30191/v1/mcp \

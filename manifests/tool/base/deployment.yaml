@@ -53,6 +53,12 @@ spec:
               value: "Qwen/Qwen2.5-7B-Instruct"
             - name: LLM_MAX_TOKENS
               value: "512"
+            - name: LLM_USER_BODY_MAX_CHARS
+              value: "2400"
+            - name: MULTI_REPO_CODE_HITS_MAX
+              value: "12"
+            - name: GITHUB_ROUTE_MAX_REPOS
+              value: "5"
             - name: LLM_TEMPERATURE
               value: "0.7"
             - name: GITHUB_SEARCH_FOLLOW_UPS
