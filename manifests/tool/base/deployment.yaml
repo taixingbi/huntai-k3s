@@ -55,6 +55,8 @@ spec:
               value: "512"
             - name: LLM_TEMPERATURE
               value: "0.7"
+            - name: GITHUB_SEARCH_FOLLOW_UPS
+              value: "true"
           readinessProbe:
             tcpSocket:
               port: http
