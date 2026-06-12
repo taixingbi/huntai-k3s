@@ -70,7 +70,7 @@ After manifest change: sync **`web-dev`** in Argo CD (or `kubectl rollout restar
 
 Optional (not in manifest): `AUTH_SIGNUP_URL` (external IdP link on `/signup`).
 
-**Guest `/chat` (dev overlay):** `CHAT_ALLOW_GUEST=true` and `GUEST_CHAT_BEARER_TOKEN` from `layer-gateway-api-secrets` key `GUEST_CHAT_SERVICE_TOKEN` (see [deploy-gateway-api.md](deploy-gateway-api.md) §1). Visitors use `/chat` without login; history and feedback are disabled until they sign in.
+**Guest `/chat`:** `CHAT_ALLOW_GUEST=true` and `GUEST_CHAT_BEARER_TOKEN` from the gateway secret (`layer-gateway-api-secrets` in dev, `layer-ai-prod-secrets` in prod). See [deploy-gateway-api.md](deploy-gateway-api.md) §1 (dev) and [deploy-prod.md](deploy-prod.md) (prod token). Visitors use `/chat` without login; history and feedback are disabled until they sign in.
 
 **Auth flow:** `/login` → BFF sets httpOnly **`layer_access_token`** → BFF forwards `Authorization: Bearer` to gateway. Per-user JWT in production.
 

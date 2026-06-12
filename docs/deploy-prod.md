@@ -32,6 +32,18 @@ sudo k3s kubectl create secret generic layer-ai-prod-secrets -n ai-prod \
 
 Adjust keys to match upstream `env.example` for gateway-api and orchestrator. See `secrets/examples/layer-ai-prod-secrets.secret.example.yaml`.
 
+**Guest `/chat` (prod)** — add a dedicated token (do not reuse dev unless intentional):
+
+```bash
+printf '%s' "$(openssl rand -hex 32)" > ~/.secrets/prod/guest-chat-token
+chmod 600 ~/.secrets/prod/guest-chat-token
+sudo k3s kubectl patch secret layer-ai-prod-secrets -n ai-prod \
+  --type merge \
+  -p "$(jq -n --rawfile t "$HOME/.secrets/prod/guest-chat-token" '{stringData:{GUEST_CHAT_SERVICE_TOKEN:$t}}')"
+```
+
+Prod overlays set `GUEST_CHAT_ENABLED` / `CHAT_ALLOW_GUEST` and read `GUEST_CHAT_SERVICE_TOKEN` from `layer-ai-prod-secrets`. Identity is `user_id=guest`, `roles=[anyuser]`. Ensure only intended Qdrant chunks include `anyuser` in `access.roles` (see layer-rag-ingest `access_control.json`).
+
 ## Argo CD applications (manual sync)
 
 | Application | Path | Namespace |

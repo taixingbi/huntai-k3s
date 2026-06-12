@@ -7,6 +7,7 @@ resources:
 patches:
   - path: patch-deployment.yaml
   - path: patch-service.yaml
+  - path: patch-guest-chat.yaml
 # Pin prod image after promotion from dev (copy tag/digest from dev overlay or CI).
 images:
   - name: ghcr.io/taixingbi/layer-gateway-api-v1

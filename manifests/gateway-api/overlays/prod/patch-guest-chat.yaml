@@ -1,0 +1,22 @@
+# Guest /chat on prod: BFF sends GUEST_CHAT_BEARER_TOKEN matching GUEST_CHAT_SERVICE_TOKEN.
+# Add GUEST_CHAT_SERVICE_TOKEN to layer-ai-prod-secrets (see docs/deploy-prod.md).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: gateway
+          env:
+            - name: GUEST_CHAT_ENABLED
+              value: "true"
+            - name: GUEST_CHAT_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: layer-ai-prod-secrets
+                  key: GUEST_CHAT_SERVICE_TOKEN
+                  optional: true
+            - name: GUEST_CHAT_USER_ID
+              value: "guest"

@@ -7,6 +7,7 @@ resources:
 patches:
   - path: patch-deployment.yaml
   - path: patch-service.yaml
+  - path: patch-guest-chat.yaml
 images:
   - name: ghcr.io/taixingbi/layer-web-v1
     newName: ghcr.io/taixingbi/layer-web-v1
