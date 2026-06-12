@@ -175,7 +175,7 @@ Structured JSON logs from BFF routes (`logWebEvent` in [`app/lib/server-log.ts`]
 | Login works but chat **401** | Gateway Supabase/JWKS; cookie `layer_access_token`; `COOKIE_SECURE=false` on HTTP |
 | Chat works but feedback **400** | Wait for assistant save; body must include `message_id` + `conversation_id` |
 | Empty conversation sidebar | Gateway Supabase + chat persistence; sign in as same user |
-| Password reset link wrong | `APP_URL` = gateway `FRONTEND_URL` = Supabase Site URL |
+| Password reset link wrong | `APP_URL` = gateway `FRONTEND_URL` = Supabase **Site URL**; add `{origin}/auth/reset-password` to Supabase **Redirect URLs**; prod: [deploy-prod.md](deploy-prod.md) + `./scripts/check-prod-auth-urls.sh` |
 | Stale UI | Pull `taixingbi/layer-web-v1:latest` after [CI](https://github.com/taixingbi/layer-web-v1/actions); hard-refresh browser |
 | BFF cannot reach gateway | `GATEWAY_BASE_URL=http://layer-gateway-api:8000`; gateway pod ready |
 

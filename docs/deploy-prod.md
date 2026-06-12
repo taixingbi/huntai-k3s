@@ -72,6 +72,15 @@ Verify: `sudo k3s kubectl -n ai-prod get pods -l app=layer-rag-query` → **Runn
 | `ORCHESTRATOR_TIMEOUT_MS` | `120000` (dev patched too) |
 | `RAG_COLLECTION_BASE` | `taixing_knowledge_prod` |
 | `FRONTEND_URL` / `APP_URL` | `https://taixingai.com` (edit overlay if hostname differs) |
+
+### Password reset (Supabase prod project)
+
+Cluster manifests set `APP_URL` / `FRONTEND_URL` to `https://taixingai.com`. You **must** mirror that in the **prod** Supabase dashboard (Authentication → URL configuration):
+
+- **Site URL:** `https://taixingai.com`
+- **Redirect URLs:** `https://taixingai.com/auth/reset-password`, `https://www.taixingai.com/auth/reset-password`, optional LAN `http://192.168.86.179:30386/auth/reset-password`
+
+Wrong link host (`localhost:3000`) means Supabase Site URL was never updated for the prod project. Run `./scripts/check-prod-auth-urls.sh` after syncing `web-prod` and `gateway-api-prod`.
 | Orchestrator `LLM_GATEWAY_BASE_URL` | `http://layer-gateway-inference.ai-dev.svc.cluster.local:8000` |
 | RAG `QDRANT_URL` | `http://qdrant.ai-dev.svc.cluster.local:6333` |
 | RAG embed/infer/rerank URLs | `http://layer-gateway-*.ai-dev.svc.cluster.local:800x` |

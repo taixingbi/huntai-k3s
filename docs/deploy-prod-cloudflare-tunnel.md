@@ -65,7 +65,18 @@ Match prod overlays:
 | `APP_URL` | layer-web | `https://taixingai.com` |
 | `FRONTEND_URL` | layer-gateway-api | `https://taixingai.com` |
 
-Prod Supabase project: **Site URL** = `https://taixingai.com`, redirect URLs for auth flows.
+Prod Supabase project (**must** match prod `layer-ai-prod-secrets` — not the dev project):
+
+| Setting | Value |
+|---------|--------|
+| **Site URL** | `https://taixingai.com` |
+| **Redirect URLs** | `https://taixingai.com/auth/reset-password` |
+| | `https://www.taixingai.com/auth/reset-password` |
+| | `http://192.168.86.179:30386/auth/reset-password` (LAN NodePort smoke) |
+
+If reset links land on `http://localhost:3000`, the **prod Supabase Site URL** is still the default — fix the dashboard, then send a new reset email.
+
+Verify cluster env: `./scripts/check-prod-auth-urls.sh` and `GET /api/v1/auth/config` on prod web.
 
 ## 7) Verify
 

@@ -20,5 +20,7 @@ spec:
               value: "prod"
             - name: FRONTEND_URL
               value: "https://taixingai.com"
+            - name: ADDITIONAL_FRONTEND_URLS
+              value: "https://www.taixingai.com,http://192.168.86.179:30386"
             - name: ORCHESTRATOR_TIMEOUT_MS
               value: "120000"

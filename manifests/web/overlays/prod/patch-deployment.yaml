@@ -15,6 +15,10 @@ spec:
           env:
             - name: APP_URL
               value: "https://taixingai.com"
+            - name: ADDITIONAL_AUTH_REDIRECT_URLS
+              value: "https://www.taixingai.com/auth/reset-password,http://192.168.86.179:30386/auth/reset-password"
+            - name: COOKIE_SECURE
+              value: "true"
             - name: GATEWAY_BASE_URL
               value: "http://layer-gateway-api:8000"
             # Shared GPU plane lives in ai-dev (see deploy-prod.md)
