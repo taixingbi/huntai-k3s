@@ -68,9 +68,11 @@ Optional: `ADMIN_ROUTER_ACCURACY`, `ADMIN_ROUTER_EVALUATED_AT` (golden eval snap
 
 After manifest change: sync **`web-dev`** in Argo CD (or `kubectl rollout restart deployment/layer-web -n ai-dev`). KPI cards stay empty until Prometheus has scrape data and chat traffic exists.
 
-Optional (not in manifest): `GATEWAY_BEARER_TOKEN` (service/stub fallback when browser sends no `Authorization`); `AUTH_SIGNUP_URL` (external IdP link on `/signup`).
+Optional (not in manifest): `AUTH_SIGNUP_URL` (external IdP link on `/signup`).
 
-**Auth flow:** `/login` → BFF sets httpOnly **`layer_access_token`** → BFF forwards `Authorization: Bearer` to gateway. Per-user JWT in production; do not rely on a shared `GATEWAY_BEARER_TOKEN` for all users.
+**Guest `/chat` (dev overlay):** `CHAT_ALLOW_GUEST=true` and `GUEST_CHAT_BEARER_TOKEN` from `layer-gateway-api-secrets` key `GUEST_CHAT_SERVICE_TOKEN` (see [deploy-gateway-api.md](deploy-gateway-api.md) §1). Visitors use `/chat` without login; history and feedback are disabled until they sign in.
+
+**Auth flow:** `/login` → BFF sets httpOnly **`layer_access_token`** → BFF forwards `Authorization: Bearer` to gateway. Per-user JWT in production.
 
 ## 2) Deploy via Argo CD (GitOps)
 

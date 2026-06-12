@@ -74,6 +74,18 @@ sudo k3s kubectl create secret generic layer-gateway-api-secrets -n ai-dev \
   --dry-run=client -o yaml | sudo k3s kubectl apply -f -
 ```
 
+**Guest `/chat` (dev only)** — add a long random shared token (same value for gateway + web BFF):
+
+```bash
+printf '%s' "$(openssl rand -hex 32)" > ~/.secrets/guest-chat-token
+chmod 600 ~/.secrets/guest-chat-token
+sudo k3s kubectl patch secret layer-gateway-api-secrets -n ai-dev \
+  --type merge \
+  -p "$(jq -n --rawfile t "$HOME/.secrets/guest-chat-token" '{stringData:{GUEST_CHAT_SERVICE_TOKEN:$t}}')"
+```
+
+Dev overlays set `GUEST_CHAT_ENABLED=true` and mount `GUEST_CHAT_SERVICE_TOKEN` from this secret. Identity is fixed `user_id=guest` with `roles=[anyuser]` (public RAG chunks only; no chat history persistence). **Do not enable on prod** unless you intend public chat.
+
 Use the **anon public** key for `SUPABASE_ANON_KEY` and the **service_role** key for `SUPABASE_SERVICE_KEY` (username→email lookup, chat history, `message_feedback`). Optional SQL: upstream [`sql/username_login.sql`](https://github.com/taixingbi/layer-gateway-api-v1/tree/main/sql), [`sql/message_feedback_feedback_reason_constraint.sql`](https://github.com/taixingbi/layer-gateway-api-v1/tree/main/sql).
 
 **JWKS fallback** (Secret must not include `SUPABASE_*`):

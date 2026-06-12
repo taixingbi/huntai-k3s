@@ -6,6 +6,7 @@ resources:
   - namespace.yaml
 patches:
   - path: patch-orchestrator-timeout.yaml
+  - path: patch-guest-chat.yaml
 # Pinned by layer-gateway-api-v1 CI (GHCR push → update-gitops). Argo CD rolls out on tag change.
 images:
   - name: ghcr.io/taixingbi/layer-gateway-api-v1

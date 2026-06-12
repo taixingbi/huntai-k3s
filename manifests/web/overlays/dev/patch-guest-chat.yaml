@@ -1,0 +1,19 @@
+# Guest /chat on dev — server-side bearer only (never exposed to the browser).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-web
+spec:
+  template:
+    spec:
+      containers:
+        - name: web
+          env:
+            - name: CHAT_ALLOW_GUEST
+              value: "true"
+            - name: GUEST_CHAT_BEARER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: layer-gateway-api-secrets
+                  key: GUEST_CHAT_SERVICE_TOKEN
+                  optional: true

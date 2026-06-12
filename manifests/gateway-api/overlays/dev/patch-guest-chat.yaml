@@ -1,0 +1,22 @@
+# Guest /chat on dev: BFF sends GUEST_CHAT_BEARER_TOKEN matching GUEST_CHAT_SERVICE_TOKEN.
+# Add GUEST_CHAT_SERVICE_TOKEN to layer-gateway-api-secrets (see docs/deploy-gateway-api.md).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: layer-gateway-api
+spec:
+  template:
+    spec:
+      containers:
+        - name: gateway
+          env:
+            - name: GUEST_CHAT_ENABLED
+              value: "true"
+            - name: GUEST_CHAT_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: layer-gateway-api-secrets
+                  key: GUEST_CHAT_SERVICE_TOKEN
+                  optional: true
+            - name: GUEST_CHAT_USER_ID
+              value: "guest"
