@@ -15,6 +15,8 @@ spec:
           env:
             - name: APP_URL
               value: "https://taixingai.com"
+            - name: NEXT_PUBLIC_RESUME_CANONICAL_URL
+              value: "https://taixingai.com/resume/Taixing_Bi_Resume.pdf"
             - name: ADDITIONAL_AUTH_REDIRECT_URLS
               value: "https://www.taixingai.com/auth/reset-password,http://192.168.86.179:30386/auth/reset-password"
             - name: COOKIE_SECURE
