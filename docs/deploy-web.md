@@ -51,7 +51,7 @@ Defaults in [manifests/web/base/deployment.yaml](../manifests/web/base/deploymen
 | `PROMETHEUS_URL` | `http://prometheus.monitoring.svc.cluster.local:9090` | KPI + GPU metrics |
 | `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` | from gateway Secret | Recent requests + feedback + **Supabase health** |
 
-Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis health uses a TCP `PING` against `REDIS_URL` (deployed with the RAG overlay in `ai-dev`). Orchestrator health uses an 8s probe timeout because `/ready` runs LLM + RAG dependency checks.
+Supabase health probes `GET /auth/v1/health` and `GET /rest/v1/profiles?limit=1` (Postgres + Auth). Redis health uses a TCP `PING` against `REDIS_URL` (Redis deploys with the RAG overlay in `ai-dev` and `ai-prod`). Orchestrator health uses an 8s probe timeout because `/ready` runs LLM + RAG dependency checks.
 
 **Admin Observability (`/admin/observability`)** — link hub only; opens vendored dashboards on [taixingbi.grafana.net](https://taixingbi.grafana.net) (Loki logs, GPU DCGM, vLLM embedding). No `LOKI_*` secrets on the web pod. Optional override: `NEXT_PUBLIC_GRAFANA_BASE_URL`.
 

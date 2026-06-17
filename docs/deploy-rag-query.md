@@ -315,4 +315,4 @@ NodePort:
 - Argo CD: **`rag-query-prod`** (manual sync), path `manifests/rag/overlays/prod`
 - CI: **layer-rag-query-v1** `main` → pins prod image in huntai-k3s; **`dev`** → pins dev only
 - `ENV=prod` → Qdrant collections `*_prod` (orchestrator uses `RAG_COLLECTION_BASE=taixing_knowledge_prod`)
-- Backends: Qdrant + gateways in **`ai-dev`** (FQDN in prod patch)
+- Backends: Qdrant + gateways in **`ai-dev`** (FQDN in prod patch); **Redis** in **`ai-prod`** (`manifests/redis/base` in prod overlay)

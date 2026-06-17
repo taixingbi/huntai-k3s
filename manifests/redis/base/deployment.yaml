@@ -1,4 +1,4 @@
-# Redis for layer-rag-query embedding / follow-up caches (ai-dev).
+# Redis for layer-rag-query embedding / follow-up caches (ai-dev / ai-prod overlays).
 apiVersion: apps/v1
 kind: Deployment
 metadata:

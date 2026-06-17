@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: ai-prod
 resources:
   - ../../base
+  - ../../../redis/base
   - namespace.yaml
 patches:
   - path: patch-deployment.yaml

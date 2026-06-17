@@ -1,6 +1,6 @@
 # Deploy prod user stack (`ai-prod`)
 
-Prod runs **gateway-api**, **orchestrator**, **web**, **rag-query**, and **mcp-github** in namespace **`ai-prod`**. Shared GPU plane stays in **`vllm`** + **`ai-dev`** (inference/embed/rerank gateways, Qdrant).
+Prod runs **gateway-api**, **orchestrator**, **web**, **rag-query**, **Redis** (RAG cache), and **mcp-github** in namespace **`ai-prod`**. Shared GPU plane stays in **`vllm`** + **`ai-dev`** (inference/embed/rerank gateways, Qdrant).
 
 Architecture: [architecture.md](architecture.md). Ports: [port.md](port.md).
 
@@ -70,7 +70,7 @@ cd ~/shared/huntai-platform/huntai-k3s
 # Argo auto-syncs rag-query-prod; or run ./scripts/sync-rag-query-prod.sh
 ```
 
-Verify: `sudo k3s kubectl -n ai-prod get pods -l app=layer-rag-query` → **Running**; image tag matches [prod kustomization](../manifests/rag/overlays/prod/kustomization.yaml).
+Verify: `sudo k3s kubectl -n ai-prod get pods -l app=layer-rag-query` → **Running**; image tag matches [prod kustomization](../manifests/rag/overlays/prod/kustomization.yaml). Redis deploys with the same overlay (`get pods,svc -l app=redis`); web and rag-query use `REDIS_URL=redis://redis:6379/0` in-cluster.
 
 ```bash
 ./scripts/deploy-ai-prod.sh
@@ -96,6 +96,7 @@ Wrong link host (`localhost:3000`) means Supabase Site URL was never updated for
 | Orchestrator `LLM_GATEWAY_BASE_URL` | `http://layer-gateway-inference.ai-dev.svc.cluster.local:8000` |
 | RAG `QDRANT_URL` | `http://qdrant.ai-dev.svc.cluster.local:6333` |
 | RAG embed/infer/rerank URLs | `http://layer-gateway-*.ai-dev.svc.cluster.local:800x` |
+| `REDIS_URL` (web + rag-query) | `redis://redis:6379/0` (Redis in `ai-prod`, same overlay as rag-query) |
 
 ## Observability
 
