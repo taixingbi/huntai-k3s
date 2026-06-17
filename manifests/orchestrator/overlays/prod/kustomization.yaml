@@ -10,5 +10,5 @@ patches:
 images:
   - name: ghcr.io/taixingbi/layer-orchestrator-v1
     newName: ghcr.io/taixingbi/layer-orchestrator-v1
-    newTag: "234a6dcc074a"
-    digest: "sha256:cae9650384146bff3d61700a6fe370a42157cc90514f32ff0969ad9fad1b9447"
+    newTag: "18656145e393"
+    digest: "sha256:a1c7de80d83c0591a9235c15b69c4a277e4bc6973ae2798269e6a0ecd15738e2"
