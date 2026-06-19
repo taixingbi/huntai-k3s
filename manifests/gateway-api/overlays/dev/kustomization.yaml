@@ -11,5 +11,5 @@ patches:
 images:
   - name: ghcr.io/taixingbi/layer-gateway-api-v1
     newName: ghcr.io/taixingbi/layer-gateway-api-v1
-    newTag: "a5edddafbbfc"
-    digest: "sha256:602db049e5cf0977545ab6277219f894b31f33faf1f01876cc03f9895acc4d28"
+    newTag: "b7efa6e611d3"
+    digest: "sha256:983a8dcc1cbc0d592b08e5c038bc5188e5ffa4e9a51a624fe85ed8f8f794b527"
