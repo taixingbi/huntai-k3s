@@ -11,5 +11,5 @@ patches:
 images:
   - name: ghcr.io/taixingbi/layer-rag-query-v1
     newName: ghcr.io/taixingbi/layer-rag-query-v1
-    newTag: "8e670ff1f4b6"
-    digest: "sha256:7db25db8758c85ad30d0f51afe1099a5369293466c83338fc9c0604712481f44"
+    newTag: "7a53e5d07508"
+    digest: "sha256:e6e08864bc77a990f87aff1aadd80ab2b90d01381e7083744fd0cb441e3fa593"
