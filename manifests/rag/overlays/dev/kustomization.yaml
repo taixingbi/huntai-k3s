@@ -9,5 +9,5 @@ resources:
 images:
   - name: ghcr.io/taixingbi/layer-rag-query-v1
     newName: ghcr.io/taixingbi/layer-rag-query-v1
-    newTag: "a7e77946edcb"
-    digest: "sha256:4fd58e028d5915646be8eb3196e4802ebe095f7fba9b1f43d11d0f10bc8a06f4"
+    newTag: "e75863888222"
+    digest: "sha256:1c42fd178c80706e184c4a2c18f1334c74e86330cf4939146ff9e1c8cd2c3fb2"
