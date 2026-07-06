@@ -21,3 +21,5 @@ spec:
                   name: layer-gateway-api-secrets
                   key: SUPABASE_SERVICE_KEY
                   optional: true
+            - name: ADMIN_RAG_EVAL_ENV
+              value: "dev"
