@@ -11,5 +11,5 @@ patches:
 images:
   - name: ghcr.io/taixingbi/layer-web-v1
     newName: ghcr.io/taixingbi/layer-web-v1
-    newTag: "5970a3c6172d"
-    digest: "sha256:9b410c1fa2eab55679c098fd772f74fae33205e1654b0eb9de7a162375e1b0f3"
+    newTag: "4ea09261fb3b"
+    digest: "sha256:7f981074642284b1ec6d4a84b65dad14ef10f8fb2caab14ad3e2504e004b93d7"
